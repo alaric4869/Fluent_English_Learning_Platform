@@ -14,6 +14,7 @@ export type SentenceStatus = "couldnt_hear" | "difficult" | "understood" | "mast
 export interface ResourceContent {
   summary: string;
   transcript?: string;
+  transcriptMode?: "provided" | "source_captions";
   sentences?: string[];
   article?: string;
   chunks?: Array<{ phrase: string; meaning: string; example: string }>;

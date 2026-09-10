@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { AppAction, ReviewItemDto, SavedSentenceDto, SentenceStatus, StudyPlanItemDto } from "../../modules/shared/contracts";
+import { ListeningMediaPlayer } from "./ListeningMediaPlayer";
 import { Modal, ModuleMark, StatusPill } from "./ui";
 
 export function StudyWorkspace({ item, date, dueReviews, savedSentences = [], busy, onAction, onClose }: {
@@ -94,15 +95,16 @@ export function StudyWorkspace({ item, date, dueReviews, savedSentences = [], bu
 
           {item.module === "listening" && (
             <>
-              <div className="media-placeholder">
-                <span>BUILT-IN PRACTICE AUDIO · EN-AU</span><button aria-label="Play listening practice audio" onClick={() => playText(content.transcript ?? content.sentences?.join(". ") ?? "")}>▶</button>
-                <div><strong>{item.resource.title}</strong><small>Replay as often as needed · add original media URLs in the library</small></div>
-              </div>
-              <div className="content-section transcript-section">
-                <div className="content-section-title"><div><p className="eyebrow">Transcript</p><h3>Listen first. Reveal when ready.</h3></div><button className="secondary-button compact" onClick={() => setTranscriptVisible((value) => !value)}>{transcriptVisible ? "Hide transcript" : "Reveal transcript"}</button></div>
-                <div className={transcriptVisible ? "transcript-copy visible" : "transcript-copy hidden"}>{content.transcript}</div>
-              </div>
-              <SentencePractice sentences={content.sentences ?? []} module="listening" statuses={sentenceStatuses} onStatus={saveSentence} onPlay={playText} />
+              <ListeningMediaPlayer title={item.resource.title} source={item.resource.source} url={item.resource.url} />
+              {content.transcript ? (
+                <div className="content-section transcript-section">
+                  <div className="content-section-title"><div><p className="eyebrow">Transcript</p><h3>Listen first. Reveal when ready.</h3></div><button className="secondary-button compact" onClick={() => setTranscriptVisible((value) => !value)}>{transcriptVisible ? "Hide transcript" : "Reveal transcript"}</button></div>
+                  <div className={transcriptVisible ? "transcript-copy visible" : "transcript-copy hidden"}>{content.transcript}</div>
+                </div>
+              ) : (
+                <div className="content-section transcript-source-note"><p className="eyebrow">Exact transcript</p><h3>Use the source captions</h3><p>Turn on English CC in the video for the exact words. This keeps the transcript matched to the real recording instead of showing a generated script.</p></div>
+              )}
+              <SentencePractice sentences={content.sentences ?? []} module="listening" statuses={sentenceStatuses} onStatus={saveSentence} />
             </>
           )}
 
@@ -176,7 +178,7 @@ function SentencePractice({ sentences, module, statuses, onStatus, onPlay }: {
   module: "listening" | "speaking";
   statuses: Record<number, SentenceStatus>;
   onStatus: (sentence: string, sentenceIndex: number, status: SentenceStatus) => Promise<void>;
-  onPlay: (sentence: string) => void;
+  onPlay?: (sentence: string) => void;
 }) {
   const choices: Array<{ value: SentenceStatus; label: string }> = module === "listening"
     ? [{ value: "couldnt_hear", label: "Couldn’t hear" }, { value: "difficult", label: "Difficult" }, { value: "understood", label: "Understood" }, { value: "mastered", label: "Mastered" }]
@@ -184,7 +186,7 @@ function SentencePractice({ sentences, module, statuses, onStatus, onPlay }: {
   return (
     <div className="content-section"><p className="eyebrow">Sentence practice</p><h3>{module === "listening" ? "What could your ears catch?" : "Repeat, then hide and reproduce"}</h3>
       <div className="sentence-list">{sentences.map((sentence, index) => (
-        <div className="sentence-row" key={`${sentence}-${index}`}><button className="sentence-play" aria-label={`Play sentence ${index + 1}`} onClick={() => onPlay(sentence)}>▶</button><div><p>{sentence}</p><div className="sentence-ratings">{choices.map((choice) => <button className={statuses[index] === choice.value ? "active" : ""} key={choice.value} onClick={() => void onStatus(sentence, index, choice.value)}>{choice.label}</button>)}</div></div></div>
+        <div className="sentence-row" key={`${sentence}-${index}`}>{onPlay ? <button className="sentence-play" aria-label={`Play pronunciation guide for sentence ${index + 1}`} onClick={() => onPlay(sentence)}>▶</button> : <span className="sentence-number">{String(index + 1).padStart(2, "0")}</span>}<div><p>{sentence}</p><div className="sentence-ratings">{choices.map((choice) => <button className={statuses[index] === choice.value ? "active" : ""} key={choice.value} onClick={() => void onStatus(sentence, index, choice.value)}>{choice.label}</button>)}</div></div></div>
       ))}</div>
     </div>
   );

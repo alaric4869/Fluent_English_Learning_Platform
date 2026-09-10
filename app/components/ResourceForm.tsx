@@ -27,7 +27,11 @@ export function ResourceForm({ resource, busy, onAction, onClose }: {
     const content = {
       ...resource?.content,
       summary,
-      ...(module === "listening" ? { transcript: text, sentences: text.split(/[.!?]\s+/).filter(Boolean).slice(0, 8) } : {}),
+      ...(module === "listening" ? {
+        transcript: text.trim() || undefined,
+        transcriptMode: text.trim() ? "provided" as const : "source_captions" as const,
+        ...(text.trim() ? { sentences: text.split(/[.!?]\s+/).filter(Boolean).slice(0, 8) } : {}),
+      } : {}),
       ...(module === "reading" ? { article: text } : {}),
     };
     const common = { title, source, url: url || null, topic, difficulty, durationMinutes: duration, tags: tags.split(",").map((tag) => tag.trim()).filter(Boolean), content };
@@ -45,13 +49,13 @@ export function ResourceForm({ resource, busy, onAction, onClose }: {
           <label>Resource type<select value={type} disabled={Boolean(resource)} onChange={(event) => setType(event.target.value as ResourceType)}>{["listening", "speaking", "reading", "vocabulary", "pronunciation", "grammar", "ielts_pte", "australian_english"].map((value) => <option key={value} value={value}>{value.replace("_", " / ")}</option>)}</select></label>
           <label>Plan module<select value={module} disabled={Boolean(resource)} onChange={(event) => setModule(event.target.value as StudyModule)}>{["listening", "speaking", "reading", "vocabulary"].map((value) => <option key={value}>{value}</option>)}</select></label>
           <label>Source<input value={source} onChange={(event) => setSource(event.target.value)} /></label>
-          <label>URL (optional)<input type="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://…" /></label>
+          <label>Media or source URL{module === "listening" ? " (required)" : " (optional)"}<input required={module === "listening"} type="url" value={url} onChange={(event) => setUrl(event.target.value)} placeholder={module === "listening" ? "YouTube, MP3, M4A, OGG or WAV URL" : "https://…"} />{module === "listening" && <small className="field-hint">YouTube videos play inside the lesson. Direct audio links use the real audio player.</small>}</label>
           <label>Topic<input required value={topic} onChange={(event) => setTopic(event.target.value)} /></label>
           <label>Difficulty<select value={difficulty} onChange={(event) => setDifficulty(event.target.value as Difficulty)}><option value="foundation">Foundation</option><option value="comfortable">Comfortable</option><option value="stretch">Stretch</option></select></label>
           <label>Duration (minutes)<input type="number" min="5" max="180" value={duration} onChange={(event) => setDuration(Number(event.target.value))} /></label>
           <label>Tags<input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="Australia, phone call" /></label>
           <label className="span-two">Short summary<textarea required value={summary} onChange={(event) => setSummary(event.target.value)} placeholder="What will this lesson help you practise?" /></label>
-          <label className="span-two">Transcript or article text<textarea className="large-textarea" value={text} onChange={(event) => setText(event.target.value)} placeholder="Paste the English transcript or reading text here…" /></label>
+          <label className="span-two">{module === "listening" ? "Transcript (optional when the video has English CC)" : "Transcript or article text"}<textarea className="large-textarea" value={text} onChange={(event) => setText(event.target.value)} placeholder={module === "listening" ? "Paste an exact transcript, or leave blank and use the video's English captions…" : "Paste the English transcript or reading text here…"} /></label>
         </div>
         <div className="form-actions"><button type="button" className="text-button" onClick={onClose}>Cancel</button><button className="primary-button" disabled={busy}>{busy ? "Saving…" : resource ? "Save changes" : "Add to library"}</button></div>
       </form>

@@ -1,7 +1,7 @@
 import { getD1 } from "./index";
 import { SEED_RESOURCES } from "./seed";
 
-const SCHEMA_VERSION = "1";
+const SCHEMA_VERSION = "2";
 let bootstrapPromise: Promise<void> | null = null;
 
 const schemaStatements = [
@@ -164,10 +164,24 @@ async function bootstrap(): Promise<void> {
 
   const seedStatements = SEED_RESOURCES.map((resource) =>
     d1
-      .prepare(`INSERT OR IGNORE INTO learning_resources (
+      .prepare(`INSERT INTO learning_resources (
         id, owner_user_id, type, module, title, source, url, topic, difficulty,
         duration_minutes, priority, tags_json, content_json, is_favorite, is_archived
-      ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)`)
+      ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)
+      ON CONFLICT(id) DO UPDATE SET
+        type = excluded.type,
+        module = excluded.module,
+        title = excluded.title,
+        source = excluded.source,
+        url = excluded.url,
+        topic = excluded.topic,
+        difficulty = excluded.difficulty,
+        duration_minutes = excluded.duration_minutes,
+        priority = excluded.priority,
+        tags_json = excluded.tags_json,
+        content_json = excluded.content_json,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE learning_resources.owner_user_id IS NULL`)
       .bind(
         resource.id,
         resource.type,
