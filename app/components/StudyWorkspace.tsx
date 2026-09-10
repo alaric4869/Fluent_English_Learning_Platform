@@ -41,6 +41,17 @@ export function StudyWorkspace({ item, date, dueReviews, savedSentences = [], bu
     await onAction({ type: "save_sentence", resourceId: item.resource.id, sentenceIndex, sentence, status, date }, false);
   };
 
+  const playText = (text: string) => {
+    if (!("speechSynthesis" in window) || !text) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-AU";
+    utterance.rate = 0.92;
+    const australianVoice = window.speechSynthesis.getVoices().find((voice) => voice.lang.toLowerCase().startsWith("en-au"));
+    if (australianVoice) utterance.voice = australianVoice;
+    window.speechSynthesis.speak(utterance);
+  };
+
   const saveChunk = async (chunk: { phrase: string; meaning: string; example: string }) => {
     const ok = await onAction({
       type: "add_vocabulary",
@@ -84,21 +95,21 @@ export function StudyWorkspace({ item, date, dueReviews, savedSentences = [], bu
           {item.module === "listening" && (
             <>
               <div className="media-placeholder">
-                <span>LISTENING PLAYER</span><button aria-label="Play listening audio">▶</button>
-                <div><strong>{item.resource.title}</strong><small>Short real-world English · replay as often as needed</small></div>
+                <span>BUILT-IN PRACTICE AUDIO · EN-AU</span><button aria-label="Play listening practice audio" onClick={() => playText(content.transcript ?? content.sentences?.join(". ") ?? "")}>▶</button>
+                <div><strong>{item.resource.title}</strong><small>Replay as often as needed · add original media URLs in the library</small></div>
               </div>
               <div className="content-section transcript-section">
                 <div className="content-section-title"><div><p className="eyebrow">Transcript</p><h3>Listen first. Reveal when ready.</h3></div><button className="secondary-button compact" onClick={() => setTranscriptVisible((value) => !value)}>{transcriptVisible ? "Hide transcript" : "Reveal transcript"}</button></div>
                 <div className={transcriptVisible ? "transcript-copy visible" : "transcript-copy hidden"}>{content.transcript}</div>
               </div>
-              <SentencePractice sentences={content.sentences ?? []} module="listening" statuses={sentenceStatuses} onStatus={saveSentence} />
+              <SentencePractice sentences={content.sentences ?? []} module="listening" statuses={sentenceStatuses} onStatus={saveSentence} onPlay={playText} />
             </>
           )}
 
           {item.module === "speaking" && (
             <>
               <div className="speaking-callout"><span>Listen → Pause → Repeat → Imitate → Hide → Retell</span><p>Keep the rhythm. Perfect grammar is not the goal during the first retell.</p></div>
-              <SentencePractice sentences={content.sentences ?? []} module="speaking" statuses={sentenceStatuses} onStatus={saveSentence} />
+              <SentencePractice sentences={content.sentences ?? []} module="speaking" statuses={sentenceStatuses} onStatus={saveSentence} onPlay={playText} />
               {(content.pronunciationNotes?.length || content.connectedSpeechNotes?.length) && (
                 <div className="notes-pair">
                   <div><p className="eyebrow">Pronunciation</p>{content.pronunciationNotes?.map((note) => <p key={note}>{note}</p>)}</div>
@@ -160,11 +171,12 @@ export function StudyWorkspace({ item, date, dueReviews, savedSentences = [], bu
   );
 }
 
-function SentencePractice({ sentences, module, statuses, onStatus }: {
+function SentencePractice({ sentences, module, statuses, onStatus, onPlay }: {
   sentences: string[];
   module: "listening" | "speaking";
   statuses: Record<number, SentenceStatus>;
   onStatus: (sentence: string, sentenceIndex: number, status: SentenceStatus) => Promise<void>;
+  onPlay: (sentence: string) => void;
 }) {
   const choices: Array<{ value: SentenceStatus; label: string }> = module === "listening"
     ? [{ value: "couldnt_hear", label: "Couldn’t hear" }, { value: "difficult", label: "Difficult" }, { value: "understood", label: "Understood" }, { value: "mastered", label: "Mastered" }]
@@ -172,7 +184,7 @@ function SentencePractice({ sentences, module, statuses, onStatus }: {
   return (
     <div className="content-section"><p className="eyebrow">Sentence practice</p><h3>{module === "listening" ? "What could your ears catch?" : "Repeat, then hide and reproduce"}</h3>
       <div className="sentence-list">{sentences.map((sentence, index) => (
-        <div className="sentence-row" key={`${sentence}-${index}`}><span className="sentence-number">{String(index + 1).padStart(2, "0")}</span><div><p>{sentence}</p><div className="sentence-ratings">{choices.map((choice) => <button className={statuses[index] === choice.value ? "active" : ""} key={choice.value} onClick={() => void onStatus(sentence, index, choice.value)}>{choice.label}</button>)}</div></div></div>
+        <div className="sentence-row" key={`${sentence}-${index}`}><button className="sentence-play" aria-label={`Play sentence ${index + 1}`} onClick={() => onPlay(sentence)}>▶</button><div><p>{sentence}</p><div className="sentence-ratings">{choices.map((choice) => <button className={statuses[index] === choice.value ? "active" : ""} key={choice.value} onClick={() => void onStatus(sentence, index, choice.value)}>{choice.label}</button>)}</div></div></div>
       ))}</div>
     </div>
   );
