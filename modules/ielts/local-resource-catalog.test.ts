@@ -12,6 +12,7 @@ describe("local IELTS resource catalog", () => {
     ["listening/剑18音频/18-3-3.mp3", "audio", 18, 3, 3],
     ["listening/19音频/Test3 Part2.mp3", "audio", 19, 3, 2],
     ["listening/20音频/20T2S1.mp3", "audio", 20, 2, 1],
+    ["listening/【听力12】剑桥雅思12听力音频/Test5/Test5.Section1.mp3", "audio", 12, 5, 1],
   ])("classifies %s", (path, kind, book, test, section) => {
     expect(classifyIeltsPath(path)).toMatchObject({ kind, bookNumber: book, testNumber: test, sectionNumber: section });
   });

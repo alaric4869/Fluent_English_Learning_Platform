@@ -83,6 +83,40 @@ export function catalogFromInputFiles(fileList: FileList): LocalIeltsCatalog {
   return { folderName, books, pdfs, audio, totalAudioFiles: allAudio.length };
 }
 
+export function catalogFromBookFiles(fileList: FileList, bookNumber: number): LocalIeltsCatalog {
+  const files = [...fileList].flatMap((file): LocalIeltsFile[] => {
+    const classified = classifyIeltsPath(`G${bookNumber}/${file.name}`);
+    return classified ? [{ ...classified, name: file.name, getFile: async () => file }] : [];
+  });
+  return toCatalog(`剑桥 ${bookNumber}`, files);
+}
+
+export function mergeLocalIeltsCatalog(current: LocalIeltsCatalog | null, incoming: LocalIeltsCatalog): LocalIeltsCatalog {
+  if (!current) return incoming;
+  const pdfByBook = new Map(current.pdfs.map((file) => [file.bookNumber, file]));
+  for (const file of incoming.pdfs) pdfByBook.set(file.bookNumber, file);
+  const audioBySection = new Map(current.audio.map((file) => [audioKey(file), file]));
+  for (const file of incoming.audio) audioBySection.set(audioKey(file), file);
+  const audio = [...audioBySection.values()].sort((left, right) =>
+    left.bookNumber - right.bookNumber
+      || (left.testNumber ?? 0) - (right.testNumber ?? 0)
+      || (left.sectionNumber ?? 0) - (right.sectionNumber ?? 0),
+  );
+  const pdfs = [...pdfByBook.values()].sort((a, b) => b.bookNumber - a.bookNumber);
+  const books = [...new Set([...pdfs, ...audio].map((file) => file.bookNumber))].sort((a, b) => b - a);
+  return {
+    folderName: current.folderName === incoming.folderName ? current.folderName : "已选择的本地资料",
+    books,
+    pdfs,
+    audio,
+    totalAudioFiles: Math.max(current.totalAudioFiles, incoming.totalAudioFiles, audio.length),
+  };
+}
+
+function audioKey(file: LocalIeltsFile): string {
+  return `${file.bookNumber}-${file.testNumber}-${file.sectionNumber}`;
+}
+
 async function walk(directory: BrowserDirectoryHandle, prefix: string, files: LocalIeltsFile[]): Promise<void> {
   for await (const entry of directory.values()) {
     const path = prefix ? `${prefix}/${entry.name}` : entry.name;
@@ -93,6 +127,14 @@ async function walk(directory: BrowserDirectoryHandle, prefix: string, files: Lo
     const classified = classifyIeltsPath(path);
     if (classified) files.push({ ...classified, name: entry.name, getFile: () => entry.getFile() });
   }
+}
+
+function toCatalog(folderName: string, files: LocalIeltsFile[]): LocalIeltsCatalog {
+  const pdfs = files.filter((file) => file.kind === "pdf").sort((a, b) => b.bookNumber - a.bookNumber);
+  const allAudio = files.filter((file) => file.kind === "audio");
+  const audio = deduplicateIeltsAudio(allAudio);
+  const books = [...new Set([...pdfs, ...audio].map((file) => file.bookNumber))].sort((a, b) => b - a);
+  return { folderName, books, pdfs, audio, totalAudioFiles: allAudio.length };
 }
 
 async function saveDirectoryHandle(handle: BrowserDirectoryHandle): Promise<void> {

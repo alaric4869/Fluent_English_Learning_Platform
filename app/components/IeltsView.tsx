@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import type { IeltsAction, IeltsAttemptDto, IeltsDashboardDto, IeltsSkill } from "../../modules/shared/contracts";
+import { formatIeltsTestLabel, getIeltsTestOptions } from "../../modules/ielts/ielts-material-manifest";
 import {
   catalogFromInputFiles,
+  catalogFromBookFiles,
   chooseResourcesDirectory,
   hasReadPermission,
   requestReadPermission,
   restoreResourcesDirectory,
   scanResourcesDirectory,
+  mergeLocalIeltsCatalog,
   type BrowserDirectoryHandle,
   type LocalIeltsCatalog,
 } from "../../modules/ielts/local-resource-access";
@@ -31,6 +34,7 @@ export function IeltsView() {
   const [examDate, setExamDate] = useState("2026-10-31");
   const [targetBand, setTargetBand] = useState("6.5");
   const directoryInput = useRef<HTMLInputElement>(null);
+  const bookFilesInput = useRef<HTMLInputElement>(null);
 
   const loadDashboard = useCallback(async () => {
     const response = await fetch("/api/ielts", { cache: "no-store" });
@@ -58,10 +62,7 @@ export function IeltsView() {
   }, [loadDashboard]);
 
   const activeAttempt = dashboard?.attempts.find((attempt) => attempt.id === activeAttemptId) ?? null;
-  const tests = useMemo(() => {
-    const found = [...new Set(catalog?.audio.filter((file) => file.bookNumber === selection.bookNumber).map((file) => file.testNumber).filter((value): value is number => value !== null) ?? [])].sort((a, b) => a - b);
-    return found.length ? found : selection.bookNumber === 12 ? [5, 6, 7, 8] : [1, 2, 3, 4];
-  }, [catalog, selection.bookNumber]);
+  const tests = useMemo(() => getIeltsTestOptions(selection.bookNumber, selection.skill), [selection.bookNumber, selection.skill]);
 
   async function scanHandle(handle: BrowserDirectoryHandle) {
     setScanning(true);
@@ -101,6 +102,18 @@ export function IeltsView() {
     if (!next.pdfs.length) { setError("没有找到 G 类 PDF。请选择正确的 resources 文件夹。"); return; }
     setCatalog(next);
     setError(null);
+  }
+
+  function importCurrentBook(event: ChangeEvent<HTMLInputElement>) {
+    if (!event.target.files?.length) return;
+    const incoming = catalogFromBookFiles(event.target.files, selection.bookNumber);
+    if (!incoming.pdfs.length) {
+      setError(`没有找到剑桥 ${selection.bookNumber} 的 PDF。请选择这一本 PDF，可同时选择 4 个听力音频。`);
+      return;
+    }
+    setCatalog((current) => mergeLocalIeltsCatalog(current, incoming));
+    setError(null);
+    event.target.value = "";
   }
 
   async function post(action: IeltsAction): Promise<{ attemptId?: string }> {
@@ -146,9 +159,16 @@ export function IeltsView() {
   }
 
   function selectBook(bookNumber: number) {
-    const foundTests = [...new Set(catalog?.audio.filter((file) => file.bookNumber === bookNumber).map((file) => file.testNumber).filter((value): value is number => value !== null) ?? [])].sort((a, b) => a - b);
-    const testNumber = foundTests[0] ?? (bookNumber === 12 ? 5 : 1);
+    const testNumber = getIeltsTestOptions(bookNumber, selection.skill)[0].number;
     setSelection((value) => ({ ...value, bookNumber, testNumber }));
+  }
+
+  function selectSkill(skill: IeltsSkill) {
+    const options = getIeltsTestOptions(selection.bookNumber, skill);
+    const testNumber = options.some((option) => option.number === selection.testNumber)
+      ? selection.testNumber
+      : options[0].number;
+    setSelection((value) => ({ ...value, skill, testNumber }));
   }
 
   if (!dashboard) return <div className="app-loading"><span /><h2>正在建立你的 G 类备考计划</h2><p>读取目标与真题练习记录…</p></div>;
@@ -166,7 +186,7 @@ export function IeltsView() {
 
       <div className="ielts-overview-grid">
         <section className="local-library-card">
-          <div className="local-library-copy"><p className="eyebrow">My authentic library</p><h2>连接你的 G 类真题库</h2><p>原书与音频只从这台电脑读取，不会上传到网站。首次使用请选择 <code>resources</code> 文件夹。</p><button className="primary-button" disabled={scanning} onClick={() => void connectFolder()}>{scanning ? "正在扫描 5.3GB 资料…" : catalog ? "重新连接文件夹" : "连接 resources 文件夹 →"}</button><input ref={directoryInput} className="visually-hidden" type="file" multiple onChange={importInput} {...({ webkitdirectory: "", directory: "" } as Record<string, string>)} /></div>
+          <div className="local-library-copy"><p className="eyebrow">My authentic library</p><h2>连接你的 G 类真题库</h2><p>原书与音频只从这台电脑读取，不会上传到网站。可以连接整个 <code>resources</code> 文件夹；若浏览器不支持，直接选择当前册 PDF。</p><div className="local-library-actions"><button className="primary-button" disabled={scanning} onClick={() => void connectFolder()}>{scanning ? "正在扫描 5.3GB 资料…" : catalog ? "重新连接文件夹" : "连接 resources 文件夹 →"}</button><button className="secondary-button" onClick={() => bookFilesInput.current?.click()}>只选择剑桥 {selection.bookNumber}</button></div><input ref={directoryInput} className="visually-hidden" type="file" multiple onChange={importInput} {...({ webkitdirectory: "", directory: "" } as Record<string, string>)} /><input ref={bookFilesInput} className="visually-hidden" type="file" multiple accept=".pdf,.mp3,.m4a,.wav,.aac" onChange={importCurrentBook} /></div>
           <div className={`library-scan-status ${catalog ? "connected" : ""}`}><span>{catalog ? "✓" : "LOCAL"}</span><div><strong>{catalog ? `已连接 ${catalog.folderName}` : "等待连接"}</strong><small>{catalog ? `${catalog.pdfs.length} 本 PDF · ${catalog.totalAudioFiles} 个音频文件 · ${catalog.audio.length} 个唯一 Section` : "检测到本机已有 G4–G20 与配套听力"}</small></div></div>
         </section>
         <section className="ielts-summary-card"><p className="eyebrow">Practice evidence</p><div><strong>{dashboard.summary.completedAttempts}</strong><span>已完成练习</span></div><div><strong>{dashboard.summary.averageBand ?? "—"}</strong><span>目前平均 Band</span></div><div><strong>{dashboard.summary.completedThisWeek}</strong><span>本周完成</span></div></section>
@@ -190,8 +210,8 @@ export function IeltsView() {
           return <button className={`${book === selection.bookNumber ? "active" : ""} ${available ? "available" : ""}`} key={book} disabled={Boolean(activeAttempt)} onClick={() => selectBook(book)}><span>CAMBRIDGE</span><strong>{book}</strong><small>{completed ? `${completed} 次已完成` : "General Training"}</small></button>;
         })}</div>
         <div className="ielts-selection-row">
-          <label>Test<select disabled={Boolean(activeAttempt)} value={selection.testNumber} onChange={(event) => setSelection((value) => ({ ...value, testNumber: Number(event.target.value) }))}>{tests.map((test) => <option value={test} key={test}>Test {test}</option>)}</select></label>
-          <div className="ielts-skill-tabs">{SKILLS.map((skill) => <button disabled={Boolean(activeAttempt)} className={selection.skill === skill ? "active" : ""} onClick={() => setSelection((value) => ({ ...value, skill }))} key={skill}><span>{SKILL_META[skill].short}</span>{SKILL_META[skill].label}</button>)}</div>
+          <label>Test<select disabled={Boolean(activeAttempt)} value={selection.testNumber} onChange={(event) => setSelection((value) => ({ ...value, testNumber: Number(event.target.value) }))}>{tests.map((test) => <option value={test.number} key={test.number}>{test.label}</option>)}</select></label>
+          <div className="ielts-skill-tabs">{SKILLS.map((skill) => <button disabled={Boolean(activeAttempt)} className={selection.skill === skill ? "active" : ""} onClick={() => selectSkill(skill)} key={skill}><span>{SKILL_META[skill].short}</span>{SKILL_META[skill].label}</button>)}</div>
         </div>
       </section>
 
@@ -213,7 +233,7 @@ function Phase({ number, title, copy, active }: { number: string; title: string;
 
 function AttemptHistory({ attempts }: { attempts: IeltsAttemptDto[] }) {
   const visible = attempts.filter((attempt) => attempt.status === "completed").slice(0, 8);
-  return <section className="ielts-history-card"><div className="section-heading"><div><p className="eyebrow">Performance history</p><h2>最近真题成绩</h2></div><span>{visible.length ? "每次练习都会永久保留" : "完成第一套后，这里会出现成绩趋势"}</span></div>{visible.length ? <div className="ielts-attempt-table"><div className="table-head"><span>材料</span><span>科目</span><span>成绩</span><span>日期</span><span>记录</span></div>{visible.map((attempt) => <div key={attempt.id}><strong>剑 {attempt.bookNumber} · T{attempt.testNumber}</strong><span>{SKILL_META[attempt.skill].label}</span><b>{attempt.rawScore !== null ? `${attempt.rawScore}/40 · ` : ""}Band {attempt.estimatedBand ?? "—"}</b><time>{new Intl.DateTimeFormat("zh-CN", { month: "short", day: "numeric" }).format(new Date(attempt.completedAt ?? attempt.startedAt))}</time><p>{attempt.notes || "—"}</p></div>)}</div> : <div className="ielts-history-empty">还没有已完成的真题记录。选择 Book、Test 和科目，然后开始第一次基线测试。</div>}</section>;
+  return <section className="ielts-history-card"><div className="section-heading"><div><p className="eyebrow">Performance history</p><h2>最近真题成绩</h2></div><span>{visible.length ? "每次练习都会永久保留" : "完成第一套后，这里会出现成绩趋势"}</span></div>{visible.length ? <div className="ielts-attempt-table"><div className="table-head"><span>材料</span><span>科目</span><span>成绩</span><span>日期</span><span>记录</span></div>{visible.map((attempt) => <div key={attempt.id}><strong>剑 {attempt.bookNumber} · {formatIeltsTestLabel(attempt.bookNumber, attempt.skill, attempt.testNumber)}</strong><span>{SKILL_META[attempt.skill].label}</span><b>{attempt.rawScore !== null ? `${attempt.rawScore}/40 · ` : ""}Band {attempt.estimatedBand ?? "—"}</b><time>{new Intl.DateTimeFormat("zh-CN", { month: "short", day: "numeric" }).format(new Date(attempt.completedAt ?? attempt.startedAt))}</time><p>{attempt.notes || "—"}</p></div>)}</div> : <div className="ielts-history-empty">还没有已完成的真题记录。选择 Book、Test 和科目，然后开始第一次基线测试。</div>}</section>;
 }
 
 function daysUntil(date: string): number {
