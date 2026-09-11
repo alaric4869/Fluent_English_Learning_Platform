@@ -11,7 +11,7 @@ export type ReviewRating = "again" | "hard" | "good" | "easy";
 export type MasteryStatus = "new" | "learning" | "familiar" | "mastered";
 export type SentenceStatus = "couldnt_hear" | "difficult" | "understood" | "mastered" | "need_practice" | "good";
 export type IeltsSkill = "listening" | "reading" | "writing" | "speaking";
-export type IeltsAttemptStatus = "in_progress" | "completed";
+export type IeltsAttemptStatus = "in_progress" | "completed" | "cancelled";
 
 export interface ResourceContent {
   summary: string;
@@ -177,6 +177,7 @@ export interface IeltsDashboardDto {
 export type IeltsAction =
   | { type: "save_goal"; targetBand: number; examDate: string }
   | { type: "start_attempt"; bookNumber: number; testNumber: number; skill: IeltsSkill }
+  | { type: "cancel_attempt"; attemptId: string }
   | {
       type: "complete_attempt";
       attemptId: string;

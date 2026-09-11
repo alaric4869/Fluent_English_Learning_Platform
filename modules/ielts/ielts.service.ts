@@ -29,11 +29,22 @@ export class IeltsService {
     await this.repository.saveGoal(userId, targetBand, examDate);
   }
 
-  startAttempt(userId: string, bookNumber: number, testNumber: number, skill: IeltsSkill): Promise<string> {
+  async startAttempt(userId: string, bookNumber: number, testNumber: number, skill: IeltsSkill): Promise<string> {
     if (!Number.isInteger(bookNumber) || bookNumber < 4 || bookNumber > 20) throw new Error("Book must be between 4 and 20.");
     if (!Number.isInteger(testNumber) || testNumber < 1 || testNumber > 8) throw new Error("Test must be between 1 and 8.");
     if (!IELTS_SKILLS.includes(skill)) throw new Error("Unknown IELTS skill.");
+    const active = (await this.repository.listAttempts(userId)).find((attempt) => attempt.status === "in_progress");
+    if (active) {
+      if (active.bookNumber === bookNumber && active.testNumber === testNumber && active.skill === skill) return active.id;
+      throw new Error("Finish or exit the current IELTS practice before starting another one.");
+    }
     return this.repository.startAttempt(userId, bookNumber, testNumber, skill);
+  }
+
+  async cancelAttempt(userId: string, attemptId: string): Promise<void> {
+    const active = (await this.repository.listAttempts(userId)).find((attempt) => attempt.id === attemptId && attempt.status === "in_progress");
+    if (!active) throw new Error("Active IELTS attempt not found.");
+    await this.repository.cancelAttempt(userId, attemptId);
   }
 
   async completeAttempt(userId: string, attemptId: string, rawScore: number | undefined, estimatedBand: number | undefined, notes: string): Promise<void> {

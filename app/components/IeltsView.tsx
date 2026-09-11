@@ -150,6 +150,15 @@ export function IeltsView() {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "无法保存成绩。"); }
   }
 
+  async function cancelAttempt() {
+    if (!activeAttemptId) return;
+    try {
+      await post({ type: "cancel_attempt", attemptId: activeAttemptId });
+      setActiveAttemptId(null);
+      await loadDashboard();
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "无法退出当前练习。"); }
+  }
+
   async function saveGoal() {
     try {
       await post({ type: "save_goal", targetBand: Number(targetBand), examDate });
@@ -213,6 +222,7 @@ export function IeltsView() {
           <label>Test<select disabled={Boolean(activeAttempt)} value={selection.testNumber} onChange={(event) => setSelection((value) => ({ ...value, testNumber: Number(event.target.value) }))}>{tests.map((test) => <option value={test.number} key={test.number}>{test.label}</option>)}</select></label>
           <div className="ielts-skill-tabs">{SKILLS.map((skill) => <button disabled={Boolean(activeAttempt)} className={selection.skill === skill ? "active" : ""} onClick={() => selectSkill(skill)} key={skill}><span>{SKILL_META[skill].short}</span>{SKILL_META[skill].label}</button>)}</div>
         </div>
+        {activeAttempt && <div className="ielts-attempt-lock"><div><strong>当前练习正在进行</strong><span>为避免成绩记到错误材料，Book、Test 和科目已暂时锁定。可以继续完成，或退出后重新选择。</span></div><button className="secondary-button" disabled={busy} onClick={() => void cancelAttempt()}>{busy ? "正在退出…" : "退出当前练习"}</button></div>}
       </section>
 
       <IeltsPracticeWorkspace key={`${selection.bookNumber}-${selection.testNumber}-${selection.skill}`} catalog={catalog} selection={selection} attempt={activeAttempt} busy={busy} onStart={startAttempt} onComplete={completeAttempt} />

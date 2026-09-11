@@ -11,5 +11,6 @@ export interface IeltsRepository {
   saveGoal(userId: string, targetBand: number, examDate: string): Promise<void>;
   listAttempts(userId: string): Promise<IeltsAttemptDto[]>;
   startAttempt(userId: string, bookNumber: number, testNumber: number, skill: IeltsSkill): Promise<string>;
+  cancelAttempt(userId: string, attemptId: string): Promise<void>;
   completeAttempt(userId: string, attemptId: string, input: CompleteIeltsAttemptInput): Promise<void>;
 }

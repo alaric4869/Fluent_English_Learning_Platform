@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from "pdfjs-dist";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { LocalIeltsFile } from "../../modules/ielts/local-resource-access";
 import type { IeltsPageRange } from "../../modules/ielts/ielts-material-manifest";
 
@@ -28,7 +29,7 @@ export function IeltsPdfViewer({ file, pageRange, title }: {
         objectUrl = URL.createObjectURL(sourceFile);
         setSourceUrl(objectUrl);
         const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
+        pdfjs.GlobalWorkerOptions.workerSrc = resolveBrowserAssetUrl(pdfWorkerUrl);
         loadingTask = pdfjs.getDocument({ url: objectUrl });
         loadedDocument = await loadingTask.promise;
         if (!cancelled) setDocument(loadedDocument);
@@ -63,6 +64,13 @@ export function IeltsPdfViewer({ file, pageRange, title }: {
       </div>
     </div>
   );
+}
+
+function resolveBrowserAssetUrl(assetUrl: string): string {
+  const parsed = new URL(assetUrl, `${window.location.origin}/`);
+  return parsed.protocol === "file:"
+    ? `${window.location.origin}${parsed.pathname}${parsed.search}`
+    : parsed.toString();
 }
 
 function PdfPage({ document, pageNumber }: { document: PDFDocumentProxy; pageNumber: number }) {

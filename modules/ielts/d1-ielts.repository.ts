@@ -67,6 +67,14 @@ export class D1IeltsRepository implements IeltsRepository {
     return id;
   }
 
+  async cancelAttempt(userId: string, attemptId: string): Promise<void> {
+    const result = await getD1().prepare(`UPDATE ielts_attempts SET
+      status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ? AND user_id = ? AND status = 'in_progress'`)
+      .bind(attemptId, userId).run();
+    if (!result.meta.changes) throw new Error("Active IELTS attempt not found.");
+  }
+
   async completeAttempt(userId: string, attemptId: string, input: CompleteIeltsAttemptInput): Promise<void> {
     const result = await getD1().prepare(`UPDATE ielts_attempts SET
       status = 'completed', raw_score = ?, estimated_band = ?, notes = ?,

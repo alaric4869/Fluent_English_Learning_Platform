@@ -26,6 +26,10 @@ export async function POST(request: Request) {
       const attemptId = await ieltsService.startAttempt(userId, action.bookNumber, action.testNumber, action.skill);
       return Response.json({ ok: true, attemptId });
     }
+    if (action.type === "cancel_attempt") {
+      await ieltsService.cancelAttempt(userId, action.attemptId);
+      return Response.json({ ok: true });
+    }
     if (action.type === "complete_attempt") {
       await ieltsService.completeAttempt(userId, action.attemptId, action.rawScore, action.estimatedBand, action.notes);
       return Response.json({ ok: true });
