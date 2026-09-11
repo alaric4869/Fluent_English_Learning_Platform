@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import type { AppAction, AppStateDto, LearningResourceDto, StudyPlanItemDto } from "../../modules/shared/contracts";
 import { DashboardView } from "./DashboardView";
 import { TodayView } from "./TodayView";
@@ -86,16 +85,18 @@ export function LearningApp({ view }: { view: AppView }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <Link className="brand" href="/" aria-label="Fluent home">
+        {/* A plain anchor avoids router state for the persistent application shell. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a className="brand" href="/" aria-label="Fluent home">
           <span className="brand-mark">F</span>
           <span><strong>Fluent</strong><small>Daily English</small></span>
-        </Link>
+        </a>
         <nav className="main-nav" aria-label="Main navigation">
           {NAV_ITEMS.map((item) => (
-            <Link className={view === item.view ? "active" : ""} href={item.href} key={item.view}>
+            <a className={view === item.view ? "active" : ""} href={item.href} key={item.view}>
               <span>{item.short}</span>{item.label}
               {item.view === "review" && state && state.dueReviews.length > 0 && <b>{state.dueReviews.length}</b>}
-            </Link>
+            </a>
           ))}
         </nav>
         <div className="sidebar-card">
