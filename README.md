@@ -1,6 +1,6 @@
 # Fluent — Daily English
 
-Fluent is a persistent personal English learning dashboard for an IELTS 5–5.5 learner. It creates a date-specific daily plan, guides listening/speaking/reading/chunk practice, schedules reviews, preserves history, and turns performance signals into conservative plan adjustments.
+Fluent is a persistent personal English learning dashboard for an IELTS 5–5.5 learner preparing for IELTS General Training Band 6.5. It creates a date-specific daily plan, guides listening/speaking/reading/chunk practice, schedules reviews, preserves history, and turns performance signals into conservative plan adjustments.
 
 ## Product areas
 
@@ -10,6 +10,14 @@ Fluent is a persistent personal English learning dashboard for an IELTS 5–5.5 
 - Focused reading and chunk capture
 - Spaced review with Again / Hard / Good / Easy
 - Resource library, history, progress, and notebook
+- IELTS General Training workspace for Cambridge G4–G20 books and matching local audio
+- Persistent IELTS goal, countdown, attempt history, raw scores, estimated bands, and mistake notes
+
+## Local IELTS resources
+
+The deployed private site does not upload or bundle the learner's copyrighted books and audio. From the IELTS G page, the learner grants read access to the local `resources` directory. The browser indexes filenames, opens the selected PDF through a temporary object URL, and matches Book / Test / Part to the corresponding audio. A directory handle may be remembered in browser IndexedDB as a device-local access preference; all authoritative learning records remain in D1.
+
+`resources/` is deliberately git-ignored and must never be included in a deployment.
 
 ## Local development
 

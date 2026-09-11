@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { AppAction, AppStateDto, ReviewRating } from "../../modules/shared/contracts";
 import { EmptyState } from "./ui";
 
@@ -16,10 +16,6 @@ export function ReviewView({ state, onAction }: { state: AppStateDto; onAction: 
   const [revealed, setRevealed] = useState(false);
   const [completed, setCompleted] = useState(0);
   const item = state.dueReviews.find((review) => review.id === activeId) ?? state.dueReviews[0];
-
-  useEffect(() => {
-    if (!item && state.dueReviews[0]) setActiveId(state.dueReviews[0].id);
-  }, [item, state.dueReviews]);
 
   const rate = async (rating: ReviewRating) => {
     if (!item) return;

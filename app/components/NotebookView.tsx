@@ -10,14 +10,16 @@ export function NotebookView({ state, onAction }: { state: AppStateDto; onAction
   const [type, setType] = useState<(typeof TYPES)[number]>("all");
   const [search, setSearch] = useState("");
   const [adding, setAdding] = useState(false);
-  const vocabularyEntries: NotebookEntryDto[] = state.vocabulary.map((item) => ({
-    id: item.id, type: "vocabulary", title: item.phrase, content: `${item.meaning}\n${item.example}`,
-    sourceResourceId: item.sourceResourceId, sourceTitle: null, isFavorite: item.isFavorite, createdAt: item.dateLearned,
-  }));
-  const entries = useMemo(() => [...state.notebook, ...vocabularyEntries]
-    .filter((entry) => type === "all" || entry.type === type)
-    .filter((entry) => !search || `${entry.title} ${entry.content}`.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt)), [state.notebook, state.vocabulary, type, search]);
+  const entries = useMemo(() => {
+    const vocabularyEntries: NotebookEntryDto[] = state.vocabulary.map((item) => ({
+      id: item.id, type: "vocabulary", title: item.phrase, content: `${item.meaning}\n${item.example}`,
+      sourceResourceId: item.sourceResourceId, sourceTitle: null, isFavorite: item.isFavorite, createdAt: item.dateLearned,
+    }));
+    return [...state.notebook, ...vocabularyEntries]
+      .filter((entry) => type === "all" || entry.type === type)
+      .filter((entry) => !search || `${entry.title} ${entry.content}`.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [state.notebook, state.vocabulary, type, search]);
 
   return (
     <div className="page-wrap">

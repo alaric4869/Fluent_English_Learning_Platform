@@ -14,6 +14,7 @@ The UI never accesses D1. Route handlers validate transport input and dispatch e
 - `learning-artifacts`: vocabulary and sentence capture
 - `notebook`: personal notes and mistakes
 - `analytics`: history, streaks, skill scores, and activity
+- `ielts`: General Training goal, attempt lifecycle, score conversion, and local resource indexing
 - `app-state`: composition root and read-model assembly
 
 ## Important boundaries
@@ -23,3 +24,9 @@ The UI never accesses D1. Route handlers validate transport input and dispatch e
 Study plans are generated once per learner-local date and persisted. A plan item contains a resource snapshot so later resource changes cannot erase what was assigned historically.
 
 Domain events can be added after the first release; current writes already use explicit application-service transitions, leaving a clear publishing point.
+
+## IELTS local-media boundary
+
+IELTS books and audio remain on the learner's device. The client-side local-resource adapter classifies file paths and exposes temporary `blob:` URLs to the PDF and audio players. It never posts file bytes or local paths to application APIs. D1 stores only stable study evidence such as book number, test number, skill, result, timestamps, and notes.
+
+`IeltsView` calls the typed `/api/ielts` route, which dispatches to `IeltsService` and `IeltsRepository`. Band estimation is deterministic domain logic and remains independent from React and D1.

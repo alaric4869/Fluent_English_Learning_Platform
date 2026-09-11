@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const appMeta = sqliteTable("app_meta", {
   key: text("key").primaryKey(),
@@ -195,4 +195,35 @@ export const performanceSignals = sqliteTable(
     observedAt: text("observed_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [index("idx_performance_user_module").on(table.userId, table.module)],
+);
+
+export const ieltsGoals = sqliteTable("ielts_goals", {
+  userId: text("user_id").primaryKey(),
+  testType: text("test_type").notNull().default("general"),
+  targetBand: real("target_band").notNull().default(6.5),
+  examDate: text("exam_date").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const ieltsAttempts = sqliteTable(
+  "ielts_attempts",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    bookNumber: integer("book_number").notNull(),
+    testNumber: integer("test_number").notNull(),
+    skill: text("skill").notNull(),
+    status: text("status").notNull().default("in_progress"),
+    rawScore: integer("raw_score"),
+    estimatedBand: real("estimated_band"),
+    notes: text("notes").notNull().default(""),
+    startedAt: text("started_at").notNull(),
+    completedAt: text("completed_at"),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_ielts_attempts_user_started").on(table.userId, table.startedAt),
+    index("idx_ielts_attempts_material").on(table.userId, table.bookNumber, table.testNumber, table.skill),
+  ],
 );

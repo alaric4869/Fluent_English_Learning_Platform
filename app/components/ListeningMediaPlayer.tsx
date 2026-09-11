@@ -28,6 +28,8 @@ export function ListeningMediaPlayer({ title, source, url }: { title: string; so
     return (
       <section className="listening-media-card audio-media-card">
         <div className="listening-media-head"><div><span>REAL AUDIO</span><strong>{source}</strong></div><a href={media.originalUrl} target="_blank" rel="noreferrer">Open audio ↗</a></div>
+        {/* This source has no timed-caption file; the lesson transcript is displayed beside the player. */}
+        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <audio controls preload="metadata" src={media.originalUrl}>Your browser cannot play this audio. Use the open-audio link instead.</audio>
         <p className="media-study-tip"><strong>First pass:</strong> listen without the transcript. Then replay short sections while checking the text.</p>
       </section>

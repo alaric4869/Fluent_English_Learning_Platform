@@ -10,6 +10,8 @@ export type PlanItemStatus = "not_started" | "in_progress" | "completed";
 export type ReviewRating = "again" | "hard" | "good" | "easy";
 export type MasteryStatus = "new" | "learning" | "familiar" | "mastered";
 export type SentenceStatus = "couldnt_hear" | "difficult" | "understood" | "mastered" | "need_practice" | "good";
+export type IeltsSkill = "listening" | "reading" | "writing" | "speaking";
+export type IeltsAttemptStatus = "in_progress" | "completed";
 
 export interface ResourceContent {
   summary: string;
@@ -140,6 +142,48 @@ export interface AppStateDto {
   history: HistoryDayDto[];
   progress: ProgressDto;
 }
+
+export interface IeltsGoalDto {
+  testType: "general";
+  targetBand: number;
+  examDate: string;
+  updatedAt: string;
+}
+
+export interface IeltsAttemptDto {
+  id: string;
+  bookNumber: number;
+  testNumber: number;
+  skill: IeltsSkill;
+  status: IeltsAttemptStatus;
+  rawScore: number | null;
+  estimatedBand: number | null;
+  notes: string;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+export interface IeltsDashboardDto {
+  goal: IeltsGoalDto;
+  attempts: IeltsAttemptDto[];
+  summary: {
+    completedAttempts: number;
+    completedThisWeek: number;
+    averageBand: number | null;
+    skillAverages: Array<{ skill: IeltsSkill; averageBand: number | null; attempts: number }>;
+  };
+}
+
+export type IeltsAction =
+  | { type: "save_goal"; targetBand: number; examDate: string }
+  | { type: "start_attempt"; bookNumber: number; testNumber: number; skill: IeltsSkill }
+  | {
+      type: "complete_attempt";
+      attemptId: string;
+      rawScore?: number;
+      estimatedBand?: number;
+      notes: string;
+    };
 
 export type AppAction =
   | { type: "start_session"; planItemId: string }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import type { AppAction, AppStateDto, LearningResourceDto, StudyPlanItemDto } from "../../modules/shared/contracts";
 import { DashboardView } from "./DashboardView";
 import { TodayView } from "./TodayView";
@@ -11,17 +12,19 @@ import { ProgressView } from "./ProgressView";
 import { NotebookView } from "./NotebookView";
 import { StudyWorkspace } from "./StudyWorkspace";
 import { ResourceForm } from "./ResourceForm";
+import { IeltsView } from "./IeltsView";
 
-export type AppView = "dashboard" | "today" | "library" | "review" | "history" | "progress" | "notebook";
+export type AppView = "dashboard" | "today" | "ielts" | "library" | "review" | "history" | "progress" | "notebook";
 
 const NAV_ITEMS: Array<{ view: AppView; label: string; href: string; short: string }> = [
   { view: "dashboard", label: "Dashboard", href: "/", short: "01" },
   { view: "today", label: "Today", href: "/today", short: "02" },
-  { view: "library", label: "Library", href: "/library", short: "03" },
-  { view: "review", label: "Review", href: "/review", short: "04" },
-  { view: "history", label: "History", href: "/history", short: "05" },
-  { view: "progress", label: "Progress", href: "/progress", short: "06" },
-  { view: "notebook", label: "Notebook", href: "/notebook", short: "07" },
+  { view: "ielts", label: "IELTS G", href: "/ielts", short: "03" },
+  { view: "library", label: "Library", href: "/library", short: "04" },
+  { view: "review", label: "Review", href: "/review", short: "05" },
+  { view: "history", label: "History", href: "/history", short: "06" },
+  { view: "progress", label: "Progress", href: "/progress", short: "07" },
+  { view: "notebook", label: "Notebook", href: "/notebook", short: "08" },
 ];
 
 export function LearningApp({ view }: { view: AppView }) {
@@ -47,7 +50,11 @@ export function LearningApp({ view }: { view: AppView }) {
     }
   }, [today]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    // The dashboard request completes asynchronously before it updates presentation state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
 
   const runAction = useCallback(async (action: AppAction, refresh = true) => {
     setBusy(true);
@@ -79,16 +86,16 @@ export function LearningApp({ view }: { view: AppView }) {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <a className="brand" href="/" aria-label="Fluent home">
+        <Link className="brand" href="/" aria-label="Fluent home">
           <span className="brand-mark">F</span>
           <span><strong>Fluent</strong><small>Daily English</small></span>
-        </a>
+        </Link>
         <nav className="main-nav" aria-label="Main navigation">
           {NAV_ITEMS.map((item) => (
-            <a className={view === item.view ? "active" : ""} href={item.href} key={item.view}>
+            <Link className={view === item.view ? "active" : ""} href={item.href} key={item.view}>
               <span>{item.short}</span>{item.label}
               {item.view === "review" && state && state.dueReviews.length > 0 && <b>{state.dueReviews.length}</b>}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className="sidebar-card">
@@ -97,7 +104,7 @@ export function LearningApp({ view }: { view: AppView }) {
           <div className="mini-rule"><span /><span /><span /></div>
         </div>
         <div className="sidebar-profile">
-          <span>AN</span><div><strong>My learning space</strong><small>IELTS 5–5.5</small></div>
+          <span>AN</span><div><strong>IELTS General</strong><small>Target · Band 6.5</small></div>
         </div>
       </aside>
 
@@ -119,6 +126,7 @@ export function LearningApp({ view }: { view: AppView }) {
           <>
             {view === "dashboard" && <DashboardView state={state} onStart={startItem} onAction={runAction} onAddResource={() => setResourceEditor("new")} />}
             {view === "today" && <TodayView state={state} onStart={startItem} onAction={runAction} />}
+            {view === "ielts" && <IeltsView />}
             {view === "library" && <LibraryView state={state} onAction={runAction} onEdit={setResourceEditor} onAdd={() => setResourceEditor("new")} />}
             {view === "review" && <ReviewView state={state} onAction={runAction} />}
             {view === "history" && <HistoryView state={state} />}

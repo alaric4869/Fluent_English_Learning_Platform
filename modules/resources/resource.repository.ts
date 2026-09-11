@@ -1,6 +1,6 @@
 import type { LearningResourceDto } from "../shared/contracts";
 
-export interface NewResourceInput extends Omit<LearningResourceDto, "id" | "createdAt" | "lastStudiedAt" | "isArchived" | "priority"> {}
+export type NewResourceInput = Omit<LearningResourceDto, "id" | "createdAt" | "lastStudiedAt" | "isArchived" | "priority">;
 
 export interface ResourceRepository {
   list(userId: string, includeArchived?: boolean): Promise<LearningResourceDto[]>;

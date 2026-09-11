@@ -78,6 +78,7 @@ export function DashboardView({ state, onStart, onAction, onAddResource }: {
         </div>
         <div className="quick-actions-card">
           <p className="eyebrow">Shortcuts</p><h2>Quick actions</h2>
+          <a href="/ielts"><span>GT</span><div><strong>IELTS G · Band 6.5</strong><small>Open authentic books and audio</small></div></a>
           <button onClick={onAddResource}><span>＋</span><div><strong>Add a resource</strong><small>Video, article or exercise</small></div></button>
           <a href="/library"><span>↗</span><div><strong>Browse the library</strong><small>{state.resources.length} learning resources</small></div></a>
           <a href="/notebook"><span>✎</span><div><strong>Open the notebook</strong><small>{state.notebook.length + state.vocabulary.length} saved items</small></div></a>

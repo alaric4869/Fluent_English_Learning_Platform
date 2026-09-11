@@ -9,6 +9,8 @@ import { ReviewService } from "../review/review.service";
 import { LearningArtifactService } from "../learning-artifacts/artifact.service";
 import { NotebookService } from "../notebook/notebook.service";
 import { ProgressService } from "../analytics/progress.service";
+import { D1IeltsRepository } from "../ielts/d1-ielts.repository";
+import { IeltsService } from "../ielts/ielts.service";
 
 const resourceRepository = new D1ResourceRepository();
 const studyPlanRepository = new D1StudyPlanRepository();
@@ -24,3 +26,4 @@ export const reviewService = new ReviewService(reviewRepository, new FixedInterv
 export const artifactService = new LearningArtifactService(reviewRepository);
 export const notebookService = new NotebookService();
 export const progressService = new ProgressService();
+export const ieltsService = new IeltsService(new D1IeltsRepository());

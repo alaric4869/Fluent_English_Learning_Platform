@@ -1,7 +1,7 @@
 import { getD1 } from "./index";
 import { SEED_RESOURCES } from "./seed";
 
-const SCHEMA_VERSION = "2";
+const SCHEMA_VERSION = "3";
 let bootstrapPromise: Promise<void> | null = null;
 
 const schemaStatements = [
@@ -148,6 +148,30 @@ const schemaStatements = [
     observed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`,
   `CREATE INDEX IF NOT EXISTS idx_performance_user_module ON performance_signals(user_id, module)`,
+  `CREATE TABLE IF NOT EXISTS ielts_goals (
+    user_id TEXT PRIMARY KEY,
+    test_type TEXT NOT NULL DEFAULT 'general',
+    target_band REAL NOT NULL DEFAULT 6.5,
+    exam_date TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`,
+  `CREATE TABLE IF NOT EXISTS ielts_attempts (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    book_number INTEGER NOT NULL,
+    test_number INTEGER NOT NULL,
+    skill TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'in_progress',
+    raw_score INTEGER,
+    estimated_band REAL,
+    notes TEXT NOT NULL DEFAULT '',
+    started_at TEXT NOT NULL,
+    completed_at TEXT,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_ielts_attempts_user_started ON ielts_attempts(user_id, started_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_ielts_attempts_material ON ielts_attempts(user_id, book_number, test_number, skill)`,
 ];
 
 export async function ensureDatabase(): Promise<void> {
