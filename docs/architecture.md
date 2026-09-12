@@ -27,6 +27,8 @@ Domain events can be added after the first release; current writes already use e
 
 ## IELTS local-media boundary
 
-IELTS books and audio remain on the learner's device. The client-side local-resource adapter classifies file paths and exposes temporary `blob:` URLs to the PDF and audio players. It never posts file bytes or local paths to application APIs. D1 stores only stable study evidence such as book number, test number, skill, result, timestamps, and notes.
+IELTS test books, explanation books, and audio remain on the learner's device. The client-side local-resource adapter classifies original-paper PDFs separately from `answer`/精讲 PDFs and exposes temporary `blob:` URLs to the PDF and audio players. It never posts file bytes or local paths to application APIs. D1 stores only stable study evidence such as book number, test number, skill, result, timestamps, notes, and question-level responses.
 
-`IeltsView` calls the typed `/api/ielts` route, which dispatches to `IeltsService` and `IeltsRepository`. Band estimation is deterministic domain logic and remains independent from React and D1.
+`IeltsView` calls the typed `/api/ielts` route, which dispatches to `IeltsService` and `IeltsRepository`. `IeltsService` owns answer-sheet validation and uses the deterministic grader; React never calculates an authoritative score and D1 never exposes raw table access to the client. The versioned G4–G20 answer-key and explanation-range manifests are immutable content data, while the learner's answers and grading snapshots are durable records. Each indexed objective paper is covered by an automated completeness test.
+
+Listening and General Training Reading use objective auto-grading. Writing and Speaking deliberately remain response/self-assessment workflows because those modules do not have a single correct answer; future AI evaluation must enter through a separate evaluator service.

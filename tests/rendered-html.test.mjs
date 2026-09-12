@@ -22,10 +22,10 @@ test("client bundle uses a deployable PDF worker URL", async () => {
   const chunksDirectory = new URL("../dist/client/_next/static/chunks/", import.meta.url);
   const chunkNames = (await readdir(chunksDirectory)).filter((name) => name.endsWith(".js"));
   const chunkSources = await Promise.all(chunkNames.map((name) => readFile(new URL(name, chunksDirectory), "utf8")));
-  const applicationChunk = chunkSources.find((source) => source.includes("/_next/static/media/pdf.worker.min"));
+  const applicationChunk = chunkSources.find((source) => source.includes("/vendor/pdfjs/pdf.worker.min.mjs"));
 
   assert.ok(applicationChunk, "Expected the PDF worker asset URL in the application bundle");
-  assert.doesNotMatch(applicationChunk, /file:\/\/\/_next\/static\/media\/pdf\.worker/);
-  const mediaFiles = await readdir(new URL("../dist/client/_next/static/media/", import.meta.url));
-  assert.ok(mediaFiles.some((name) => name.startsWith("pdf.worker.min") && name.endsWith(".mjs")));
+  assert.doesNotMatch(applicationChunk, /file:\/\/\/.*pdf\.worker/);
+  const workerSource = await readFile(new URL("../dist/client/vendor/pdfjs/pdf.worker.min.mjs", import.meta.url), "utf8");
+  assert.match(workerSource, /Mozilla Foundation/);
 });

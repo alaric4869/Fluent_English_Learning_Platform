@@ -30,6 +30,14 @@ export async function POST(request: Request) {
       await ieltsService.cancelAttempt(userId, action.attemptId);
       return Response.json({ ok: true });
     }
+    if (action.type === "save_attempt_answers") {
+      await ieltsService.saveAttemptAnswers(userId, action.attemptId, action.answers);
+      return Response.json({ ok: true });
+    }
+    if (action.type === "submit_objective_attempt") {
+      const result = await ieltsService.submitObjectiveAttempt(userId, action.attemptId, action.answers, action.notes);
+      return Response.json({ ok: true, result });
+    }
     if (action.type === "complete_attempt") {
       await ieltsService.completeAttempt(userId, action.attemptId, action.rawScore, action.estimatedBand, action.notes);
       return Response.json({ ok: true });

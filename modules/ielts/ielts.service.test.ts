@@ -23,6 +23,9 @@ function repositoryWith(attempts: IeltsAttemptDto[]): IeltsRepository {
     listAttempts: vi.fn().mockResolvedValue(attempts),
     startAttempt: vi.fn().mockResolvedValue("new-attempt"),
     cancelAttempt: vi.fn().mockResolvedValue(undefined),
+    listResponses: vi.fn().mockResolvedValue([]),
+    saveResponses: vi.fn().mockResolvedValue(undefined),
+    saveGradedResponses: vi.fn().mockResolvedValue(undefined),
     completeAttempt: vi.fn().mockResolvedValue(undefined),
   };
 }
@@ -48,5 +51,23 @@ describe("IeltsService active attempt handling", () => {
 
     await service.cancelAttempt("learner", "active-attempt");
     expect(repository.cancelAttempt).toHaveBeenCalledWith("learner", "active-attempt");
+  });
+
+  it("grades a complete objective answer sheet and persists question-level results", async () => {
+    const repository = repositoryWith([{ ...activeAttempt, bookNumber: 20, testNumber: 1 }]);
+    const service = new IeltsService(repository);
+    const answers = Array.from({ length: 40 }, (_, index) => ({
+      questionNumber: index + 1,
+      sectionNumber: Math.ceil((index + 1) / 10),
+      answer: "wrong",
+    }));
+
+    const result = await service.submitObjectiveAttempt("learner", "active-attempt", answers, "baseline");
+
+    expect(result.rawScore).toBe(0);
+    expect(repository.saveGradedResponses).toHaveBeenCalledWith("learner", "active-attempt", expect.arrayContaining([
+      expect.objectContaining({ questionNumber: 1, isCorrect: false, correctAnswer: "fish" }),
+    ]));
+    expect(repository.completeAttempt).toHaveBeenCalledWith("learner", "active-attempt", expect.objectContaining({ rawScore: 0, notes: "baseline" }));
   });
 });

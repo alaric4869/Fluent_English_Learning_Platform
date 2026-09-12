@@ -227,3 +227,24 @@ export const ieltsAttempts = sqliteTable(
     index("idx_ielts_attempts_material").on(table.userId, table.bookNumber, table.testNumber, table.skill),
   ],
 );
+
+export const ieltsQuestionResponses = sqliteTable(
+  "ielts_question_responses",
+  {
+    id: text("id").primaryKey(),
+    attemptId: text("attempt_id").notNull().references(() => ieltsAttempts.id),
+    userId: text("user_id").notNull(),
+    sectionNumber: integer("section_number").notNull(),
+    questionNumber: integer("question_number").notNull(),
+    answer: text("answer").notNull().default(""),
+    isCorrect: integer("is_correct", { mode: "boolean" }),
+    correctAnswer: text("correct_answer"),
+    explanationPage: integer("explanation_page"),
+    savedAt: text("saved_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    gradedAt: text("graded_at"),
+  },
+  (table) => [
+    uniqueIndex("idx_ielts_responses_attempt_question").on(table.attemptId, table.questionNumber),
+    index("idx_ielts_responses_user_saved").on(table.userId, table.savedAt),
+  ],
+);

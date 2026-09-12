@@ -1,7 +1,7 @@
 import { getD1 } from "./index";
 import { SEED_RESOURCES } from "./seed";
 
-const SCHEMA_VERSION = "3";
+const SCHEMA_VERSION = "4";
 let bootstrapPromise: Promise<void> | null = null;
 
 const schemaStatements = [
@@ -172,6 +172,21 @@ const schemaStatements = [
   )`,
   `CREATE INDEX IF NOT EXISTS idx_ielts_attempts_user_started ON ielts_attempts(user_id, started_at)`,
   `CREATE INDEX IF NOT EXISTS idx_ielts_attempts_material ON ielts_attempts(user_id, book_number, test_number, skill)`,
+  `CREATE TABLE IF NOT EXISTS ielts_question_responses (
+    id TEXT PRIMARY KEY,
+    attempt_id TEXT NOT NULL REFERENCES ielts_attempts(id),
+    user_id TEXT NOT NULL,
+    section_number INTEGER NOT NULL,
+    question_number INTEGER NOT NULL,
+    answer TEXT NOT NULL DEFAULT '',
+    is_correct INTEGER,
+    correct_answer TEXT,
+    explanation_page INTEGER,
+    saved_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    graded_at TEXT
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_ielts_responses_attempt_question ON ielts_question_responses(attempt_id, question_number)`,
+  `CREATE INDEX IF NOT EXISTS idx_ielts_responses_user_saved ON ielts_question_responses(user_id, saved_at)`,
 ];
 
 export async function ensureDatabase(): Promise<void> {

@@ -10,7 +10,7 @@ Fluent is a persistent personal English learning dashboard for an IELTS 5–5.5 
 - Focused reading and chunk capture
 - Spaced review with Again / Hard / Good / Easy
 - Resource library, history, progress, and notebook
-- IELTS General Training workspace for Cambridge G4–G20 books and matching local audio
+- IELTS General Training workspace for Cambridge G4–G20 books, matching local audio, persistent 40-question answer sheets, automatic Listening/Reading marking, and local 精讲 links under wrong answers
 - Persistent IELTS goal, countdown, attempt history, raw scores, estimated bands, and mistake notes
 
 ## Local IELTS resources

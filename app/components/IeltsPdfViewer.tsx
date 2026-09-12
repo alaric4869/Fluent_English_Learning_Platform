@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from "pdfjs-dist";
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import type { LocalIeltsFile } from "../../modules/ielts/local-resource-access";
 import type { IeltsPageRange } from "../../modules/ielts/ielts-material-manifest";
 
-export function IeltsPdfViewer({ file, pageRange, title }: {
+const PDF_WORKER_PATH = "/vendor/pdfjs/pdf.worker.min.mjs";
+
+export function IeltsPdfViewer({ file, pageRange, title, compact = false }: {
   file: LocalIeltsFile | null;
   pageRange: IeltsPageRange | null;
   title: string;
+  compact?: boolean;
 }) {
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
@@ -29,7 +31,7 @@ export function IeltsPdfViewer({ file, pageRange, title }: {
         objectUrl = URL.createObjectURL(sourceFile);
         setSourceUrl(objectUrl);
         const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = resolveBrowserAssetUrl(pdfWorkerUrl);
+        pdfjs.GlobalWorkerOptions.workerSrc = PDF_WORKER_PATH;
         loadingTask = pdfjs.getDocument({ url: objectUrl });
         loadedDocument = await loadingTask.promise;
         if (!cancelled) setDocument(loadedDocument);
@@ -54,7 +56,7 @@ export function IeltsPdfViewer({ file, pageRange, title }: {
   const lastPage = Math.min(pageRange.endPage, document.numPages);
   const pages = Array.from({ length: Math.max(0, lastPage - pageRange.startPage + 1) }, (_, index) => pageRange.startPage + index);
   return (
-    <div className="ielts-pdf-viewer">
+    <div className={`ielts-pdf-viewer ${compact ? "compact" : ""}`}>
       <div className="ielts-pdf-toolbar">
         <div><strong>{title}</strong><span>PDF 第 {pageRange.startPage}{lastPage > pageRange.startPage ? `–${lastPage}` : ""} 页 · 共 {pages.length} 页</span></div>
         {sourceUrl && <a href={sourceUrl} target="_blank" rel="noreferrer">需要时打开整本 ↗</a>}
@@ -64,13 +66,6 @@ export function IeltsPdfViewer({ file, pageRange, title }: {
       </div>
     </div>
   );
-}
-
-function resolveBrowserAssetUrl(assetUrl: string): string {
-  const parsed = new URL(assetUrl, `${window.location.origin}/`);
-  return parsed.protocol === "file:"
-    ? `${window.location.origin}${parsed.pathname}${parsed.search}`
-    : parsed.toString();
 }
 
 function PdfPage({ document, pageNumber }: { document: PDFDocumentProxy; pageNumber: number }) {

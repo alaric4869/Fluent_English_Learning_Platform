@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import type { IeltsAction, IeltsAttemptDto, IeltsDashboardDto, IeltsSkill } from "../../modules/shared/contracts";
+import type { IeltsAction, IeltsAttemptDto, IeltsDashboardDto, IeltsSkill, IeltsSubmissionResultDto } from "../../modules/shared/contracts";
+import type { IeltsSubmittedAnswer } from "../../modules/ielts/ielts-question-bank";
 import { formatIeltsTestLabel, getIeltsTestOptions } from "../../modules/ielts/ielts-material-manifest";
 import {
   catalogFromInputFiles,
@@ -116,7 +117,7 @@ export function IeltsView() {
     event.target.value = "";
   }
 
-  async function post(action: IeltsAction): Promise<{ attemptId?: string }> {
+  async function post(action: IeltsAction): Promise<{ attemptId?: string; result?: IeltsSubmissionResultDto }> {
     setBusy(true);
     setError(null);
     try {
@@ -125,7 +126,7 @@ export function IeltsView() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(action),
       });
-      const payload = await response.json() as { error?: string; attemptId?: string };
+      const payload = await response.json() as { error?: string; attemptId?: string; result?: IeltsSubmissionResultDto };
       if (!response.ok) throw new Error(payload.error ?? "无法保存 IELTS 记录。");
       return payload;
     } finally {
@@ -148,6 +149,30 @@ export function IeltsView() {
       setActiveAttemptId(null);
       await loadDashboard();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "无法保存成绩。"); }
+  }
+
+  async function saveAttemptAnswers(answers: IeltsSubmittedAnswer[]) {
+    if (!activeAttemptId) return;
+    try {
+      await post({ type: "save_attempt_answers", attemptId: activeAttemptId, answers });
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "无法保存当前 Section 的答案。");
+      throw reason;
+    }
+  }
+
+  async function submitObjectiveAttempt(answers: IeltsSubmittedAnswer[], notes: string): Promise<IeltsSubmissionResultDto> {
+    if (!activeAttemptId) throw new Error("请先开始本次练习。");
+    try {
+      const payload = await post({ type: "submit_objective_attempt", attemptId: activeAttemptId, answers, notes });
+      if (!payload.result) throw new Error("判分结果没有返回，请重试。");
+      setActiveAttemptId(null);
+      await loadDashboard();
+      return payload.result;
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "无法提交并判分。");
+      throw reason;
+    }
   }
 
   async function cancelAttempt() {
@@ -195,8 +220,8 @@ export function IeltsView() {
 
       <div className="ielts-overview-grid">
         <section className="local-library-card">
-          <div className="local-library-copy"><p className="eyebrow">My authentic library</p><h2>连接你的 G 类真题库</h2><p>原书与音频只从这台电脑读取，不会上传到网站。可以连接整个 <code>resources</code> 文件夹；若浏览器不支持，直接选择当前册 PDF。</p><div className="local-library-actions"><button className="primary-button" disabled={scanning} onClick={() => void connectFolder()}>{scanning ? "正在扫描 5.3GB 资料…" : catalog ? "重新连接文件夹" : "连接 resources 文件夹 →"}</button><button className="secondary-button" onClick={() => bookFilesInput.current?.click()}>只选择剑桥 {selection.bookNumber}</button></div><input ref={directoryInput} className="visually-hidden" type="file" multiple onChange={importInput} {...({ webkitdirectory: "", directory: "" } as Record<string, string>)} /><input ref={bookFilesInput} className="visually-hidden" type="file" multiple accept=".pdf,.mp3,.m4a,.wav,.aac" onChange={importCurrentBook} /></div>
-          <div className={`library-scan-status ${catalog ? "connected" : ""}`}><span>{catalog ? "✓" : "LOCAL"}</span><div><strong>{catalog ? `已连接 ${catalog.folderName}` : "等待连接"}</strong><small>{catalog ? `${catalog.pdfs.length} 本 PDF · ${catalog.totalAudioFiles} 个音频文件 · ${catalog.audio.length} 个唯一 Section` : "检测到本机已有 G4–G20 与配套听力"}</small></div></div>
+          <div className="local-library-copy"><p className="eyebrow">My authentic library</p><h2>连接你的 G 类真题库</h2><p>原题、精讲与音频只从这台电脑读取，不会上传到网站。请连接整个 <code>resources</code> 文件夹，网站会自动区分真题 PDF 与 answer 精讲 PDF。</p><div className="local-library-actions"><button className="primary-button" disabled={scanning} onClick={() => void connectFolder()}>{scanning ? "正在扫描本地资料…" : catalog ? "重新连接文件夹" : "连接 resources 文件夹 →"}</button><button className="secondary-button" onClick={() => bookFilesInput.current?.click()}>只选择剑桥 {selection.bookNumber}</button></div><input ref={directoryInput} className="visually-hidden" type="file" multiple onChange={importInput} {...({ webkitdirectory: "", directory: "" } as Record<string, string>)} /><input ref={bookFilesInput} className="visually-hidden" type="file" multiple accept=".pdf,.mp3,.m4a,.wav,.aac" onChange={importCurrentBook} /></div>
+          <div className={`library-scan-status ${catalog ? "connected" : ""}`}><span>{catalog ? "✓" : "LOCAL"}</span><div><strong>{catalog ? `已连接 ${catalog.folderName}` : "等待连接"}</strong><small>{catalog ? `${catalog.pdfs.length} 本真题 · ${catalog.answerPdfs.length} 本精讲 · ${catalog.audio.length} 个听力 Section` : "检测到本机已有 G4–G20、精讲与配套听力"}</small></div></div>
         </section>
         <section className="ielts-summary-card"><p className="eyebrow">Practice evidence</p><div><strong>{dashboard.summary.completedAttempts}</strong><span>已完成练习</span></div><div><strong>{dashboard.summary.averageBand ?? "—"}</strong><span>目前平均 Band</span></div><div><strong>{dashboard.summary.completedThisWeek}</strong><span>本周完成</span></div></section>
       </div>
@@ -225,7 +250,7 @@ export function IeltsView() {
         {activeAttempt && <div className="ielts-attempt-lock"><div><strong>当前练习正在进行</strong><span>为避免成绩记到错误材料，Book、Test 和科目已暂时锁定。可以继续完成，或退出后重新选择。</span></div><button className="secondary-button" disabled={busy} onClick={() => void cancelAttempt()}>{busy ? "正在退出…" : "退出当前练习"}</button></div>}
       </section>
 
-      <IeltsPracticeWorkspace key={`${selection.bookNumber}-${selection.testNumber}-${selection.skill}`} catalog={catalog} selection={selection} attempt={activeAttempt} busy={busy} onStart={startAttempt} onComplete={completeAttempt} />
+      <IeltsPracticeWorkspace key={`${selection.bookNumber}-${selection.testNumber}-${selection.skill}`} catalog={catalog} selection={selection} attempt={activeAttempt} initialResponses={dashboard.activeResponses} answerKeyAvailable={dashboard.availableAnswerKeys.includes(`${selection.bookNumber}-${selection.testNumber}-${selection.skill}`)} busy={busy} onStart={startAttempt} onSaveAnswers={saveAttemptAnswers} onSubmitObjective={submitObjectiveAttempt} onComplete={completeAttempt} />
 
       <div className="ielts-bottom-grid">
         <section className="ielts-score-card"><div><p className="eyebrow">Target guide</p><h2>6.5 的阶段目标</h2></div><div className="score-targets"><div><span>听力</span><strong>约 26/40</strong><small>建议练到 28+ 留出波动</small></div><div><span>G 类阅读</span><strong>约 32/40</strong><small>建议练到 33–34</small></div><div><span>写作 / 口语</span><strong>稳定 6–6.5</strong><small>用评分项定位短板</small></div></div><p>听力与阅读换算为预估值；官方说明不同试卷的原始分边界可能略有变化。</p></section>

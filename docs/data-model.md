@@ -12,9 +12,10 @@ The schema separates catalog content, dated assignments, actual study, captured 
 - `performance_signals` stores structured difficulty and confidence observations for later skill analysis.
 - `ielts_goals` stores the learner's General Training target band and expected exam date.
 - `ielts_attempts` is append-only practice history for a Cambridge book/test/skill combination, including raw score, estimated band, notes, and timestamps.
+- `ielts_question_responses` stores each saved answer independently from the answer-key content. Before submission `is_correct` is null; submission writes the verified result, the correct-answer snapshot, and the linked explanation page so historical review remains stable.
 
 All persistent learner records carry a `user_id`. Seed resources have no owner; manually added resources belong to the current learner. Referenced user resources are archived instead of hard-deleted.
 
 Indexes reflect actual application queries: daily plan uniqueness, resources by module, reviews by due date, user history, and performance by skill.
 
-Local PDF/audio filenames, filesystem handles, and file contents are intentionally excluded from the cloud data model. The optional directory handle is a browser-local preference stored in IndexedDB; it is not learning state and can be safely rebuilt by reconnecting the folder.
+Local test PDFs, explanation PDFs, audio filenames, filesystem handles, and file contents are intentionally excluded from the cloud data model. The optional directory handle is a browser-local preference stored in IndexedDB; it is not learning state and can be safely rebuilt by reconnecting the folder.

@@ -1,4 +1,5 @@
 export type LocalIeltsFileKind = "pdf" | "audio";
+export type LocalIeltsPdfRole = "paper" | "answer";
 
 export interface ClassifiedIeltsFile {
   kind: LocalIeltsFileKind;
@@ -6,6 +7,7 @@ export interface ClassifiedIeltsFile {
   bookNumber: number;
   testNumber: number | null;
   sectionNumber: number | null;
+  pdfRole: LocalIeltsPdfRole | null;
 }
 
 export function classifyIeltsPath(path: string): ClassifiedIeltsFile | null {
@@ -15,10 +17,13 @@ export function classifyIeltsPath(path: string): ClassifiedIeltsFile | null {
   if (!kind) return null;
   const bookNumber = findBookNumber(normalized, kind);
   if (!bookNumber) return null;
-  if (kind === "pdf") return { kind, path: normalized, bookNumber, testNumber: null, sectionNumber: null };
+  if (kind === "pdf") {
+    const pdfRole = /(?:^|\/)answer(?:\/|$)/i.test(normalized) || /精讲|解析/.test(normalized) ? "answer" : "paper";
+    return { kind, path: normalized, bookNumber, testNumber: null, sectionNumber: null, pdfRole };
+  }
   const location = findTestAndSection(normalized);
   if (!location) return null;
-  return { kind, path: normalized, bookNumber, ...location };
+  return { kind, path: normalized, bookNumber, ...location, pdfRole: null };
 }
 
 export function deduplicateIeltsAudio<T extends ClassifiedIeltsFile>(files: T[]): T[] {

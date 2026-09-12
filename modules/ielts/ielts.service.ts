@@ -1,4 +1,7 @@
-import type { IeltsAttemptDto, IeltsDashboardDto, IeltsSkill } from "../shared/contracts";
+import type { IeltsAttemptDto, IeltsDashboardDto, IeltsSkill, IeltsSubmissionResultDto } from "../shared/contracts";
+import { IELTS_ANSWER_KEYS } from "./ielts-answer-keys.generated";
+import { gradeIeltsAnswers } from "./ielts-grading";
+import { answerKeyId, sectionForQuestion, type IeltsSubmittedAnswer } from "./ielts-question-bank";
 import { estimateIeltsBand } from "./ielts-score";
 import type { IeltsRepository } from "./ielts.repository";
 
@@ -16,7 +19,9 @@ export class IeltsService {
     }
     if (!goal) throw new Error("Unable to prepare IELTS goal.");
     const attempts = await this.repository.listAttempts(userId);
-    return { goal, attempts, summary: summarizeAttempts(attempts) };
+    const active = attempts.find((attempt) => attempt.status === "in_progress");
+    const activeResponses = active ? await this.repository.listResponses(userId, active.id) : [];
+    return { goal, attempts, activeResponses, availableAnswerKeys: [...IELTS_ANSWER_KEYS.keys()], summary: summarizeAttempts(attempts) };
   }
 
   async saveGoal(userId: string, targetBand: number, examDate: string): Promise<void> {
@@ -47,6 +52,35 @@ export class IeltsService {
     await this.repository.cancelAttempt(userId, attemptId);
   }
 
+  async saveAttemptAnswers(userId: string, attemptId: string, answers: IeltsSubmittedAnswer[]): Promise<void> {
+    const attempt = await this.getActiveAttempt(userId, attemptId);
+    if (attempt.skill !== "listening" && attempt.skill !== "reading") throw new Error("Only objective IELTS attempts have an answer sheet.");
+    const normalized = validateSubmittedAnswers(answers, false, attempt.skill);
+    await this.repository.saveResponses(userId, attemptId, normalized);
+  }
+
+  async submitObjectiveAttempt(userId: string, attemptId: string, answers: IeltsSubmittedAnswer[], notes: string): Promise<IeltsSubmissionResultDto> {
+    const attempt = await this.getActiveAttempt(userId, attemptId);
+    if (attempt.skill !== "listening" && attempt.skill !== "reading") throw new Error("This practice is not automatically graded.");
+    const answerKey = IELTS_ANSWER_KEYS.get(answerKeyId(attempt.bookNumber, attempt.testNumber, attempt.skill));
+    if (!answerKey) throw new Error("This Test's verified answer key has not been imported yet.");
+    const normalized = validateSubmittedAnswers(answers, true, attempt.skill);
+    const grade = gradeIeltsAnswers(answerKey, normalized);
+    const estimatedBand = estimateIeltsBand(attempt.skill, grade.rawScore);
+    await this.repository.saveGradedResponses(userId, attemptId, grade.answers);
+    await this.repository.completeAttempt(userId, attemptId, {
+      rawScore: grade.rawScore,
+      estimatedBand,
+      notes: notes.trim().slice(0, 4000),
+    });
+    const savedAt = new Date().toISOString();
+    return {
+      rawScore: grade.rawScore,
+      estimatedBand,
+      answers: grade.answers.map((answer) => ({ ...answer, savedAt })),
+    };
+  }
+
   async completeAttempt(userId: string, attemptId: string, rawScore: number | undefined, estimatedBand: number | undefined, notes: string): Promise<void> {
     const attempts = await this.repository.listAttempts(userId);
     const attempt = attempts.find((candidate) => candidate.id === attemptId);
@@ -70,6 +104,34 @@ export class IeltsService {
       notes: notes.trim().slice(0, 4000),
     });
   }
+
+  private async getActiveAttempt(userId: string, attemptId: string): Promise<IeltsAttemptDto> {
+    const attempt = (await this.repository.listAttempts(userId)).find((candidate) => candidate.id === attemptId && candidate.status === "in_progress");
+    if (!attempt) throw new Error("Active IELTS attempt not found.");
+    return attempt;
+  }
+}
+
+function validateSubmittedAnswers(
+  answers: IeltsSubmittedAnswer[],
+  requireComplete: boolean,
+  skill: "listening" | "reading",
+): IeltsSubmittedAnswer[] {
+  if (!Array.isArray(answers)) throw new Error("A valid IELTS answer sheet is required.");
+  const unique = new Map<number, IeltsSubmittedAnswer>();
+  for (const item of answers) {
+    if (!Number.isInteger(item.questionNumber) || item.questionNumber < 1 || item.questionNumber > 40) throw new Error("Question number must be between 1 and 40.");
+    unique.set(item.questionNumber, {
+      questionNumber: item.questionNumber,
+      sectionNumber: sectionForQuestion(skill, item.questionNumber),
+      answer: String(item.answer ?? "").trim().slice(0, 200),
+    });
+  }
+  const normalized = [...unique.values()].sort((left, right) => left.questionNumber - right.questionNumber);
+  if (requireComplete && (normalized.length !== 40 || normalized.some((item) => !item.answer))) {
+    throw new Error("Please answer all 40 questions before submitting.");
+  }
+  return normalized;
 }
 
 function summarizeAttempts(attempts: IeltsAttemptDto[]): IeltsDashboardDto["summary"] {

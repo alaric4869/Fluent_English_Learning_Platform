@@ -163,9 +163,27 @@ export interface IeltsAttemptDto {
   completedAt: string | null;
 }
 
+export interface IeltsQuestionResponseDto {
+  questionNumber: number;
+  sectionNumber: number;
+  answer: string;
+  isCorrect: boolean | null;
+  correctAnswer: string | null;
+  explanationPage: number | null;
+  savedAt: string;
+}
+
+export interface IeltsSubmissionResultDto {
+  rawScore: number;
+  estimatedBand: number | null;
+  answers: IeltsQuestionResponseDto[];
+}
+
 export interface IeltsDashboardDto {
   goal: IeltsGoalDto;
   attempts: IeltsAttemptDto[];
+  activeResponses: IeltsQuestionResponseDto[];
+  availableAnswerKeys: string[];
   summary: {
     completedAttempts: number;
     completedThisWeek: number;
@@ -178,6 +196,17 @@ export type IeltsAction =
   | { type: "save_goal"; targetBand: number; examDate: string }
   | { type: "start_attempt"; bookNumber: number; testNumber: number; skill: IeltsSkill }
   | { type: "cancel_attempt"; attemptId: string }
+  | {
+      type: "save_attempt_answers";
+      attemptId: string;
+      answers: Array<{ questionNumber: number; sectionNumber: number; answer: string }>;
+    }
+  | {
+      type: "submit_objective_attempt";
+      attemptId: string;
+      answers: Array<{ questionNumber: number; sectionNumber: number; answer: string }>;
+      notes: string;
+    }
   | {
       type: "complete_attempt";
       attemptId: string;
