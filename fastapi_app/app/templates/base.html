@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Fluent Daily English{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/ielts">
+        <span class="brand-mark">F</span>
+        <span><strong>Fluent Daily</strong><small>IELTS General Training</small></span>
+      </a>
+      <nav aria-label="主导航">
+        <a href="/ielts">练习中心</a>
+        <span class="nav-muted">学习记录 · 即将开放</span>
+      </nav>
+    </header>
+    <main>{% block content %}{% endblock %}</main>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
+

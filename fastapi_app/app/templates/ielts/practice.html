@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ practice_set.title }}{% endblock %}
+{% block content %}
+<div class="workspace" data-practice-slug="{{ practice_set.slug }}" data-attempt-status="{{ attempt.status }}">
+  <aside class="workspace-sidebar">
+    <a class="back-link" href="/ielts">← 返回练习中心</a>
+    <p class="eyebrow">CAMBRIDGE {{ practice_set.book_number }}</p>
+    <h1>{{ practice_set.title }}</h1>
+    <p>{{ practice_set.description }}</p>
+
+    {% if practice_set.skill == "listening" %}
+    <div class="audio-note">
+      <strong>真实考试音频</strong>
+      <span>每个 Part 使用你 resources 文件夹中的本地 MP3。</span>
+    </div>
+    {% endif %}
+
+    <div class="progress-panel">
+      <div class="progress-label"><span>完成进度</span><strong id="progressText">0 / 40</strong></div>
+      <div class="progress-track"><span id="progressBar"></span></div>
+      <p id="saveStatus" aria-live="polite">答案会自动保存</p>
+    </div>
+
+    <div class="section-nav" role="tablist" aria-label="题目分区">
+      {% for section in practice_set.sections %}
+      <button class="section-tab{% if loop.first %} is-active{% endif %}" type="button" data-section-target="section-{{ section.order_index }}">
+        <span>{{ section.title }}</span>
+        <small>Questions {{ section.questions[0].number }}–{{ section.questions[-1].number }}</small>
+      </button>
+      {% endfor %}
+    </div>
+
+    <button id="submitAttempt" class="button button-primary submit-button" type="button">完成全部并提交</button>
+    <div id="scoreCard" class="score-card{% if attempt.status != 'submitted' %} is-hidden{% endif %}" aria-live="polite">
+      <small>本次成绩</small>
+      <strong><span id="scoreValue">{{ attempt.score or 0 }}</span> / 40</strong>
+      <p>错题下方已显示答案与中文精解。</p>
+    </div>
+  </aside>
+
+  <section class="question-stage">
+    {% for section in practice_set.sections %}
+    <div id="section-{{ section.order_index }}" class="practice-section{% if not loop.first %} is-hidden{% endif %}" data-section="{{ section.order_index }}">
+      <header class="practice-section-header">
+        <div>
+          <p class="eyebrow">{{ "LISTENING" if practice_set.skill == "listening" else "GENERAL TRAINING READING" }}</p>
+          <h2>{{ section.title }}</h2>
+          <p>{{ section.instructions }}</p>
+        </div>
+        <span class="question-range">{{ section.questions[0].number }}–{{ section.questions[-1].number }}</span>
+      </header>
+
+      {% if section.has_audio %}
+      <div class="audio-player">
+        <div><strong>{{ section.title }} 音频</strong><span>建议只播放一次，模拟真实考试</span></div>
+        <audio controls preload="metadata" src="/media/audio/{{ practice_set.slug }}/{{ section.order_index }}"></audio>
+      </div>
+      {% endif %}
+
+      {% for block in section.content_blocks %}
+      <article class="content-block{% if block.kind == 'notice' %} content-notice{% endif %}">
+        {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+        {% for paragraph in block.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
+      </article>
+      {% endfor %}
+
+      <div class="question-list">
+        {% for question in section.questions %}
+        {% set saved_answer = attempt.answers.get(question.number|string, '') %}
+        <article class="question-card" id="question-{{ question.number }}" data-question-number="{{ question.number }}">
+          <div class="question-heading">
+            <span class="question-number">{{ question.number }}</span>
+            <p>{{ question.prompt }}</p>
+          </div>
+
+          {% if question.question_type == 'text' %}
+          <label class="text-answer">
+            <span class="sr-only">Question {{ question.number }} answer</span>
+            <input type="text" maxlength="500" value="{{ saved_answer }}" placeholder="输入答案" autocomplete="off">
+          </label>
+          {% else %}
+          <div class="choice-list">
+            {% for option in question.options %}
+            <label class="choice-option">
+              <input type="radio" name="question-{{ question.number }}" value="{{ option.key }}"{% if saved_answer == option.key %} checked{% endif %}>
+              <span class="choice-key">{{ option.key }}</span>
+              <span>{{ option.text }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="question-feedback is-hidden">
+            <strong class="feedback-title"></strong>
+            <p class="correct-answer"></p>
+            <p class="explanation"></p>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <footer class="section-footer">
+        {% if not loop.first %}<button class="button button-secondary section-change" type="button" data-go-section="{{ section.order_index - 1 }}">← 上一部分</button>{% endif %}
+        {% if not loop.last %}<button class="button button-primary section-change" type="button" data-go-section="{{ section.order_index + 1 }}">下一部分 →</button>{% endif %}
+      </footer>
+    </div>
+    {% endfor %}
+  </section>
+</div>
+<script id="initialResults" type="application/json">{{ attempt.results|tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/ielts-practice.js') }}" defer></script>{% endblock %}
+

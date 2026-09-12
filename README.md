@@ -28,3 +28,7 @@ Use the project scripts to install dependencies, start the local preview, genera
 The project is a modular monolith. UI routes call typed application services; domain strategies contain planning and review rules; repositories isolate D1 access. Future agent tools must call the same application services rather than database tables.
 
 See `docs/architecture.md`, `docs/data-model.md`, `docs/adaptive-learning.md`, and `docs/ai-agent-architecture.md`.
+
+## Local-first FastAPI edition
+
+The new Python-first implementation lives in [`fastapi_app/`](fastapi_app/README.md). It currently provides web-native Cambridge G20 Test 1 Listening and Reading practice with SQLite persistence, real local audio, automatic grading, and inline Chinese explanations. The existing deployed Sites application remains unchanged while this edition is developed locally.

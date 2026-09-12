@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}IELTS G 类练习中心{% endblock %}
+{% block content %}
+<section class="hero page-shell">
+  <div>
+    <p class="eyebrow">IELTS GENERAL TRAINING · TARGET 6.5</p>
+    <h1>在网页里完成整套真题</h1>
+    <p class="hero-copy">题目、作答、评分和错题精解都在同一个页面。原始 PDF 不再作为练习界面。</p>
+  </div>
+  <div class="goal-card">
+    <span>当前目标</span>
+    <strong>10 月底 · 6.5</strong>
+    <small>首批内容：Cambridge 20 · Test 1</small>
+  </div>
+</section>
+
+<section class="page-shell section-block">
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">AVAILABLE NOW</p>
+      <h2>可交互练习</h2>
+    </div>
+    <p>{{ practice_sets|length }} 个模块</p>
+  </div>
+  <div class="set-grid">
+    {% for item in practice_sets %}
+    <article class="set-card">
+      <div class="set-card-top">
+        <span class="skill-pill skill-{{ item.skill }}">{{ "听力" if item.skill == "listening" else "阅读" }}</span>
+        <span>{{ item.duration_minutes }} 分钟</span>
+      </div>
+      <h3>{{ item.title }}</h3>
+      <p>{{ item.description }}</p>
+      <dl>
+        <div><dt>题量</dt><dd>40</dd></div>
+        <div><dt>分区</dt><dd>{{ item.sections|length }}</dd></div>
+        <div><dt>形式</dt><dd>网页作答</dd></div>
+      </dl>
+      <a class="button button-primary" href="/ielts/{{ item.slug }}">开始 / 继续练习</a>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="page-shell roadmap-note">
+  <span>下一批</span>
+  <p>Cambridge 20 Test 2–4，随后按 G19 → G4 逐步导入。Python 后端和数据结构已经支持继续扩充，不需要重写页面。</p>
+</section>
+{% endblock %}
+
