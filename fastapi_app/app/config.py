@@ -12,9 +12,9 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{FASTAPI_ROOT / 'data' / 'english_learning.db'}"
     seed_path: Path = FASTAPI_ROOT / "seed" / "g20_test1.json"
     resources_root: Path = REPOSITORY_ROOT / "resources"
+    ielts_assets_root: Path = FASTAPI_ROOT / "data" / "imported" / "assets"
 
     model_config = SettingsConfigDict(env_prefix="ENGLISH_TOOL_", env_file=".env")
 
 
 settings = Settings()
-

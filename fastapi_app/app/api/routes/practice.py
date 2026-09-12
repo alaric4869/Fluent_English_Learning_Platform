@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config import FASTAPI_ROOT, settings
 from app.database import get_db
+from app.presenters.ielts import present_practice_workspace
 from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
 from app.schemas.ielts import SaveAnswerRequest, SavedAnswerResponse, SubmitAttemptResponse
 from app.services.ielts_practice import (
@@ -52,7 +53,7 @@ def practice_workspace(
     return templates.TemplateResponse(
         request=request,
         name="ielts/practice.html",
-        context=workspace,
+        context=present_practice_workspace(workspace),
     )
 
 
@@ -101,3 +102,12 @@ def section_audio(
     if not audio_path.is_relative_to(resources_root) or not audio_path.is_file():
         raise HTTPException(status_code=404, detail="Audio file is unavailable")
     return FileResponse(audio_path, media_type="audio/mpeg", filename=audio_path.name)
+
+
+@router.get("/media/ielts-assets/{asset_path:path}")
+def ielts_question_asset(asset_path: str):
+    assets_root = settings.ielts_assets_root.resolve()
+    resolved_asset = (assets_root / Path(asset_path)).resolve()
+    if not resolved_asset.is_relative_to(assets_root) or not resolved_asset.is_file():
+        raise HTTPException(status_code=404, detail="Question asset is unavailable")
+    return FileResponse(resolved_asset)

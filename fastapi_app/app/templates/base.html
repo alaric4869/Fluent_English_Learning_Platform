@@ -4,21 +4,64 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Fluent Daily English{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><circle cx=%2232%22 cy=%2232%22 r=%2230%22 fill=%22%231c2d29%22/><text x=%2232%22 y=%2242%22 text-anchor=%22middle%22 font-size=%2232%22 fill=%22white%22 font-family=%22Georgia%22>F</text></svg>">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="/ielts">
-        <span class="brand-mark">F</span>
-        <span><strong>Fluent Daily</strong><small>IELTS General Training</small></span>
-      </a>
-      <nav aria-label="主导航">
-        <a href="/ielts">练习中心</a>
-        <span class="nav-muted">学习记录 · 即将开放</span>
-      </nav>
-    </header>
-    <main>{% block content %}{% endblock %}</main>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/ielts" aria-label="Fluent Daily English 首页">
+          <span class="brand-mark">F</span>
+          <span class="brand-copy"><strong>Fluent</strong><small>DAILY ENGLISH</small></span>
+        </a>
+
+        <nav class="main-nav" aria-label="主导航">
+          <span class="nav-item nav-disabled"><i>01</i><span>Dashboard</span></span>
+          <span class="nav-item nav-disabled"><i>02</i><span>Today</span></span>
+          <a class="nav-item is-active" href="/ielts" aria-current="page"><i>03</i><span>IELTS G</span></a>
+          <span class="nav-item nav-disabled"><i>04</i><span>Library</span></span>
+          <span class="nav-item nav-disabled"><i>05</i><span>Review</span></span>
+          <span class="nav-item nav-disabled"><i>06</i><span>History</span></span>
+          <span class="nav-item nav-disabled"><i>07</i><span>Progress</span></span>
+          <span class="nav-item nav-disabled"><i>08</i><span>Notebook</span></span>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-card">
+            <small>DAILY INTENTION</small>
+            <p>Small, focused practice creates automatic English.</p>
+            <span aria-hidden="true"></span>
+          </div>
+          <div class="sidebar-profile">
+            <span class="profile-avatar">AN</span>
+            <span><strong>IELTS General</strong><small>Target · Band 6.5</small></span>
+          </div>
+        </div>
+      </aside>
+
+      <div class="main-content">
+        <header class="topbar">
+          <a class="mobile-brand" href="/ielts"><span class="brand-mark">F</span><strong>Fluent</strong></a>
+          <p>{% block topbar_label %}IELTS General Training{% endblock %}</p>
+          <div class="topbar-meta"><span aria-hidden="true"></span><time id="sydneyDate">Sydney</time></div>
+        </header>
+        <main>{% block content %}{% endblock %}</main>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const target = document.querySelector("#sydneyDate");
+        if (!target) return;
+        const date = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Australia/Sydney",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }).format(new Date());
+        target.textContent = `Sydney · ${date}`;
+      })();
+    </script>
     {% block scripts %}{% endblock %}
   </body>
 </html>
-

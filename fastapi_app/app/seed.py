@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
 
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.ielts import PracticeAttempt, PracticeQuestion, PracticeSection, PracticeSet
+from app.models.ielts import PracticeQuestion, PracticeSection, PracticeSet
 
 
 def import_seed_data(session: Session, seed_path: Path) -> None:
@@ -13,47 +13,67 @@ def import_seed_data(session: Session, seed_path: Path) -> None:
         existing = session.scalar(select(PracticeSet).where(PracticeSet.slug == item["slug"]))
         if existing and existing.content_version == item["content_version"]:
             continue
-        if existing:
-            session.execute(delete(PracticeAttempt).where(PracticeAttempt.practice_set_id == existing.id))
-            session.delete(existing)
+        practice_set = existing or PracticeSet(slug=item["slug"])
+        _update_practice_set(practice_set, item)
+        if existing is None:
+            session.add(practice_set)
             session.flush()
 
-        practice_set = PracticeSet(
-            slug=item["slug"],
-            book_number=item["book_number"],
-            test_number=item["test_number"],
-            skill=item["skill"],
-            title=item["title"],
-            description=item["description"],
-            duration_minutes=item["duration_minutes"],
-            content_version=item["content_version"],
-        )
-        session.add(practice_set)
-        session.flush()
+        sections_by_order = {section.order_index: section for section in practice_set.sections}
+        questions_by_number = {
+            question.number: question
+            for section in practice_set.sections
+            for question in section.questions
+        }
         for section_payload in item["sections"]:
-            section = PracticeSection(
-                practice_set_id=practice_set.id,
-                order_index=section_payload["order_index"],
-                title=section_payload["title"],
-                instructions=section_payload["instructions"],
-                content_blocks=section_payload.get("content_blocks", []),
-                audio_path=section_payload.get("audio_path"),
-            )
-            session.add(section)
-            session.flush()
+            order_index = section_payload["order_index"]
+            section = sections_by_order.get(order_index)
+            if section is None:
+                section = PracticeSection(practice_set_id=practice_set.id, order_index=order_index)
+                _update_section(section, section_payload)
+                session.add(section)
+                session.flush()
+                sections_by_order[order_index] = section
+            else:
+                _update_section(section, section_payload)
+
             for question_payload in section_payload["questions"]:
-                session.add(
-                    PracticeQuestion(
-                        practice_set_id=practice_set.id,
-                        section_id=section.id,
-                        number=question_payload["number"],
-                        prompt=question_payload["prompt"],
-                        question_type=question_payload["question_type"],
-                        options=question_payload.get("options", []),
-                        accepted_answers=question_payload["accepted_answers"],
-                        answer_group=question_payload.get("answer_group"),
-                        explanation=question_payload["explanation"],
-                    )
-                )
+                number = question_payload["number"]
+                question = questions_by_number.get(number)
+                if question is None:
+                    question = PracticeQuestion(practice_set_id=practice_set.id, number=number)
+                    session.add(question)
+                    questions_by_number[number] = question
+                _update_question(question, section, question_payload)
     session.commit()
 
+
+def _update_practice_set(practice_set: PracticeSet, payload: dict) -> None:
+    practice_set.book_number = payload["book_number"]
+    practice_set.test_number = payload["test_number"]
+    practice_set.skill = payload["skill"]
+    practice_set.title = payload["title"]
+    practice_set.description = payload["description"]
+    practice_set.duration_minutes = payload["duration_minutes"]
+    practice_set.content_version = payload["content_version"]
+
+
+def _update_section(section: PracticeSection, payload: dict) -> None:
+    section.title = payload["title"]
+    section.instructions = payload["instructions"]
+    section.content_blocks = payload.get("content_blocks", [])
+    section.audio_path = payload.get("audio_path")
+
+
+def _update_question(
+    question: PracticeQuestion,
+    section: PracticeSection,
+    payload: dict,
+) -> None:
+    question.section_id = section.id
+    question.prompt = payload["prompt"]
+    question.question_type = payload["question_type"]
+    question.options = payload.get("options", [])
+    question.accepted_answers = payload["accepted_answers"]
+    question.answer_group = payload.get("answer_group")
+    question.explanation = payload["explanation"]

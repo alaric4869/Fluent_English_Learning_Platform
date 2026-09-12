@@ -8,7 +8,7 @@
       "title": "G20 · Test 1 Listening",
       "description": "4 个 Part、40 道题。使用本地真题音频，提交后自动评分并显示逐题中文精解。",
       "duration_minutes": 30,
-      "content_version": "g20-t1-listening-v2",
+      "content_version": "g20-t1-listening-v3",
       "sections": [
         {
           "order_index": 1,
@@ -17,12 +17,34 @@
           "audio_path": "listening/20音频/20T1S1.mp3",
           "content_blocks": [
             {
-              "kind": "notice",
+              "kind": "table",
               "title": "Restaurant recommendations",
-              "paragraphs": [
-                "The Junction — Greyson Street, near the station. Good for people who are especially keen on (1). Quite expensive. The (2) is a good place for a drink.",
-                "Paloma — In Bow Street next to the cinema. (3) food, good for sharing. Staff are very friendly. Need to pay £50 deposit. A limited selection of (4) food on the menu.",
-                "The (5) — At the top of a (6). A famous chef. All the (7) are very good. Only uses (8) ingredients. Set lunch costs £(9) per person. Portions probably of (10) size."
+              "headers": ["Name of restaurant", "Location", "Reason for recommendation", "Other comments"],
+              "rows": [
+                {
+                  "cells": [
+                    [{"text": "The Junction"}],
+                    [{"text": "Greyson Street, near the station"}],
+                    [{"text": "Good for people who are especially keen on "}, {"answer": 1}],
+                    [{"text": "Quite expensive\n\nThe "}, {"answer": 2}, {"text": " is a good place for a drink"}]
+                  ]
+                },
+                {
+                  "cells": [
+                    [{"text": "Paloma"}],
+                    [{"text": "In Bow Street next to the cinema"}],
+                    [{"answer": 3}, {"text": " food, good for sharing"}],
+                    [{"text": "Staff are very friendly\n\nNeed to pay £50 deposit\n\nA limited selection of "}, {"answer": 4}, {"text": " food on the menu"}]
+                  ]
+                },
+                {
+                  "cells": [
+                    [{"text": "The "}, {"answer": 5}],
+                    [{"text": "At the top of a "}, {"answer": 6}],
+                    [{"text": "A famous chef\n\nAll the "}, {"answer": 7}, {"text": " are very good\n\nOnly uses "}, {"answer": 8}, {"text": " ingredients"}],
+                    [{"text": "Set lunch costs £"}, {"answer": 9}, {"text": " per person\n\nPortions probably of "}, {"answer": 10}, {"text": " size"}]
+                  ]
+                }
               ]
             }
           ],

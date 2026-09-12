@@ -1,8 +1,15 @@
-# Fluent — Daily English
+# Adaptive English Learning Agent
 
-Fluent is a persistent personal English learning dashboard for an IELTS 5–5.5 learner preparing for IELTS General Training Band 6.5. It creates a date-specific daily plan, guides listening/speaking/reading/chunk practice, schedules reviews, preserves history, and turns performance signals into conservative plan adjustments.
+This repository is becoming a Python-first adaptive English learning system. Its product loop is:
 
-## Product areas
+```text
+Study → Collect performance → Update learner profile → Detect weaknesses
+      → Generate and explain the next plan → Study again
+```
+
+IELTS General Training is one learning-resource type and the first source of structured performance evidence. It is not the product boundary.
+
+## Target product areas
 
 - Dashboard and date-persisted daily plan
 - Intensive listening sentence practice
@@ -10,25 +17,25 @@ Fluent is a persistent personal English learning dashboard for an IELTS 5–5.5 
 - Focused reading and chunk capture
 - Spaced review with Again / Hard / Good / Easy
 - Resource library, history, progress, and notebook
-- IELTS General Training workspace for Cambridge G4–G20 books, matching local audio, persistent 40-question answer sheets, automatic Listening/Reading marking, and local 精讲 links under wrong answers
+- IELTS General Training workspace with real local audio, persistent answer sheets, automatic Listening/Reading marking, and web-native explanations
 - Persistent IELTS goal, countdown, attempt history, raw scores, estimated bands, and mistake notes
 
-## Local IELTS resources
+## Current implementation direction
 
-The deployed private site does not upload or bundle the learner's copyrighted books and audio. From the IELTS G page, the learner grants read access to the local `resources` directory. The browser indexes filenames, opens the selected PDF through a temporary object URL, and matches Book / Test / Part to the corresponding audio. A directory handle may be remembered in browser IndexedDB as a device-local access preference; all authoritative learning records remain in D1.
+The formal target architecture is the local-first FastAPI application in `fastapi_app/`: FastAPI, SQLAlchemy, Pydantic, SQLite, Jinja2, HTML/CSS, and only the JavaScript required for browser interaction. Scoring, persistence, validation, learner modelling, and future adaptation stay in Python.
 
-`resources/` is deliberately git-ignored and must never be included in a deployment.
+The previous Sites/Vinext application is retained temporarily for migration audit only. Do not delete it until its useful UI, content-processing logic, data, and assets have been accounted for. It must not become a second long-term product architecture.
 
-## Local development
+## Local resources
 
-Use the project scripts to install dependencies, start the local preview, generate D1 migrations, and build the deployable worker. The local Sites runtime supplies a D1 binding declared in `.openai/hosting.json`.
+Copyrighted books and audio remain in the git-ignored `resources/` directory. The FastAPI app serves only approved local media and structured, proofread web content; it never publishes source PDFs.
 
-## Architecture
+## Architecture status
 
-The project is a modular monolith. UI routes call typed application services; domain strategies contain planning and review rules; repositories isolate D1 access. Future agent tools must call the same application services rather than database tables.
+The application remains a modular monolith. Presentation calls application services, application services call domain policies and repository protocols, and SQLAlchemy implements persistence. Future agent tools must call stable services rather than database tables.
 
-See `docs/architecture.md`, `docs/data-model.md`, `docs/adaptive-learning.md`, and `docs/ai-agent-architecture.md`.
+The current FastAPI slice covers Cambridge G20 Test 1 Listening and Reading. The next milestone is the learning-data pipeline (`ExerciseAttempt → StudySession → SkillPerformance`), not bulk IELTS import.
 
-## Local-first FastAPI edition
+## Run the FastAPI edition
 
-The new Python-first implementation lives in [`fastapi_app/`](fastapi_app/README.md). It currently provides web-native Cambridge G20 Test 1 Listening and Reading practice with SQLite persistence, real local audio, automatic grading, and inline Chinese explanations. The existing deployed Sites application remains unchanged while this edition is developed locally.
+See [`fastapi_app/README.md`](fastapi_app/README.md). The existing deployed Sites application remains unchanged while the Python edition is developed and verified locally.
