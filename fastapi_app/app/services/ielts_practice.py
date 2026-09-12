@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from typing import Protocol
 
-from app.domain.ielts.entities import PracticeQuestion, QuestionOption, QuestionType
+from app.domain.ielts.entities import GradeResult, PracticeQuestion, QuestionOption, QuestionType
 from app.domain.ielts.grading import grade_answers
 from app.domain.ielts.repository import IeltsPracticeRepository
 
@@ -14,9 +15,23 @@ class IncompleteAttemptError(ValueError):
     missing_questions: tuple[int, ...]
 
 
+class IeltsSubmissionObserver(Protocol):
+    def record_submission(
+        self,
+        practice_set: dict,
+        attempt: dict,
+        grade: GradeResult,
+    ) -> None: ...
+
+
 class IeltsPracticeService:
-    def __init__(self, repository: IeltsPracticeRepository) -> None:
+    def __init__(
+        self,
+        repository: IeltsPracticeRepository,
+        submission_observer: IeltsSubmissionObserver | None = None,
+    ) -> None:
         self.repository = repository
+        self.submission_observer = submission_observer
 
     def list_practice_sets(self) -> list[dict]:
         return self.repository.list_practice_sets()
@@ -56,6 +71,8 @@ class IeltsPracticeService:
 
         grade = grade_answers([self._to_entity(question) for question in questions], answers)
         attempt = self.repository.submit_attempt(workspace["attempt"]["id"], grade)
+        if self.submission_observer is not None:
+            self.submission_observer.record_submission(workspace["practice_set"], attempt, grade)
         return {
             "attempt_id": attempt["id"],
             "score": grade.score,
@@ -98,4 +115,3 @@ class IeltsPracticeService:
             ),
             answer_group=question["answer_group"],
         )
-

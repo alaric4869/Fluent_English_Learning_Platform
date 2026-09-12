@@ -22,6 +22,14 @@ class PracticeSet(Base):
     description: Mapped[str] = mapped_column(Text, default="")
     duration_minutes: Mapped[int] = mapped_column(Integer)
     content_version: Mapped[str] = mapped_column(String(40))
+    learning_resource_id: Mapped[int | None] = mapped_column(
+        ForeignKey("learning_resources.id"),
+        nullable=True,
+        index=True,
+    )
+    learning_resource: Mapped["LearningResource | None"] = relationship(
+        back_populates="practice_sets"
+    )
     sections: Mapped[list["PracticeSection"]] = relationship(
         back_populates="practice_set", cascade="all, delete-orphan", order_by="PracticeSection.order_index"
     )
@@ -75,8 +83,8 @@ class PracticeAttempt(Base):
     answers: Mapped[dict[str, str]] = mapped_column(JSON, default=dict)
     results: Mapped[list[dict]] = mapped_column(JSON, default=list)
     score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    submission_revision: Mapped[int] = mapped_column(Integer, default=0)
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
     submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     practice_set: Mapped[PracticeSet] = relationship(back_populates="attempts")
-

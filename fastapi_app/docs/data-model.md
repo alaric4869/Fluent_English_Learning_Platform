@@ -11,14 +11,20 @@ The practice content and learner attempt are separate sources of truth. Answer k
 
 Content synchronization preserves stable IDs and existing attempts. Database shape is managed by Alembic migrations.
 
-## Next learning-evidence slice
+## Implemented learning-evidence slice
 
-These concepts are planned, not yet implemented:
+These concepts are now persisted:
 
-- `LearningResource`: provider-neutral material metadata; an IELTS `PracticeSet` can reference one resource.
-- `StudySession`: one bounded learner activity with skill, timing, completion and self-ratings.
-- `SkillPerformance`: normalized evidence derived from a session, such as accuracy, difficulty, confidence and error counts.
-- `LearnerProfileSnapshot`: an immutable time-series view of skill scores and supporting evidence.
+- `LearningResource`: provider-neutral material metadata. Each current IELTS `PracticeSet` links to one resource.
+- `StudySession`: an immutable submitted activity with skill, resource, timestamps, accuracy and optional self-ratings.
+- `ExerciseAttempt`: one immutable question result with answer, correctness, score and prompt/answer/explanation snapshots.
+- `SkillPerformance`: normalized session evidence such as accuracy and correct/incorrect counts. Unknown ratings remain `NULL`; the system does not invent confidence or difficulty values.
+
+`PracticeAttempt.submission_revision` identifies each completed version. The same submission can safely be retried without duplicating evidence; changing an answer and submitting again creates a new historical session.
+
+## Planned adaptive slice
+
+- `LearnerProfileSnapshot`: an immutable time-series view of four skill scores and supporting evidence.
 - `AdaptationDecision`: a recommendation, its measurable reasons and any manual override.
 
-The first conversion path will be `submitted PracticeAttempt → StudySession → SkillPerformance`. It will use the existing G20 Test 1 content before any bulk resource import.
+The next conversion path is `SkillPerformance history → LearnerProfileSnapshot`.

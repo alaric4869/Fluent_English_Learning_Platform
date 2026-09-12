@@ -5,16 +5,21 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.ielts import PracticeQuestion, PracticeSection, PracticeSet
+from app.models.learning_evidence import LearningResource
 
 
 def import_seed_data(session: Session, seed_path: Path) -> None:
     payload = json.loads(seed_path.read_text(encoding="utf-8"))
     for item in payload["practice_sets"]:
+        learning_resource = _upsert_learning_resource(session, item)
         existing = session.scalar(select(PracticeSet).where(PracticeSet.slug == item["slug"]))
+        if existing is not None and existing.learning_resource_id != learning_resource.id:
+            existing.learning_resource_id = learning_resource.id
         if existing and existing.content_version == item["content_version"]:
             continue
         practice_set = existing or PracticeSet(slug=item["slug"])
         _update_practice_set(practice_set, item)
+        practice_set.learning_resource_id = learning_resource.id
         if existing is None:
             session.add(practice_set)
             session.flush()
@@ -46,6 +51,38 @@ def import_seed_data(session: Session, seed_path: Path) -> None:
                     questions_by_number[number] = question
                 _update_question(question, section, question_payload)
     session.commit()
+
+
+def _upsert_learning_resource(session: Session, payload: dict) -> LearningResource:
+    resource = session.scalar(
+        select(LearningResource).where(LearningResource.slug == payload["slug"])
+    )
+    is_new = resource is None
+    if resource is None:
+        resource = LearningResource(slug=payload["slug"])
+    skill = payload["skill"]
+    resource.title = payload["title"]
+    resource.resource_type = payload.get("resource_type", f"ielts_{skill}")
+    resource.skill = skill
+    resource.topic = payload.get("topic", "IELTS General Training")
+    resource.difficulty = payload.get("difficulty", "intermediate")
+    resource.estimated_duration_minutes = payload["duration_minutes"]
+    resource.source_url = payload.get("source_url")
+    resource.local_asset_reference = payload.get("local_asset_reference")
+    resource.content = {
+        "practice_set_slug": payload["slug"],
+        "book_number": payload["book_number"],
+        "test_number": payload["test_number"],
+    }
+    resource.tags = payload.get(
+        "tags",
+        ["ielts", "general-training", f"g{payload['book_number']}", skill],
+    )
+    resource.active = True
+    if is_new:
+        session.add(resource)
+        session.flush()
+    return resource
 
 
 def _update_practice_set(practice_set: PracticeSet, payload: dict) -> None:

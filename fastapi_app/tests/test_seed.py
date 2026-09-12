@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import Base
 from app.models.ielts import PracticeAttempt, PracticeQuestion, PracticeSet
+from app.models.learning_evidence import LearningResource
 from app.seed import import_seed_data
 
 
@@ -35,11 +36,15 @@ def test_content_update_preserves_existing_attempt(tmp_path) -> None:
         practice_set = session.scalar(select(PracticeSet))
         attempt = session.scalar(select(PracticeAttempt))
         question = session.scalar(select(PracticeQuestion))
+        resource = session.scalar(select(LearningResource))
 
         assert practice_set.id == original_set_id
+        assert practice_set.learning_resource_id == resource.id
         assert practice_set.content_version == "version-2"
         assert attempt.answers == {"1": "saved answer"}
         assert question.prompt == "Updated prompt"
+        assert resource.skill == "listening"
+        assert resource.resource_type == "ielts_listening"
 
 
 def _seed_payload(version: str, prompt: str) -> dict:

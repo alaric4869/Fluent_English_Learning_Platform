@@ -62,6 +62,10 @@ class SqlAlchemyIeltsPracticeRepository:
         attempt = self.session.get(PracticeAttempt, attempt_id)
         if attempt is None:
             raise LookupError("Attempt not found")
+        if attempt.status == "submitted" and attempt.results:
+            return self._serialize_attempt(attempt)
+        if attempt.status != "submitted":
+            attempt.submission_revision += 1
         attempt.status = "submitted"
         attempt.score = grade.score
         attempt.results = [
@@ -115,6 +119,7 @@ class SqlAlchemyIeltsPracticeRepository:
             "title": item.title,
             "description": item.description,
             "duration_minutes": item.duration_minutes,
+            "learning_resource_id": item.learning_resource_id,
             "sections": sections,
         }
 
@@ -123,8 +128,13 @@ class SqlAlchemyIeltsPracticeRepository:
         return {
             "id": attempt.id,
             "practice_set_id": attempt.practice_set_id,
+            "user_key": attempt.user_key,
             "status": attempt.status,
             "answers": dict(attempt.answers),
             "results": list(attempt.results),
             "score": attempt.score,
+            "submission_revision": attempt.submission_revision,
+            "started_at": attempt.started_at,
+            "updated_at": attempt.updated_at,
+            "submitted_at": attempt.submitted_at,
         }

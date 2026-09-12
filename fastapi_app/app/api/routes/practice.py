@@ -9,12 +9,15 @@ from app.config import FASTAPI_ROOT, settings
 from app.database import get_db
 from app.presenters.ielts import present_practice_workspace
 from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
+from app.repositories.sqlalchemy_learning_evidence import SqlAlchemyLearningEvidenceRepository
 from app.schemas.ielts import SaveAnswerRequest, SavedAnswerResponse, SubmitAttemptResponse
 from app.services.ielts_practice import (
     IeltsPracticeService,
     IncompleteAttemptError,
     PracticeSetNotFoundError,
 )
+from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
+from app.services.learning_evidence import LearningEvidenceService
 
 
 router = APIRouter()
@@ -23,7 +26,12 @@ LOCAL_USER_KEY = "local-user"
 
 
 def get_service(session: Session = Depends(get_db)) -> IeltsPracticeService:
-    return IeltsPracticeService(SqlAlchemyIeltsPracticeRepository(session))
+    evidence_service = LearningEvidenceService(SqlAlchemyLearningEvidenceRepository(session))
+    evidence_recorder = IeltsLearningEvidenceRecorder(evidence_service)
+    return IeltsPracticeService(
+        SqlAlchemyIeltsPracticeRepository(session),
+        submission_observer=evidence_recorder,
+    )
 
 
 @router.get("/")

@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its current usable slice is G20 Test 1 Listening and Reading; those exercises are the first source of structured evidence for the future learner profile and adaptive study loop.
+This directory is the target Python-first application. Its current usable slice is G20 Test 1 Listening and Reading. Every completed submission now produces immutable question-level attempts, a study session, and normalized skill performance for the future learner profile.
 
 ## Run locally
 
@@ -23,7 +23,8 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 ## Boundaries
 
 - `domain/`: deterministic IELTS rules and repository contracts.
-- `services/`: application use cases used by both the HTML pages and JSON API.
+- `domain/learning_evidence/`: provider-neutral session, exercise-attempt, skill and evidence contracts.
+- `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
 - `api/routes/`: HTTP transport and validation.

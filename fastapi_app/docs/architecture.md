@@ -32,8 +32,12 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/practice.py`: translates HTTP requests into use-case calls and safely streams approved local audio files.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
+- `domain/learning_evidence/`: the four initial skills and typed, provider-neutral evidence records.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
+- `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
+- `services/learning_evidence.py`: stable write use case for evidence producers.
 - `repositories/sqlalchemy_ielts.py`: the only place that reads and writes IELTS database tables.
+- `repositories/sqlalchemy_learning_evidence.py`: idempotently persists sessions, exercise attempts and skill performance.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
@@ -58,18 +62,18 @@ Structured content contains semantic blocks such as `table`, `figure`, and quest
 - Only G20 Test 1 Listening and Reading have been curated and quality checked.
 - G20 Test 1 has no map question. The figure block preserves a verified crop and answer association; coordinate overlays should be added and visually checked when a real map resource is curated.
 
-## Next domain boundary
+## Implemented learning-data pipeline
 
-The next milestone adds an explicit learning-data pipeline without changing the IELTS grader:
+The IELTS grader remains independent. After it submits an attempt, an application-level observer translates the result:
 
 ```text
-Submitted ExerciseAttempt
+Submitted IELTS PracticeAttempt revision
         ↓
-StudySession (what the learner did)
+StudySession (one immutable learning activity)
         ↓
-SkillPerformance (normalized evidence)
-        ↓
-LearnerProfileSnapshot (later milestone)
+ExerciseAttempt × 40 + SkillPerformance
 ```
 
-The conversion belongs in an application service and repository abstraction, not in a route, template, or JavaScript event handler.
+The conversion belongs in an application service and repository abstraction, not in a route, template, or JavaScript event handler. A unique source revision makes retries idempotent. Editing a submitted answer moves the practice attempt back to `in_progress`; the next submission creates a new revision while the previous session remains unchanged.
+
+The next boundary is `SkillPerformance → LearnerProfileSnapshot` through a deterministic `SkillEvaluator`.

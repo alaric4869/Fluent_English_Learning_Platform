@@ -8,14 +8,21 @@
 - Restore the established calm green/cream UI.
 - Render structured table questions as native HTML and fix grouped multi-answer behavior.
 
-## M1 · Learning data pipeline (next)
+## M1 · Learning data pipeline
 
-- Add `LearningResource`, `StudySession`, and `SkillPerformance` domain concepts.
-- Convert a submitted G20 attempt into normalized performance evidence.
-- Preserve attempt history and support clean retakes.
-- Test the full `ExerciseAttempt → StudySession → SkillPerformance` path.
+- Add provider-neutral `LearningResource`, `StudySession`, `ExerciseAttempt`, and `SkillPerformance` concepts.
+- Convert every submitted G20 result into normalized, immutable performance evidence.
+- Preserve submission history using idempotent attempt revisions.
+- Test the complete `PracticeAttempt → StudySession → ExerciseAttempt + SkillPerformance` path.
 
-## M2–M6 · Adaptive loop
+## M2 · Learner profile (next)
+
+- Read recent performance through a repository/service boundary.
+- Add deterministic, configurable `SkillEvaluator` logic.
+- Persist immutable `LearnerProfileSnapshot` history for Listening, Speaking, Reading and Vocabulary.
+- Explain how every score was derived and handle insufficient evidence explicitly.
+
+## M3–M6 · Adaptive loop
 
 1. Learner profile and immutable profile snapshots.
 2. Deterministic skill evaluator.
@@ -30,5 +37,6 @@
 - Add AI evaluation and planning behind replaceable interfaces.
 - Expand curated IELTS, PTE, podcast, article, Australian English and custom-resource content.
 - Add authentication, PostgreSQL and synchronization without rewriting domain logic.
+- After AI Agent integration, refine the Reading workspace into a responsive source-left/questions-right split view.
 
 Do not bulk-import more IELTS tests before M1–M6 establish the adaptive feedback loop.
