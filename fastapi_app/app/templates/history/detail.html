@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ day.study_date.isoformat() }} · History{% endblock %}
+{% block topbar_label %}Study record · {{ day.study_date.isoformat() }}{% endblock %}
+{% block content %}
+<div class="page-wrap insight-page">
+  <section class="detail-hero">
+    <a class="back-link" href="/history">← 返回学习历史</a>
+    <p class="eyebrow">DAILY STUDY RECORD</p>
+    <h1>{{ day.display_date }}</h1>
+    <p>{{ day.completed_module_count }}/{{ day.assigned_module_count }} 个计划模块完成 · {{ day.sessions|length }} 次实际作答</p>
+  </section>
+
+  {% if day.plan %}
+  <section class="insight-section">
+    <div class="section-heading"><div><p class="eyebrow">DAILY PLAN</p><h2>当天学习计划</h2></div><p>{{ day.plan.total_minutes }} min planned</p></div>
+    <div class="history-detail-grid">
+      {% for module in day.modules %}
+      <article class="history-module-detail{% if module.is_completed %} is-completed{% endif %}">
+        <header><span class="skill-icon skill-{{ module.item.skill.value }}">{{ module.code }}</span><div><h3>{{ module.title }}</h3><small>{{ module.status_label }}</small></div><strong>{{ module.item.planned_minutes }} min</strong></header>
+        <p>{{ module.resource_title }}</p>
+        {% if module.item.manual_override %}<span class="manual-badge">用户手动调整</span>{% endif %}
+        <dl>
+          <div><dt>首次开始</dt><dd>{{ module.started_at_label }}</dd></div>
+          <div><dt>完成时间</dt><dd>{{ module.completed_at_label if module.item.completed_at else '未完成' }}</dd></div>
+        </dl>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="insight-section history-sessions-section">
+    <div class="section-heading"><div><p class="eyebrow">RECORDED EVIDENCE</p><h2>实际作答记录</h2></div><p>来自提交后的持久化证据</p></div>
+    <div class="session-list">
+      {% for entry in day.sessions %}
+      <article class="session-card">
+        <div><span>{{ entry.skill_label }}</span><h3>{{ entry.session.resource_title }}</h3><p>{{ entry.session.source_type }} · {{ entry.session.source_id }}</p></div>
+        <dl>
+          <div><dt>正确率</dt><dd>{{ entry.accuracy_percent }}%</dd></div>
+          <div><dt>错题</dt><dd>{{ entry.session.incorrect_item_count }}</dd></div>
+          <div><dt>真实计时</dt><dd>{{ entry.tracked_minutes ~ ' min' if entry.tracked_minutes is not none else '未记录' }}</dd></div>
+        </dl>
+      </article>
+      {% else %}
+      <div class="empty-state compact"><p>这一天没有已提交的作答记录。</p></div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

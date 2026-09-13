@@ -31,6 +31,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 
 - `api/routes/practice.py`: translates HTTP requests into use-case calls and safely streams approved local audio files.
 - `api/routes/today.py`: renders today's persisted plan and exposes typed override/completion actions.
+- `api/routes/insights.py`: renders History and Progress from reporting services without querying tables.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
@@ -40,6 +41,8 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/resources/`: resource selection inputs and the replaceable `ResourceRecommender` contract.
 - `domain/study_plan/`: date-based plan entities, time-allocation configuration and `StudyPlanGenerator` contract.
 - `domain/adaptive_learning/`: explicit recommendation/override decision types and repository boundary.
+- `domain/history/`: persisted-session history read contracts.
+- `domain/analytics/`: progress summaries and deterministic streak calculation.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
@@ -50,6 +53,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `repositories/sqlalchemy_resources.py`: reads active resources together with study and assignment history.
 - `repositories/sqlalchemy_study_plan.py`: persists one plan per learner/date and its four independent items.
 - `repositories/sqlalchemy_adaptive_learning.py`: atomically applies validated overrides and appends decision history.
+- `repositories/sqlalchemy_history.py`: reads submitted study sessions for timelines and analytics.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
@@ -101,7 +105,7 @@ Every snapshot stores the exact `SkillPerformance` IDs used to calculate it. A f
 
 Each immutable assessment run contains one result for every initial skill, the source profile snapshot IDs, actual observed metrics, threshold reasons, and a detector version. A fingerprint prevents duplicate runs when the same submission is retried. Missing or single-snapshot evidence is explicitly classified `insufficient_evidence`, not weak.
 
-The next planning layer will consume the assessment through its service API. It will not read assessment tables directly.
+The planning and Progress layers consume the assessment through its service API. They do not read assessment tables directly.
 
 ## Implemented rule-based planning pipeline
 
@@ -132,3 +136,11 @@ The original system duration/resource never changes. Returning to those values c
 `GET /today` asks `StudyPlanService` for the Sydney calendar date, then passes its result and resource options to a presenter. The presenter contains labels and instructional copy but no persistence or adaptation rules. Jinja renders the established green/cream shell and four module cards.
 
 Small browser interactions call typed endpoints for an override or status change. The override endpoint delegates to `AdaptationDecisionService`; the status endpoint delegates to `StudyPlanService`. A plan becomes complete only when all four items are complete, and reopening any item makes the plan active again. IELTS grading and Today state remain independent use cases connected through the generic evidence pipeline.
+
+## Implemented History and Progress read models
+
+`HistoryService` joins date-persisted plans with submitted study sessions at the application boundary. Its timeline is intentionally bounded, while its calendar queries the selected month so old records remain reachable. A day-detail page exposes the original assigned material, current completion state, manual-override marker and submitted evidence.
+
+`ProgressAnalyticsService` calculates streaks, module completion, per-skill counts and a 28-day activity series from the same sources. The pure streak function is independent of FastAPI and SQLAlchemy. Existing `LearnerProfileService` and `WeaknessDetectionService` supply skill scores/classifications; Progress never recalculates a competing profile.
+
+Plan completion minutes are an estimated workload measure, not elapsed study time. Only `StudySession.actual_duration_seconds` contributes to the tracked-time metric. This distinction is part of the service and page contract so later timer support can improve accuracy without rewriting analytics.

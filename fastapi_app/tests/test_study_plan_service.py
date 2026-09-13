@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session
@@ -27,6 +27,7 @@ from app.services.weakness_detection import WeaknessDetectionService
 
 
 PLAN_DATE = date(2026, 9, 14)
+OCCURRED_AT = datetime(2026, 9, 14, 10, 30, tzinfo=timezone.utc)
 
 
 def test_daily_plan_is_persisted_once_with_four_independent_items() -> None:
@@ -91,7 +92,7 @@ def test_plan_is_complete_only_after_every_module_is_complete() -> None:
     Base.metadata.create_all(engine)
     with Session(engine, expire_on_commit=False) as session:
         _add_resources(session)
-        service = _service(session)
+        service = _service(session, now=lambda: OCCURRED_AT)
         plan = service.get_or_create_daily_plan("learner", PLAN_DATE)
 
         for item in plan.items[:-1]:
@@ -111,6 +112,8 @@ def test_plan_is_complete_only_after_every_module_is_complete() -> None:
 
         assert plan.status is StudyPlanStatus.COMPLETED
         assert all(item.status is StudyPlanItemStatus.COMPLETED for item in plan.items)
+        assert all(item.started_at == OCCURRED_AT for item in plan.items)
+        assert all(item.completed_at == OCCURRED_AT for item in plan.items)
 
         reopened = service.update_item_status(
             "learner",
@@ -120,9 +123,43 @@ def test_plan_is_complete_only_after_every_module_is_complete() -> None:
         )
 
         assert reopened.status is StudyPlanStatus.ACTIVE
+        assert reopened.items[0].started_at == OCCURRED_AT
+        assert reopened.items[0].completed_at is None
 
 
-def _service(session: Session) -> StudyPlanService:
+def test_start_time_is_preserved_across_status_changes() -> None:
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    first_start = datetime(2026, 9, 14, 9, 0, tzinfo=timezone.utc)
+    completed_at = datetime(2026, 9, 14, 9, 30, tzinfo=timezone.utc)
+    current_time = first_start
+    with Session(engine, expire_on_commit=False) as session:
+        _add_resources(session)
+        service = _service(session, now=lambda: current_time)
+        plan = service.get_or_create_daily_plan("learner", PLAN_DATE)
+        item_id = plan.items[0].id
+
+        plan = service.update_item_status(
+            "learner",
+            PLAN_DATE,
+            item_id,
+            StudyPlanItemStatus.IN_PROGRESS,
+        )
+        assert plan.items[0].started_at == first_start
+        assert plan.items[0].completed_at is None
+
+        current_time = completed_at
+        plan = service.update_item_status(
+            "learner",
+            PLAN_DATE,
+            item_id,
+            StudyPlanItemStatus.COMPLETED,
+        )
+        assert plan.items[0].started_at == first_start
+        assert plan.items[0].completed_at == completed_at
+
+
+def _service(session: Session, now=None) -> StudyPlanService:
     evidence_service = LearningEvidenceService(SqlAlchemyLearningEvidenceRepository(session))
     profile_service = LearnerProfileService(
         evidence_service,
@@ -143,6 +180,7 @@ def _service(session: Session) -> StudyPlanService:
         weakness_service,
         resource_service,
         RuleBasedStudyPlanGenerator(),
+        now=now,
     )
 
 

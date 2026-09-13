@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its usable UI contains a date-persisted Today plan plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
+This directory is the target Python-first application. Its usable UI contains a date-persisted Today plan, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
 
 ## Run locally
 
@@ -29,6 +29,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/resources/`: provider-neutral resource candidates and replaceable recommendation policy.
 - `domain/study_plan/`: configurable time allocation and a replaceable plan-generator contract.
 - `domain/adaptive_learning/`: typed system/manual decisions and append-only override history.
+- `domain/history/` and `domain/analytics/`: reporting contracts and deterministic progress calculations.
 - `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
@@ -47,6 +48,8 @@ The initial planner starts from Listening 30, Speaking 25, Reading 30, and Vocab
 
 Every initial plan item creates a `system_recommendation` decision. A learner override changes only the current resource/duration, retains the system values, recalculates the plan total, and appends a `manual_override` decision. Repeating the same request is a no-op; incompatible resources and out-of-range durations are rejected.
 
-The Today page is intentionally server-rendered. A small script calls typed endpoints for item completion and manual overrides, then reloads the persisted read model. Only all four completed items complete the plan; undoing one reopens it.
+The Today page is intentionally server-rendered. A small script calls typed endpoints for item completion and manual overrides, then reloads the persisted read model. Only all four completed items complete the plan; undoing one reopens it. Item status transitions retain their first start time and current completion time.
+
+History can return to any saved date, using a recent timeline, an arbitrary-month calendar, or a single-day detail page. Progress derives streaks and completion metrics from saved plans and submitted sessions. It labels completed plan minutes as estimates and reports real tracked time separately; missing timer data is never inferred.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.

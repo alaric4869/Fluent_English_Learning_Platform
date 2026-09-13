@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
@@ -32,6 +32,67 @@ class SqlAlchemyStudyPlanRepository:
         )
         plan = self.session.scalar(statement)
         return self._to_plan(plan, created=False) if plan else None
+
+    def list_recent(
+        self,
+        user_key: str,
+        through_date: date,
+        limit: int,
+    ) -> tuple[DailyStudyPlan, ...]:
+        statement = (
+            select(StudyPlanModel)
+            .where(
+                StudyPlanModel.user_key == user_key,
+                StudyPlanModel.plan_date <= through_date,
+            )
+            .options(selectinload(StudyPlanModel.items))
+            .order_by(StudyPlanModel.plan_date.desc(), StudyPlanModel.id.desc())
+            .limit(limit)
+        )
+        return tuple(
+            self._to_plan(plan, created=False)
+            for plan in self.session.scalars(statement).unique()
+        )
+
+    def list_all_through(
+        self,
+        user_key: str,
+        through_date: date,
+    ) -> tuple[DailyStudyPlan, ...]:
+        statement = (
+            select(StudyPlanModel)
+            .where(
+                StudyPlanModel.user_key == user_key,
+                StudyPlanModel.plan_date <= through_date,
+            )
+            .options(selectinload(StudyPlanModel.items))
+            .order_by(StudyPlanModel.plan_date.desc(), StudyPlanModel.id.desc())
+        )
+        return tuple(
+            self._to_plan(plan, created=False)
+            for plan in self.session.scalars(statement).unique()
+        )
+
+    def list_between(
+        self,
+        user_key: str,
+        start_date: date,
+        end_date: date,
+    ) -> tuple[DailyStudyPlan, ...]:
+        statement = (
+            select(StudyPlanModel)
+            .where(
+                StudyPlanModel.user_key == user_key,
+                StudyPlanModel.plan_date >= start_date,
+                StudyPlanModel.plan_date < end_date,
+            )
+            .options(selectinload(StudyPlanModel.items))
+            .order_by(StudyPlanModel.plan_date.desc(), StudyPlanModel.id.desc())
+        )
+        return tuple(
+            self._to_plan(plan, created=False)
+            for plan in self.session.scalars(statement).unique()
+        )
 
     def save(self, proposal: StudyPlanProposal) -> DailyStudyPlan:
         existing = self.get_for_date(proposal.user_key, proposal.plan_date)
@@ -99,6 +160,8 @@ class SqlAlchemyStudyPlanRepository:
         study_plan_item_id: int,
         status: StudyPlanItemStatus,
         plan_status: StudyPlanStatus,
+        started_at: datetime | None,
+        completed_at: datetime | None,
     ) -> DailyStudyPlan:
         statement = (
             select(StudyPlanModel)
@@ -118,6 +181,8 @@ class SqlAlchemyStudyPlanRepository:
         if item is None:
             raise LookupError("Study plan item not found")
         item.status = status.value
+        item.started_at = started_at
+        item.completed_at = completed_at
         plan.status = plan_status.value
         self.session.commit()
         saved = self._get(plan.id)
@@ -147,6 +212,8 @@ class SqlAlchemyStudyPlanRepository:
                 reasons=tuple(item.reasons),
                 manual_override=item.manual_override,
                 override_note=item.override_note,
+                started_at=_as_utc(item.started_at),
+                completed_at=_as_utc(item.completed_at),
             )
             for item in sorted(plan.items, key=lambda value: value.position)
         )
@@ -162,7 +229,13 @@ class SqlAlchemyStudyPlanRepository:
             total_minutes=plan.total_minutes,
             explanation=tuple(plan.explanation),
             items=items,
-            created_at=plan.created_at,
-            updated_at=plan.updated_at,
+            created_at=_as_utc(plan.created_at),
+            updated_at=_as_utc(plan.updated_at),
             created=created,
         )
+
+
+def _as_utc(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)

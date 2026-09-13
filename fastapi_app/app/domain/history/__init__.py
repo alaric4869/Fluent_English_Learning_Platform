@@ -1,0 +1,1 @@
+"""Study history domain."""

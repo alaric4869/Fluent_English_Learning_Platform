@@ -76,6 +76,8 @@ def present_plan_response(plan: DailyStudyPlan) -> dict:
                 "resource_id": item.resource_id,
                 "status": item.status,
                 "manual_override": item.manual_override,
+                "started_at": item.started_at,
+                "completed_at": item.completed_at,
             }
             for item in plan.items
         ],

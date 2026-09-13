@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}History · Fluent Daily English{% endblock %}
+{% block topbar_label %}Persistent study record{% endblock %}
+{% block content %}
+<div class="page-wrap insight-page">
+  <section class="insight-hero">
+    <div>
+      <p class="eyebrow">STUDY HISTORY</p>
+      <h1>你的学习记录，没有消失。</h1>
+      <p>这里显示已经保存的每日计划和真实作答记录。更换今天的材料不会改写过去。</p>
+    </div>
+    <div class="insight-summary-row">
+      <div><strong>{{ saved_day_count }}</strong><span>已保存日期</span></div>
+      <div><strong>{{ completed_module_count }}</strong><span>完成模块</span></div>
+      <div><strong>{{ session_count }}</strong><span>作答记录</span></div>
+    </div>
+  </section>
+
+  <section class="insight-section">
+    <div class="view-switch" aria-label="历史显示方式">
+      <a href="/history?view=timeline" class="{% if view == 'timeline' %}is-active{% endif %}">时间线</a>
+      <a href="/history?view=calendar&month={{ selected_month.strftime('%Y-%m') }}" class="{% if view == 'calendar' %}is-active{% endif %}">月历</a>
+    </div>
+
+    {% if view == 'calendar' %}
+    <div class="calendar-card">
+      <header class="calendar-head">
+        <a href="/history?view=calendar&month={{ previous_month }}" aria-label="上个月">←</a>
+        <h2>{{ month_label }}</h2>
+        <a href="/history?view=calendar&month={{ next_month }}" aria-label="下个月">→</a>
+      </header>
+      <div class="calendar-grid calendar-weekdays">
+        {% for label in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}<span>{{ label }}</span>{% endfor %}
+      </div>
+      <div class="calendar-grid calendar-days">
+        {% for week in calendar_weeks %}
+          {% for cell in week %}
+            {% if cell.has_record %}<a href="/history/{{ cell.date.isoformat() }}"{% else %}<span{% endif %} class="calendar-day{% if not cell.in_month %} is-outside{% endif %}{% if cell.has_record %} has-record{% endif %}">
+              <b>{{ cell.day_number }}</b>
+              {% if cell.has_record %}
+              <small>{{ cell.completed_modules }}/{{ cell.assigned_modules }} 模块{% if cell.session_count %} · {{ cell.session_count }} 次作答{% endif %}</small>
+              {% endif %}
+            {% if cell.has_record %}</a>{% else %}</span>{% endif %}
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="history-timeline">
+      {% for day in timeline_days %}
+      <a class="history-day-card" href="/history/{{ day.study_date.isoformat() }}">
+        <header>
+          <div><small>{{ day.study_date.strftime('%Y') }}</small><strong>{{ day.study_date.strftime('%d %b') }}</strong></div>
+          <span>{{ day.completed_module_count }}/{{ day.assigned_module_count }} 模块完成{% if day.sessions %} · {{ day.sessions|length }} 次真实作答{% endif %}</span>
+        </header>
+        <div class="history-module-row">
+          {% for module in day.modules %}
+          <span class="history-module{% if module.is_completed %} is-completed{% endif %}"><i>{{ module.code }}</i>{{ module.title }}</span>
+          {% endfor %}
+          {% if not day.modules %}<span class="history-empty-inline">当天只有作答记录，没有每日计划。</span>{% endif %}
+        </div>
+      </a>
+      {% else %}
+      <div class="empty-state"><strong>还没有历史记录</strong><p>完成 Today 中的模块或提交 IELTS 练习后，这里会自动出现记录。</p></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

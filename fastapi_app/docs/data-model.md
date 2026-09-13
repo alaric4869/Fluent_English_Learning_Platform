@@ -44,12 +44,14 @@ The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stabl
 ## Implemented daily-planning slice
 
 - `StudyPlan`: one immutable assignment boundary per learner/date, with source algorithm versions, assessment reference, total duration and plan-level explanation.
-- `StudyPlanItem`: one independently completable skill module with system-recommended and current duration/resource fields, status, score and reasons.
+- `StudyPlanItem`: one independently completable skill module with system-recommended and current duration/resource fields, status, score, reasons, first-start time and current completion time.
 
 The unique learner/date key makes normal generation idempotent. Separate system/current fields allow a later manual override without destroying the original recommendation. `LearningResource.priority` is explicit metadata; last-studied and last-assigned values remain derived from history instead of becoming duplicate sources of truth.
 
 `StudyPlanItem.status` is updated independently. `StudyPlan.status` is derived on every status transition: all items completed means `completed`; otherwise it remains `active`. Completion does not create an adaptation decision because it records study progress, not a change to the recommendation.
 
+`started_at` is set on the first transition into `in_progress` or `completed`. It is retained if the learner reopens the module. `completed_at` represents the current completed state and is cleared when the module is reopened. Immutable fine-grained activity events can be added later without changing this state contract.
+
 An upgrade from the previous plan schema backfills one system decision for every existing plan item, so decision history does not silently start empty.
 
-Today now reads these models through services. The next conversion path is `StudyPlan + StudySession + profile history → History/Progress read models`.
+Today, History and Progress all read these models through services. History combines plans and sessions by Sydney calendar date. Progress keeps estimated completed-plan minutes separate from `StudySession.actual_duration_seconds`, which is the only source of real elapsed time.

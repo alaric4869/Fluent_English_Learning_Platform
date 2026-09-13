@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Progress · Fluent Daily English{% endblock %}
+{% block topbar_label %}Evidence-based progress{% endblock %}
+{% block content %}
+<div class="page-wrap insight-page">
+  <section class="insight-hero progress-hero">
+    <div>
+      <p class="eyebrow">LEARNING PROGRESS</p>
+      <h1>看清坚持，也看清证据。</h1>
+      <p>统计只来自已保存的计划状态和已提交练习。计划分钟是估算值；真实时长只计算实际计时数据。</p>
+    </div>
+    <div class="streak-card"><span>CURRENT STREAK</span><strong>{{ summary.current_streak }}</strong><small>days · longest {{ summary.longest_streak }}</small></div>
+  </section>
+
+  <section class="metric-grid">
+    <article><span>STUDY DAYS</span><strong>{{ summary.total_study_days }}</strong><small>至少完成一个模块或一次作答</small></article>
+    <article><span>COMPLETION RATE</span><strong>{{ summary.completion_rate }}%</strong><small>{{ summary.completed_modules }} / {{ summary.assigned_modules }} 个计划模块</small></article>
+    <article><span>COMPLETED PLAN TIME</span><strong>{{ completed_planned_time }}</strong><small>按已完成模块的计划时长估算</small></article>
+    <article><span>TRACKED TIME</span><strong>{{ tracked_time }}</strong><small>仅包含真实计时，不做推测</small></article>
+    <article><span>THIS WEEK</span><strong>{{ this_week_planned_time }}</strong><small>本周已完成的计划时长</small></article>
+    <article><span>SUBMITTED SESSIONS</span><strong>{{ summary.completed_sessions }}</strong><small>已形成学习证据的作答</small></article>
+  </section>
+
+  <section class="insight-section">
+    <div class="section-heading"><div><p class="eyebrow">RECENT ACTIVITY</p><h2>最近 28 天</h2></div><p>柱高 = 完成模块 + 已提交作答</p></div>
+    <div class="activity-card">
+      <div class="activity-chart">
+        {% for entry in recent_activity %}
+        <div class="activity-column" title="{{ entry.activity.activity_date.isoformat() }} · {{ entry.activity.completed_modules }} modules · {{ entry.activity.completed_sessions }} sessions">
+          <span style="height: {{ [entry.height_percent, 4]|max }}%"{% if entry.activity.completed_modules + entry.activity.completed_sessions == 0 %} class="is-empty"{% endif %}></span>
+          {% if loop.index0 % 4 == 0 or loop.last %}<small>{{ entry.label }}</small>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="insight-section">
+    <div class="section-heading"><div><p class="eyebrow">SKILL PROFILE</p><h2>当前技能画像</h2></div><p>能力分数只由实际作答证据计算</p></div>
+    <div class="skill-progress-grid">
+      {% for item in skill_summaries %}
+      <article class="skill-progress-card">
+        <header><span class="skill-icon skill-{{ item.skill.value }}">{{ item.code }}</span><div><h3>{{ item.label }}</h3><small>{{ item.classification_label }} · {{ item.evidence_label }}</small></div><strong>{{ item.score if item.score is not none else '—' }}</strong></header>
+        <div class="skill-score-track"><span style="width: {{ item.score if item.score is not none else 0 }}%"></span></div>
+        <dl><div><dt>完成模块</dt><dd>{{ item.summary.completed_modules }}</dd></div><div><dt>真实作答</dt><dd>{{ item.summary.completed_sessions }}</dd></div></dl>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

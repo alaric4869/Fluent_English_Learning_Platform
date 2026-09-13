@@ -51,11 +51,17 @@
 - Complete/reopen individual modules and derive whole-plan status.
 - Keep the established calm green/cream visual system and responsive shell.
 
-## M7–M9 · Next product slices
+## M7 · History and Progress
 
-1. History and Progress read models using persisted plans, sessions and profile snapshots.
-2. Vocabulary/chunk library and configurable spaced-review scheduler.
-3. Listening sentence states, speaking/retelling records, notes and mistake-book links.
+- Add persisted first-start/current-completion timestamps to plan items through migration `0007`.
+- Add a timeline, arbitrary-month calendar and single-day History detail.
+- Add deterministic streaks, plan completion metrics, real tracked time, 28-day activity and current skill profile.
+- Keep estimated workload and actual elapsed time visibly separate.
+
+## M8–M9 · Next product slices
+
+1. Vocabulary/chunk library and configurable spaced-review scheduler.
+2. Listening sentence states, speaking/retelling records, notes and mistake-book links.
 
 ## Later, after the rule-based loop works
 

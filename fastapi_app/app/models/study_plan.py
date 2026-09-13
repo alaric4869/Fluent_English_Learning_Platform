@@ -78,6 +78,15 @@ class StudyPlanItemModel(Base):
     reasons: Mapped[list[str]] = mapped_column(JSON)
     manual_override: Mapped[bool] = mapped_column(Boolean, default=False)
     override_note: Mapped[str] = mapped_column(Text, default="")
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        index=True,
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

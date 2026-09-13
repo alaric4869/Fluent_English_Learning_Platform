@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -25,6 +25,8 @@ class StudyPlanItemResponse(BaseModel):
     resource_id: int | None
     status: StudyPlanItemStatus
     manual_override: bool
+    started_at: datetime | None
+    completed_at: datetime | None
 
 
 class StudyPlanResponse(BaseModel):

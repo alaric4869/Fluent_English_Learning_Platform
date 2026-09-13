@@ -30,7 +30,7 @@ EXPECTED_TABLES = {
     "weakness_assessment_runs",
     "weakness_skill_assessments",
 }
-HEAD_REVISION = "0006_adaptation_decisions"
+HEAD_REVISION = "0007_plan_item_timestamps"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -41,6 +41,9 @@ def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
     assert EXPECTED_TABLES <= set(inspect(engine).get_table_names())
     assert "priority" in {
         column["name"] for column in inspect(engine).get_columns("learning_resources")
+    }
+    assert {"started_at", "completed_at"} <= {
+        column["name"] for column in inspect(engine).get_columns("study_plan_items")
     }
     with engine.connect() as connection:
         assert connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one() == (
@@ -66,6 +69,27 @@ def test_upgrade_database_adopts_existing_schema_without_losing_attempts(
         assert connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one() == (
             HEAD_REVISION
         )
+
+
+def test_plan_item_timestamp_migration_can_downgrade_cleanly(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    engine = _use_database(tmp_path / "timestamps.db", monkeypatch)
+    database_migrations.upgrade_database()
+    database_url = database_migrations.settings.database_url
+    config = Config(FASTAPI_ROOT / "alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+
+    command.downgrade(config, "0006_adaptation_decisions")
+
+    assert {"started_at", "completed_at"}.isdisjoint(
+        column["name"] for column in inspect(engine).get_columns("study_plan_items")
+    )
+    with engine.connect() as connection:
+        assert connection.exec_driver_sql(
+            "SELECT version_num FROM alembic_version"
+        ).scalar_one() == "0006_adaptation_decisions"
 
 
 def test_upgrade_backfills_decisions_for_plans_created_at_previous_revision(

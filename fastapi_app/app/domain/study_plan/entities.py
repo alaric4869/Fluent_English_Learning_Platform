@@ -72,6 +72,8 @@ class DailyStudyPlanItem:
     reasons: tuple[str, ...]
     manual_override: bool
     override_note: str
+    started_at: datetime | None
+    completed_at: datetime | None
 
 
 @dataclass(frozen=True)

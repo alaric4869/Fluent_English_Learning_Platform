@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,7 @@ from app.repositories.sqlalchemy_adaptive_learning import (
     SqlAlchemyAdaptationDecisionRepository,
 )
 from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
+from app.repositories.sqlalchemy_history import SqlAlchemyStudyHistoryRepository
 from app.repositories.sqlalchemy_learning_evidence import SqlAlchemyLearningEvidenceRepository
 from app.repositories.sqlalchemy_learner_profile import SqlAlchemyLearnerProfileRepository
 from app.repositories.sqlalchemy_resources import SqlAlchemyResourceRepository
@@ -20,9 +22,11 @@ from app.repositories.sqlalchemy_weakness_detection import (
 from app.services.adaptive_learning import AdaptationDecisionService
 from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
 from app.services.ielts_practice import IeltsPracticeService
+from app.services.history import HistoryService
 from app.services.learning_evidence import LearningEvidenceService
 from app.services.learner_profile import LearnerProfileService
 from app.services.resources import ResourceService
+from app.services.progress_analytics import ProgressAnalyticsService
 from app.services.study_plan import StudyPlanService
 from app.services.weakness_detection import WeaknessDetectionService
 
@@ -35,6 +39,8 @@ class ApplicationServices:
     resources: ResourceService
     study_plan: StudyPlanService
     adaptation_decisions: AdaptationDecisionService
+    history: HistoryService
+    progress_analytics: ProgressAnalyticsService
 
 
 def build_application_services(session: Session) -> ApplicationServices:
@@ -54,6 +60,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         RuleBasedResourceRecommender(),
     )
     plan_repository = SqlAlchemyStudyPlanRepository(session)
+    history_repository = SqlAlchemyStudyHistoryRepository(session)
     study_plan_service = StudyPlanService(
         plan_repository,
         weakness_service,
@@ -64,6 +71,19 @@ def build_application_services(session: Session) -> ApplicationServices:
         plan_repository,
         SqlAlchemyAdaptationDecisionRepository(session),
         resource_service,
+    )
+    timezone = ZoneInfo("Australia/Sydney")
+    history_service = HistoryService(
+        plan_repository,
+        history_repository,
+        timezone,
+    )
+    progress_analytics_service = ProgressAnalyticsService(
+        plan_repository,
+        history_repository,
+        profile_service,
+        weakness_service,
+        timezone,
     )
     evidence_recorder = IeltsLearningEvidenceRecorder(
         evidence_service,
@@ -81,4 +101,6 @@ def build_application_services(session: Session) -> ApplicationServices:
         resources=resource_service,
         study_plan=study_plan_service,
         adaptation_decisions=adaptation_service,
+        history=history_service,
+        progress_analytics=progress_analytics_service,
     )
