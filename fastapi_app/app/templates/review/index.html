@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Review · Fluent Daily English{% endblock %}
+{% block topbar_label %}{{ due_count }} reviews due today{% endblock %}
+{% block content %}
+<div class="page-wrap review-page" data-today="{{ today.isoformat() }}">
+  <section class="review-hero">
+    <div>
+      <p class="eyebrow">VOCABULARY · SPACED REVIEW</p>
+      <h1>记住完整表达，而不是孤立单词。</h1>
+      <p>新词块会进入 Day 1、3、7、14、30 复习节奏。你的 Again / Hard / Good / Easy 会确定下一次出现时间。</p>
+    </div>
+    <div class="review-summary">
+      <div><strong id="dueCount">{{ due_count }}</strong><span>今日到期</span></div>
+      <div><strong>{{ total_count }}</strong><span>全部词块</span></div>
+      <div><strong>{{ mastered_count }}</strong><span>已掌握</span></div>
+    </div>
+  </section>
+
+  <section class="review-content">
+    <div class="view-switch" aria-label="复习页面显示方式">
+      <a href="/review" class="{% if view == 'due' %}is-active{% endif %}">今日复习{% if due_count %}<b>{{ due_count }}</b>{% endif %}</a>
+      <a href="/review?view=library" class="{% if view == 'library' %}is-active{% endif %}">词块库</a>
+    </div>
+
+    {% if view == 'due' %}
+    <div class="section-heading">
+      <div><p class="eyebrow">REVIEWS DUE TODAY</p><h2>先回忆，再看答案</h2></div>
+      <p>评分会立即保存并安排下一次复习</p>
+    </div>
+    <div id="dueReviewList" class="due-review-list">
+      {% for entry in due_items %}
+      <article class="due-review-card" data-review-item-id="{{ entry.item.review_item_id }}">
+        <header>
+          <div><span class="mastery-badge mastery-{{ entry.item.mastery_status.value }}">{{ entry.mastery_label }}</span><small>{{ entry.due_label }}</small></div>
+          <span>第 {{ entry.item.review_count + 1 }} 次复习</span>
+        </header>
+        <h3>{{ entry.item.chunk }}</h3>
+        {% if entry.item.example_sentence %}<p class="chunk-example">{{ entry.item.example_sentence }}</p>{% endif %}
+        <details class="review-answer">
+          <summary>显示意思和笔记</summary>
+          <div>
+            <span>MEANING</span><strong>{{ entry.item.meaning }}</strong>
+            {% if entry.item.personal_note %}<span>PERSONAL NOTE</span><p>{{ entry.item.personal_note }}</p>{% endif %}
+            <small>来源：{{ entry.source_title }}</small>
+          </div>
+        </details>
+        <div class="review-rating-row" aria-label="评价本次回忆">
+          <button type="button" data-rating="again" disabled><strong>Again</strong><small>明天再来</small></button>
+          <button type="button" data-rating="hard" disabled><strong>Hard</strong><small>缩短间隔</small></button>
+          <button type="button" data-rating="good" disabled><strong>Good</strong><small>正常推进</small></button>
+          <button type="button" data-rating="easy" disabled><strong>Easy</strong><small>加快推进</small></button>
+        </div>
+      </article>
+      {% else %}
+      <div class="empty-state" id="reviewEmptyState"><strong>今天没有到期复习</strong><p>可以去词块库添加新表达；新词块默认从学习后的第 1 天开始复习。</p><a class="button button-primary" href="/review?view=library">打开词块库</a></div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <details class="chunk-entry-card" open>
+      <summary><span><b>＋</b><strong>添加一个完整词块</strong><small>例如 make an appointment，而不只是 appointment</small></span></summary>
+      <form id="vocabularyForm" class="chunk-entry-form">
+        <label class="field-wide"><span>词块 / 表达 *</span><input name="chunk" maxlength="300" placeholder="Would it be possible to reschedule my appointment?" required></label>
+        <label class="field-wide"><span>中文含义 *</span><input name="meaning" maxlength="2000" placeholder="可以改一下我的预约时间吗？" required></label>
+        <label class="field-wide"><span>例句</span><textarea name="example_sentence" maxlength="2000" rows="2" placeholder="完整、自然、以后真正会说的例句"></textarea></label>
+        <label><span>难度</span><select name="difficulty"><option value="easy">简单</option><option value="medium" selected>适中</option><option value="hard">困难</option></select></label>
+        <label><span>学习日期</span><input type="date" name="learned_on" max="{{ today.isoformat() }}" value="{{ today.isoformat() }}"></label>
+        <label class="field-wide"><span>来源说明</span><input name="source_context" maxlength="1000" placeholder="例如 G20 Test 1 Listening Part 1"></label>
+        <label class="field-wide"><span>标签</span><input name="tags" placeholder="appointments, daily life, Australia"></label>
+        <label class="field-wide"><span>个人笔记</span><textarea name="personal_note" maxlength="2000" rows="2" placeholder="发音、使用场景或容易犯的错误"></textarea></label>
+        <div class="chunk-entry-actions"><button class="button button-primary" type="submit">保存并加入复习</button><small>第一次复习：学习日期后 1 天</small></div>
+      </form>
+    </details>
+
+    <div class="library-toolbar">
+      <div><p class="eyebrow">CHUNK LIBRARY</p><h2>全部词块</h2></div>
+      <form method="get" action="/review">
+        <input type="hidden" name="view" value="library">
+        <input type="search" name="search" value="{{ search }}" placeholder="搜索表达、含义、例句或来源">
+        <select name="mastery"><option value="">全部状态</option>{% for value, label in mastery_options %}<option value="{{ value }}"{% if selected_mastery == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <select name="difficulty"><option value="">全部难度</option>{% for value, label in difficulty_options %}<option value="{{ value }}"{% if selected_difficulty == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <button class="button button-secondary" type="submit">筛选</button>
+      </form>
+    </div>
+    <div class="chunk-library-list">
+      {% for entry in library_items %}
+      <article class="chunk-library-card">
+        <header><div><span class="mastery-badge mastery-{{ entry.item.mastery_status.value }}">{{ entry.mastery_label }}</span><small>{{ entry.difficulty_label }}</small></div><time>下次 {{ entry.item.next_review_date.isoformat() }}</time></header>
+        <h3>{{ entry.item.chunk }}</h3>
+        <p>{{ entry.item.meaning }}</p>
+        {% if entry.item.example_sentence %}<blockquote>{{ entry.item.example_sentence }}</blockquote>{% endif %}
+        <footer><span>来源：{{ entry.source_title }}</span><span>已复习 {{ entry.item.review_count }} 次</span></footer>
+      </article>
+      {% else %}
+      <div class="empty-state"><strong>没有匹配的词块</strong><p>调整筛选条件，或者在上方添加第一个完整表达。</p></div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+  <p id="reviewActionStatus" class="today-action-status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/review.js') }}" defer></script>{% endblock %}

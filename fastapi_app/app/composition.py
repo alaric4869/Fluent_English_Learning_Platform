@@ -5,30 +5,35 @@ from sqlalchemy.orm import Session
 
 from app.domain.learner_profile.rule_based_evaluator import RuleBasedSkillEvaluator
 from app.domain.resources.rule_based_recommender import RuleBasedResourceRecommender
+from app.domain.review.fixed_interval_scheduler import FixedIntervalReviewScheduler
 from app.domain.study_plan.rule_based_generator import RuleBasedStudyPlanGenerator
 from app.domain.weakness_detection.rule_based_detector import RuleBasedWeaknessDetector
 from app.repositories.sqlalchemy_adaptive_learning import (
     SqlAlchemyAdaptationDecisionRepository,
 )
-from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
 from app.repositories.sqlalchemy_history import SqlAlchemyStudyHistoryRepository
+from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
 from app.repositories.sqlalchemy_learning_evidence import SqlAlchemyLearningEvidenceRepository
 from app.repositories.sqlalchemy_learner_profile import SqlAlchemyLearnerProfileRepository
 from app.repositories.sqlalchemy_resources import SqlAlchemyResourceRepository
+from app.repositories.sqlalchemy_review import SqlAlchemyReviewRepository
 from app.repositories.sqlalchemy_study_plan import SqlAlchemyStudyPlanRepository
+from app.repositories.sqlalchemy_vocabulary import SqlAlchemyVocabularyRepository
 from app.repositories.sqlalchemy_weakness_detection import (
     SqlAlchemyWeaknessAssessmentRepository,
 )
 from app.services.adaptive_learning import AdaptationDecisionService
+from app.services.history import HistoryService
 from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
 from app.services.ielts_practice import IeltsPracticeService
-from app.services.history import HistoryService
 from app.services.learning_evidence import LearningEvidenceService
 from app.services.learner_profile import LearnerProfileService
-from app.services.resources import ResourceService
 from app.services.progress_analytics import ProgressAnalyticsService
+from app.services.resources import ResourceService
+from app.services.review import ReviewService
 from app.services.study_plan import StudyPlanService
 from app.services.weakness_detection import WeaknessDetectionService
+from app.services.vocabulary import VocabularyService
 
 
 @dataclass(frozen=True)
@@ -41,6 +46,8 @@ class ApplicationServices:
     adaptation_decisions: AdaptationDecisionService
     history: HistoryService
     progress_analytics: ProgressAnalyticsService
+    vocabulary: VocabularyService
+    review: ReviewService
 
 
 def build_application_services(session: Session) -> ApplicationServices:
@@ -55,10 +62,19 @@ def build_application_services(session: Session) -> ApplicationServices:
         SqlAlchemyWeaknessAssessmentRepository(session),
         RuleBasedWeaknessDetector(),
     )
+    resource_repository = SqlAlchemyResourceRepository(session)
     resource_service = ResourceService(
-        SqlAlchemyResourceRepository(session),
+        resource_repository,
         RuleBasedResourceRecommender(),
     )
+    review_scheduler = FixedIntervalReviewScheduler()
+    vocabulary_service = VocabularyService(
+        SqlAlchemyVocabularyRepository(session, review_scheduler.scheduler_version),
+        resource_repository,
+        review_scheduler,
+    )
+    review_repository = SqlAlchemyReviewRepository(session)
+    review_service = ReviewService(review_repository, review_scheduler)
     plan_repository = SqlAlchemyStudyPlanRepository(session)
     history_repository = SqlAlchemyStudyHistoryRepository(session)
     study_plan_service = StudyPlanService(
@@ -83,6 +99,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         history_repository,
         profile_service,
         weakness_service,
+        review_repository,
         timezone,
     )
     evidence_recorder = IeltsLearningEvidenceRecorder(
@@ -103,4 +120,6 @@ def build_application_services(session: Session) -> ApplicationServices:
         adaptation_decisions=adaptation_service,
         history=history_service,
         progress_analytics=progress_analytics_service,
+        vocabulary=vocabulary_service,
+        review=review_service,
     )

@@ -51,7 +51,13 @@ def today_page(
     return templates.TemplateResponse(
         request=request,
         name="today/index.html",
-        context=present_today_plan(plan, now, resources, resource_options),
+        context=present_today_plan(
+            plan,
+            now,
+            resources,
+            resource_options,
+            services.review.get_due_count(LOCAL_USER_KEY, now.date()),
+        ),
     )
 
 

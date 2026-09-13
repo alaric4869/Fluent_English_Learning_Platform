@@ -58,10 +58,17 @@
 - Add deterministic streaks, plan completion metrics, real tracked time, 28-day activity and current skill profile.
 - Keep estimated workload and actual elapsed time visibly separate.
 
-## M8–M9 · Next product slices
+## M8 · Vocabulary chunks and spaced review
 
-1. Vocabulary/chunk library and configurable spaced-review scheduler.
-2. Listening sentence states, speaking/retelling records, notes and mistake-book links.
+- Add complete chunks with meaning, example, source, notes, difficulty and tags.
+- Schedule new items and persist every Again / Hard / Good / Easy attempt.
+- Add a searchable/filterable chunk library and a focused due-today queue.
+- Surface the due count in Today and completed reviews in Progress.
+- Keep scheduling rules configurable and replaceable through `ReviewScheduler`.
+
+## M9 · Next product slice
+
+- Listening sentence states, speaking/retelling records, notes and mistake-book links.
 
 ## Later, after the rule-based loop works
 

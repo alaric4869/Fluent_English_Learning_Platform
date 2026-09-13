@@ -55,3 +55,13 @@ The unique learner/date key makes normal generation idempotent. Separate system/
 An upgrade from the previous plan schema backfills one system decision for every existing plan item, so decision history does not silently start empty.
 
 Today, History and Progress all read these models through services. History combines plans and sessions by Sydney calendar date. Progress keeps estimated completed-plan minutes separate from `StudySession.actual_duration_seconds`, which is the only source of real elapsed time.
+
+## Implemented vocabulary and review slice
+
+- `VocabularyItem`: learner-owned complete expression, meaning, example, learned date, personal note, difficulty, source resource/context, tags and normalized duplicate key.
+- `ReviewItem`: current scheduler version, step, next due date, last reviewed time, review count and active state for one vocabulary item.
+- `ReviewAttempt`: immutable rating with idempotency request ID, previous/new step, previous/new due date, interval, previous/new mastery and review time.
+
+The library exposes `new`, `learning`, `familiar` and `mastered`. Current mastery and next-review state are updated atomically with the attempt that caused the transition. Review history is never reconstructed from only the latest state.
+
+The initial configured gaps are 1, 2, 4, 7, 16 and then 30 days. Normal `Good` reviews therefore land at cumulative Day 1, 3, 7, 14 and 30; completing the Day 30 review marks the item mastered and schedules a later maintenance review. The policy is behind `ReviewScheduler`, so a future algorithm can replace it without changing routes or templates.

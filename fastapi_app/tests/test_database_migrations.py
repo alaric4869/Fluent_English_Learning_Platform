@@ -23,14 +23,17 @@ EXPECTED_TABLES = {
     "learner_profiles",
     "learner_skill_snapshots",
     "learning_resources",
+    "review_attempts",
+    "review_items",
     "skill_performances",
     "study_sessions",
     "study_plan_items",
     "study_plans",
+    "vocabulary_items",
     "weakness_assessment_runs",
     "weakness_skill_assessments",
 }
-HEAD_REVISION = "0007_plan_item_timestamps"
+HEAD_REVISION = "0008_vocabulary_review"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -90,6 +93,27 @@ def test_plan_item_timestamp_migration_can_downgrade_cleanly(
         assert connection.exec_driver_sql(
             "SELECT version_num FROM alembic_version"
         ).scalar_one() == "0006_adaptation_decisions"
+
+
+def test_vocabulary_review_migration_can_downgrade_cleanly(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    engine = _use_database(tmp_path / "reviews.db", monkeypatch)
+    database_migrations.upgrade_database()
+    database_url = database_migrations.settings.database_url
+    config = Config(FASTAPI_ROOT / "alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+
+    command.downgrade(config, "0007_plan_item_timestamps")
+
+    assert {"vocabulary_items", "review_items", "review_attempts"}.isdisjoint(
+        inspect(engine).get_table_names()
+    )
+    with engine.connect() as connection:
+        assert connection.exec_driver_sql(
+            "SELECT version_num FROM alembic_version"
+        ).scalar_one() == "0007_plan_item_timestamps"
 
 
 def test_upgrade_backfills_decisions_for_plans_created_at_previous_revision(

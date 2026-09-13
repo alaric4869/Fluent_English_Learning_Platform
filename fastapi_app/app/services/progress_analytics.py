@@ -10,6 +10,7 @@ from app.domain.analytics.streaks import calculate_streaks
 from app.domain.history.repository import StudyHistoryRepository
 from app.domain.learning_evidence.entities import Skill
 from app.domain.learner_profile.entities import EvidenceStatus
+from app.domain.review.repository import ReviewRepository
 from app.domain.study_plan.entities import StudyPlanItemStatus
 from app.domain.study_plan.repository import StudyPlanRepository
 from app.domain.weakness_detection.entities import SkillClassification
@@ -24,12 +25,14 @@ class ProgressAnalyticsService:
         history_repository: StudyHistoryRepository,
         learner_profile_service: LearnerProfileService,
         weakness_detection_service: WeaknessDetectionService,
+        review_repository: ReviewRepository,
         timezone: ZoneInfo,
     ) -> None:
         self.study_plan_repository = study_plan_repository
         self.history_repository = history_repository
         self.learner_profile_service = learner_profile_service
         self.weakness_detection_service = weakness_detection_service
+        self.review_repository = review_repository
         self.timezone = timezone
 
     def get_summary(self, user_key: str, today: date) -> ProgressSummary:
@@ -119,6 +122,10 @@ class ProgressAnalyticsService:
                 if item.activity_date >= week_start
             ),
             completed_sessions=len(sessions),
+            completed_reviews=self.review_repository.count_attempts_through(
+                user_key,
+                self._day_boundary(today + timedelta(days=1)),
+            ),
             skill_summaries=skill_summaries,
             recent_activity=recent_activity,
         )

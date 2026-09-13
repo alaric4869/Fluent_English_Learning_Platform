@@ -32,6 +32,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/practice.py`: translates HTTP requests into use-case calls and safely streams approved local audio files.
 - `api/routes/today.py`: renders today's persisted plan and exposes typed override/completion actions.
 - `api/routes/insights.py`: renders History and Progress from reporting services without querying tables.
+- `api/routes/review.py`: renders the due queue/chunk library and validates typed create/rating requests.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
@@ -43,6 +44,8 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/adaptive_learning/`: explicit recommendation/override decision types and repository boundary.
 - `domain/history/`: persisted-session history read contracts.
 - `domain/analytics/`: progress summaries and deterministic streak calculation.
+- `domain/vocabulary/`: chunk entities, mastery states and repository contract.
+- `domain/review/`: scheduler contract, centralized intervals and deterministic fixed-interval implementation.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
@@ -54,6 +57,8 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `repositories/sqlalchemy_study_plan.py`: persists one plan per learner/date and its four independent items.
 - `repositories/sqlalchemy_adaptive_learning.py`: atomically applies validated overrides and appends decision history.
 - `repositories/sqlalchemy_history.py`: reads submitted study sessions for timelines and analytics.
+- `repositories/sqlalchemy_vocabulary.py`: persists normalized chunks together with their initial review item.
+- `repositories/sqlalchemy_review.py`: reads the due queue and atomically appends idempotent review attempts.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
@@ -144,3 +149,11 @@ Small browser interactions call typed endpoints for an override or status change
 `ProgressAnalyticsService` calculates streaks, module completion, per-skill counts and a 28-day activity series from the same sources. The pure streak function is independent of FastAPI and SQLAlchemy. Existing `LearnerProfileService` and `WeaknessDetectionService` supply skill scores/classifications; Progress never recalculates a competing profile.
 
 Plan completion minutes are an estimated workload measure, not elapsed study time. Only `StudySession.actual_duration_seconds` contributes to the tracked-time metric. This distinction is part of the service and page contract so later timer support can improve accuracy without rewriting analytics.
+
+## Implemented vocabulary and review loop
+
+`VocabularyService` normalizes and validates a complete chunk, rejects learner-local duplicates, optionally verifies its source resource, and asks the configured `ReviewScheduler` for its initial state. The SQLAlchemy adapter saves the chunk and first review item in one transaction.
+
+`ReviewService` reads only active due items and passes their current structured state to `FixedIntervalReviewScheduler`. The scheduler has no FastAPI or database dependency. It returns the next step, date, interval and mastery state; the repository updates the current review item and appends an immutable `ReviewAttempt` in the same transaction.
+
+Every rating request carries a UUID. Replaying the same UUID/rating returns the prior result without increasing the review count, while reusing it with a different rating is rejected. This protects the learning record from browser/network retries. Progress counts persisted review attempts through the repository contract rather than a UI counter.

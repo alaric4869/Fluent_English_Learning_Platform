@@ -16,6 +16,12 @@
     </div>
   </section>
 
+  <a class="today-review-strip" href="/review">
+    <span>REVIEW QUEUE</span>
+    <strong>{% if due_review_count %}今天有 {{ due_review_count }} 个词块需要复习{% else %}今天没有到期词块{% endif %}</strong>
+    <small>{% if due_review_count %}先复习，再学习新内容 →{% else %}打开词块库添加常用表达 →{% endif %}</small>
+  </a>
+
   <section class="today-plan-section">
     <div class="section-heading">
       <div>

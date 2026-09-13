@@ -38,5 +38,6 @@ class ProgressSummary:
     tracked_seconds: int
     this_week_completed_planned_minutes: int
     completed_sessions: int
+    completed_reviews: int
     skill_summaries: tuple[SkillProgressSummary, ...]
     recent_activity: tuple[DailyActivity, ...]

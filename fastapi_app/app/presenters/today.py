@@ -40,6 +40,7 @@ def present_today_plan(
     now: datetime,
     resources: dict[int, LearningResourceDetails],
     resource_options: dict[Skill, tuple[ResourceCandidate, ...]],
+    due_review_count: int = 0,
 ) -> dict:
     completed_count = sum(
         item.status is StudyPlanItemStatus.COMPLETED for item in plan.items
@@ -53,6 +54,7 @@ def present_today_plan(
         "completion_percent": round(completed_count / len(plan.items) * 100)
         if plan.items
         else 0,
+        "due_review_count": due_review_count,
         "modules": [
             _present_module(item, resources, resource_options.get(item.skill, ()))
             for item in plan.items
