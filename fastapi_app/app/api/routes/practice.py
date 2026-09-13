@@ -7,9 +7,11 @@ from sqlalchemy.orm import Session
 
 from app.config import FASTAPI_ROOT, settings
 from app.database import get_db
+from app.domain.learner_profile.rule_based_evaluator import RuleBasedSkillEvaluator
 from app.presenters.ielts import present_practice_workspace
 from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
 from app.repositories.sqlalchemy_learning_evidence import SqlAlchemyLearningEvidenceRepository
+from app.repositories.sqlalchemy_learner_profile import SqlAlchemyLearnerProfileRepository
 from app.schemas.ielts import SaveAnswerRequest, SavedAnswerResponse, SubmitAttemptResponse
 from app.services.ielts_practice import (
     IeltsPracticeService,
@@ -18,6 +20,7 @@ from app.services.ielts_practice import (
 )
 from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
 from app.services.learning_evidence import LearningEvidenceService
+from app.services.learner_profile import LearnerProfileService
 
 
 router = APIRouter()
@@ -27,7 +30,12 @@ LOCAL_USER_KEY = "local-user"
 
 def get_service(session: Session = Depends(get_db)) -> IeltsPracticeService:
     evidence_service = LearningEvidenceService(SqlAlchemyLearningEvidenceRepository(session))
-    evidence_recorder = IeltsLearningEvidenceRecorder(evidence_service)
+    profile_service = LearnerProfileService(
+        evidence_service,
+        SqlAlchemyLearnerProfileRepository(session),
+        RuleBasedSkillEvaluator(),
+    )
+    evidence_recorder = IeltsLearningEvidenceRecorder(evidence_service, profile_service)
     return IeltsPracticeService(
         SqlAlchemyIeltsPracticeRepository(session),
         submission_observer=evidence_recorder,

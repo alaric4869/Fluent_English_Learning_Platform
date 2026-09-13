@@ -15,21 +15,25 @@
 - Preserve submission history using idempotent attempt revisions.
 - Test the complete `PracticeAttempt → StudySession → ExerciseAttempt + SkillPerformance` path.
 
-## M2 · Learner profile (next)
+## M2 · Learner profile
 
 - Read recent performance through a repository/service boundary.
 - Add deterministic, configurable `SkillEvaluator` logic.
 - Persist immutable `LearnerProfileSnapshot` history for Listening, Speaking, Reading and Vocabulary.
 - Explain how every score was derived and handle insufficient evidence explicitly.
 
-## M3–M6 · Adaptive loop
+## M3 · Weakness detection (next)
 
-1. Learner profile and immutable profile snapshots.
-2. Deterministic skill evaluator.
-3. Weakness detector based on recent evidence.
-4. Rule-based resource recommender and study-plan generator.
-5. Adaptation decisions with measurable explanations and manual overrides.
-6. Today/Progress integration with historical trends.
+- Add configurable `WeaknessDetector` rules over multiple recent snapshots.
+- Distinguish insufficient evidence from weak performance.
+- Return structured reasons using real accuracy, confidence, hard-item and trend values.
+- Add tests that prevent one poor session from immediately changing a skill classification.
+
+## M4–M6 · Adaptive loop
+
+1. Rule-based resource recommender and study-plan generator.
+2. Adaptation decisions with measurable explanations and manual overrides.
+3. Today/Progress integration with historical trends.
 
 ## Later, after the rule-based loop works
 

@@ -22,9 +22,17 @@ These concepts are now persisted:
 
 `PracticeAttempt.submission_revision` identifies each completed version. The same submission can safely be retried without duplicating evidence; changing an answer and submitting again creates a new historical session.
 
-## Planned adaptive slice
+## Implemented learner-profile slice
 
-- `LearnerProfileSnapshot`: an immutable time-series view of four skill scores and supporting evidence.
+- `LearnerProfile`: stable local learner identity for profile history.
+- `LearnerProfileSnapshot`: immutable calculation timestamp, algorithm version and evidence fingerprint.
+- `LearnerSkillSnapshot`: one row per skill with score, evidence status, averages, trend, calculation weights, evidence IDs and explanation.
+
+A snapshot always contains Listening, Speaking, Reading and Vocabulary. A skill with no evidence stores `NULL` as its score and `no_data` as its status. This distinguishes unknown ability from poor ability.
+
+## Planned adaptive-decision slice
+
+- `WeaknessAssessment`: strong/weak evidence derived from multiple profile snapshots.
 - `AdaptationDecision`: a recommendation, its measurable reasons and any manual override.
 
-The next conversion path is `SkillPerformance history → LearnerProfileSnapshot`.
+The next conversion path is `LearnerProfileSnapshot history → WeaknessAssessment`.

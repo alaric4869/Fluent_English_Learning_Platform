@@ -11,6 +11,23 @@ class Skill(StrEnum):
 
 
 @dataclass(frozen=True)
+class HistoricalSkillPerformance:
+    id: int
+    study_session_id: int
+    user_key: str
+    skill: Skill
+    accuracy: float
+    item_count: int
+    correct_item_count: int
+    incorrect_item_count: int
+    hard_item_count: int | None
+    confidence: int | None
+    perceived_difficulty: int | None
+    occurred_at: datetime
+    metrics: dict
+
+
+@dataclass(frozen=True)
 class CompletedStudySession:
     user_key: str
     resource_id: int

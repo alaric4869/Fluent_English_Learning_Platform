@@ -17,11 +17,14 @@ EXPECTED_TABLES = {
     "ielts_practice_questions",
     "ielts_practice_sections",
     "ielts_practice_sets",
+    "learner_profile_snapshots",
+    "learner_profiles",
+    "learner_skill_snapshots",
     "learning_resources",
     "skill_performances",
     "study_sessions",
 }
-HEAD_REVISION = "0002_learning_evidence"
+HEAD_REVISION = "0003_learner_profiles"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:

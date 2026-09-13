@@ -5,10 +5,18 @@ from app.models.learning_evidence import (
     SkillPerformance,
     StudySession,
 )
+from app.models.learner_profile import (
+    LearnerProfile,
+    LearnerProfileSnapshotModel,
+    LearnerSkillSnapshot,
+)
 
 __all__ = [
     "ExerciseAttempt",
     "LearningResource",
+    "LearnerProfile",
+    "LearnerProfileSnapshotModel",
+    "LearnerSkillSnapshot",
     "PracticeAttempt",
     "PracticeQuestion",
     "PracticeSection",

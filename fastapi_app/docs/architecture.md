@@ -33,11 +33,13 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
 - `domain/learning_evidence/`: the four initial skills and typed, provider-neutral evidence records.
+- `domain/learner_profile/`: `SkillEvaluator` interface, centralized configuration and deterministic baseline implementation.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
 - `repositories/sqlalchemy_ielts.py`: the only place that reads and writes IELTS database tables.
 - `repositories/sqlalchemy_learning_evidence.py`: idempotently persists sessions, exercise attempts and skill performance.
+- `repositories/sqlalchemy_learner_profile.py`: writes immutable profile snapshots and reads the latest profile.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
@@ -76,4 +78,8 @@ ExerciseAttempt × 40 + SkillPerformance
 
 The conversion belongs in an application service and repository abstraction, not in a route, template, or JavaScript event handler. A unique source revision makes retries idempotent. Editing a submitted answer moves the practice attempt back to `in_progress`; the next submission creates a new revision while the previous session remains unchanged.
 
-The next boundary is `SkillPerformance → LearnerProfileSnapshot` through a deterministic `SkillEvaluator`.
+## Implemented learner profile pipeline
+
+`LearnerProfileService` reads recent evidence for all four initial skills and calls the replaceable `SkillEvaluator`. `RuleBasedSkillEvaluator` uses centrally configured weights and produces structured inputs, normalized weights, evidence sufficiency, trend and a numeric explanation. It does not classify skills as weak or strong; that remains the responsibility of the next `WeaknessDetector` boundary.
+
+Every snapshot stores the exact `SkillPerformance` IDs used to calculate it. A fingerprint of those IDs plus the algorithm version makes recalculation idempotent. When new evidence arrives, a new immutable snapshot is stored instead of overwriting the previous profile.

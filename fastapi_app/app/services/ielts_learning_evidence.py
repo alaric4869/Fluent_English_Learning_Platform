@@ -7,13 +7,19 @@ from app.domain.learning_evidence.entities import (
     SkillPerformanceEvidence,
 )
 from app.services.learning_evidence import LearningEvidenceService
+from app.services.learner_profile import LearnerProfileService
 
 
 class IeltsLearningEvidenceRecorder:
     """Translate an IELTS submission into the generic learning evidence model."""
 
-    def __init__(self, service: LearningEvidenceService) -> None:
+    def __init__(
+        self,
+        service: LearningEvidenceService,
+        learner_profile_service: LearnerProfileService | None = None,
+    ) -> None:
         self.service = service
+        self.learner_profile_service = learner_profile_service
 
     def record_submission(
         self,
@@ -22,6 +28,8 @@ class IeltsLearningEvidenceRecorder:
         grade: GradeResult,
     ) -> None:
         self.service.record(build_ielts_evidence_bundle(practice_set, attempt, grade))
+        if self.learner_profile_service is not None:
+            self.learner_profile_service.refresh_profile(attempt["user_key"])
 
 
 def build_ielts_evidence_bundle(

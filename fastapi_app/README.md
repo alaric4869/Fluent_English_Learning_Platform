@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its current usable slice is G20 Test 1 Listening and Reading. Every completed submission now produces immutable question-level attempts, a study session, and normalized skill performance for the future learner profile.
+This directory is the target Python-first application. Its current usable slice is G20 Test 1 Listening and Reading. Every completed submission produces immutable question-level attempts, a study session, normalized skill performance, and a new Learner Profile snapshot when the evidence changed.
 
 ## Run locally
 
@@ -24,6 +24,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 
 - `domain/`: deterministic IELTS rules and repository contracts.
 - `domain/learning_evidence/`: provider-neutral session, exercise-attempt, skill and evidence contracts.
+- `domain/learner_profile/`: configurable rule-based scoring with explicit evidence sufficiency and trends.
 - `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
@@ -32,5 +33,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `templates/` and `static/`: light server-rendered UI and browser interactions.
 - `seed/`: structured practice content imported into SQLite.
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
+
+The first profile algorithm uses the latest five sessions per skill. Accuracy carries 75% of the configured weight, confidence 15%, and hard-item resilience 10%. Missing optional signals are excluded and the remaining weights are normalized. With no evidence, a skill has no score; one sample is provisional; two or more samples establish the current baseline.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.
