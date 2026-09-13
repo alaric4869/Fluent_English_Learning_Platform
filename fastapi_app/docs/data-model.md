@@ -40,6 +40,12 @@ The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stabl
 ## Planned adaptive-decision slice
 
 - `AdaptationDecision`: a recommendation, its measurable reasons and any manual override.
-- `StudyPlan` and `StudyPlanItem`: the date-persisted plan and its independently completable modules.
 
-The next conversion path is `WeaknessAssessmentRun + available resources → explainable StudyPlan`.
+## Implemented daily-planning slice
+
+- `StudyPlan`: one immutable assignment boundary per learner/date, with source algorithm versions, assessment reference, total duration and plan-level explanation.
+- `StudyPlanItem`: one independently completable skill module with system-recommended and current duration/resource fields, status, score and reasons.
+
+The unique learner/date key makes normal generation idempotent. Separate system/current fields allow a later manual override without destroying the original recommendation. `LearningResource.priority` is explicit metadata; last-studied and last-assigned values remain derived from history instead of becoming duplicate sources of truth.
+
+The next conversion path is `StudyPlan recommendation → explicit AdaptationDecision/manual override → Today UI`.

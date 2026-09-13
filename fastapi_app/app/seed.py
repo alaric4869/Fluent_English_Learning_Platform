@@ -78,6 +78,7 @@ def _upsert_learning_resource(session: Session, payload: dict) -> LearningResour
         "tags",
         ["ielts", "general-training", f"g{payload['book_number']}", skill],
     )
+    resource.priority = payload.get("priority", 50)
     resource.active = True
     if is_new:
         session.add(resource)

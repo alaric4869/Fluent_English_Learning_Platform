@@ -10,6 +10,7 @@ from app.models.learner_profile import (
     LearnerProfileSnapshotModel,
     LearnerSkillSnapshot,
 )
+from app.models.study_plan import StudyPlanItemModel, StudyPlanModel
 from app.models.weakness_detection import (
     WeaknessAssessmentRunModel,
     WeaknessSkillAssessmentModel,
@@ -27,6 +28,8 @@ __all__ = [
     "PracticeSet",
     "SkillPerformance",
     "StudySession",
+    "StudyPlanItemModel",
+    "StudyPlanModel",
     "WeaknessAssessmentRunModel",
     "WeaknessSkillAssessmentModel",
 ]

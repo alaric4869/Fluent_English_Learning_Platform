@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its current usable slice is G20 Test 1 Listening and Reading. Every completed submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes.
+This directory is the target Python-first application. Its current usable UI slice is G20 Test 1 Listening and Reading. Every completed submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. The backend can also create one persistent, explainable study plan per learner and date; Today-page integration comes in a later milestone.
 
 ## Run locally
 
@@ -26,6 +26,8 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/learning_evidence/`: provider-neutral session, exercise-attempt, skill and evidence contracts.
 - `domain/learner_profile/`: configurable rule-based scoring with explicit evidence sufficiency and trends.
 - `domain/weakness_detection/`: replaceable, configurable classification over profile history.
+- `domain/resources/`: provider-neutral resource candidates and replaceable recommendation policy.
+- `domain/study_plan/`: configurable time allocation and a replaceable plan-generator contract.
 - `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
@@ -38,5 +40,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 The first profile algorithm uses the latest five sessions per skill. Accuracy carries 75% of the configured weight, confidence 15%, and hard-item resilience 10%. Missing optional signals are excluded and the remaining weights are normalized. With no evidence, a skill has no score; one sample is provisional; two or more samples establish the current baseline.
 
 The initial weakness detector examines the latest four profile snapshots. It requires at least two scored snapshots and two consecutive threshold-confirming snapshots before labelling a skill `weak` or `strong`; missing evidence is recorded as `insufficient_evidence`, never as weakness. Each assessment stores the evidence snapshot IDs and measurable reasons that produced it.
+
+The initial planner starts from Listening 30, Speaking 25, Reading 30, and Vocabulary/Review 25 minutes. Confirmed weak/developing skills receive gradual increases, confirmed strong skills receive only a small reduction, and the result is capped at 120 minutes. Resource selection prefers unused, appropriately difficult material and penalizes recently studied or recently assigned material so adjacent dates rotate when alternatives exist.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.

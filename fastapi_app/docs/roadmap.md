@@ -29,11 +29,17 @@
 - Return structured reasons using real accuracy, confidence, hard-item and trend values.
 - Add tests that prevent one poor session from immediately changing a skill classification.
 
-## M4–M6 · Adaptive loop
+## M4 · Rule-based daily planning
 
-1. Rule-based resource recommender and date-persisted study-plan generator (next).
-2. Adaptation decisions with measurable explanations and manual overrides.
-3. Today/Progress integration with historical trends.
+- Rank active resources using priority, target difficulty, study recency and assignment recency.
+- Generate gradual skill-time changes from the current weakness assessment.
+- Persist one plan per learner/date with four independent plan items.
+- Preserve both system-recommended and current values for future overrides.
+
+## M5–M6 · Complete the adaptive loop
+
+1. Adaptation decisions with measurable explanations and manual overrides (next).
+2. Today/Progress integration with historical trends.
 
 ## Later, after the rule-based loop works
 

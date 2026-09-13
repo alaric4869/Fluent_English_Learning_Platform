@@ -25,6 +25,7 @@ class LearningResource(Base):
     local_asset_reference: Mapped[str | None] = mapped_column(String(500), nullable=True)
     content: Mapped[dict] = mapped_column(JSON, default=dict)
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)
+    priority: Mapped[int] = mapped_column(Integer, default=50)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(

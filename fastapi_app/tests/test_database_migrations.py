@@ -23,10 +23,12 @@ EXPECTED_TABLES = {
     "learning_resources",
     "skill_performances",
     "study_sessions",
+    "study_plan_items",
+    "study_plans",
     "weakness_assessment_runs",
     "weakness_skill_assessments",
 }
-HEAD_REVISION = "0004_weakness_assessments"
+HEAD_REVISION = "0005_daily_study_plans"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -35,6 +37,9 @@ def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
     database_migrations.upgrade_database()
 
     assert EXPECTED_TABLES <= set(inspect(engine).get_table_names())
+    assert "priority" in {
+        column["name"] for column in inspect(engine).get_columns("learning_resources")
+    }
     with engine.connect() as connection:
         assert connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one() == (
             HEAD_REVISION

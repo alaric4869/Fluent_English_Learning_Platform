@@ -35,6 +35,8 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/learning_evidence/`: the four initial skills and typed, provider-neutral evidence records.
 - `domain/learner_profile/`: `SkillEvaluator` interface, centralized configuration and deterministic baseline implementation.
 - `domain/weakness_detection/`: `WeaknessDetector` interface, centralized thresholds and deterministic confirmation rules.
+- `domain/resources/`: resource selection inputs and the replaceable `ResourceRecommender` contract.
+- `domain/study_plan/`: date-based plan entities, time-allocation configuration and `StudyPlanGenerator` contract.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
@@ -42,6 +44,8 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `repositories/sqlalchemy_learning_evidence.py`: idempotently persists sessions, exercise attempts and skill performance.
 - `repositories/sqlalchemy_learner_profile.py`: writes immutable profile snapshots and reads the latest profile.
 - `repositories/sqlalchemy_weakness_detection.py`: writes idempotent assessment runs and reads the current classification.
+- `repositories/sqlalchemy_resources.py`: reads active resources together with study and assignment history.
+- `repositories/sqlalchemy_study_plan.py`: persists one plan per learner/date and its four independent items.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
@@ -93,3 +97,21 @@ Every snapshot stores the exact `SkillPerformance` IDs used to calculate it. A f
 Each immutable assessment run contains one result for every initial skill, the source profile snapshot IDs, actual observed metrics, threshold reasons, and a detector version. A fingerprint prevents duplicate runs when the same submission is retried. Missing or single-snapshot evidence is explicitly classified `insufficient_evidence`, not weak.
 
 The next planning layer will consume the assessment through its service API. It will not read assessment tables directly.
+
+## Implemented rule-based planning pipeline
+
+`StudyPlanService` reads the latest assessment through `WeaknessDetectionService`, requests one candidate per skill through `ResourceService`, calls the replaceable `StudyPlanGenerator`, and persists the result through `StudyPlanRepository`.
+
+```text
+WeaknessAssessmentRun
+        ↓
+ResourceService → ResourceRecommender
+        ↓
+StudyPlanGenerator
+        ↓
+StudyPlan + four StudyPlanItems
+```
+
+The first request for a learner/date creates the plan; later reads return that same record. A new profile therefore does not silently rewrite an already assigned day. Every item stores the system duration and resource separately from the current values so the next milestone can preserve and explain manual overrides.
+
+Resource rotation considers both completed `StudySession` history and resources assigned to prior plans. This avoids selecting yesterday's unfinished material again when another suitable candidate exists. If no resource exists, the item is retained with a `NULL` resource and an explicit reason rather than inventing content.

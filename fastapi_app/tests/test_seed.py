@@ -45,6 +45,7 @@ def test_content_update_preserves_existing_attempt(tmp_path) -> None:
         assert question.prompt == "Updated prompt"
         assert resource.skill == "listening"
         assert resource.resource_type == "ielts_listening"
+        assert resource.priority == 50
 
 
 def _seed_payload(version: str, prompt: str) -> dict:
