@@ -29,11 +29,11 @@ Resources are scored from explicit priority, target difficulty, completed-study 
 
 ## Explainability and history
 
-Profile snapshots, weakness assessments and daily plans store their algorithm versions, source IDs and reasons. A plan stores both its system-recommended values and current values. The next milestone will use these fields for explicit manual overrides and adaptation-decision history.
+Profile snapshots, weakness assessments and daily plans store their algorithm versions, source IDs and reasons. A plan stores both its system-recommended values and current values. Each initial recommendation and validated learner override is also stored as an append-only adaptation decision. Repeating identical values does not add noise; returning to the original recommendation remains visible as a learner decision.
 
 ## Known limits
 
 - Only Listening and Reading currently have curated real resources; missing Speaking or Vocabulary resources stay explicit rather than being fabricated.
-- Planning is a backend service and is not yet connected to the Today page.
+- Planning and overrides are backend services and are not yet connected to the Today page.
 - Weekly aggregation, review retention and topic balancing are later inputs.
 - Rule thresholds require tuning after enough real usage data exists.

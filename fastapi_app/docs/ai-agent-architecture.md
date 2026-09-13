@@ -22,7 +22,7 @@ SQLAlchemy / external integration adapters
 - `get_today_plan()` / `create_daily_plan()` → `StudyPlanService`
 - `get_recent_study_history(days)` → future `HistoryService`
 - `get_due_reviews()` → future `ReviewService`
-- `save_ai_recommendation()` → future `AdaptationDecisionService`
+- `save_ai_recommendation()` → `AdaptationDecisionService` after an AI-specific command contract is added
 - `generate_weekly_report()` → future `ProgressAnalyticsService`
 
 Request and response schemas will be explicit Pydantic contracts at the tool boundary. Provider-specific SDK objects will be contained behind an `AIProvider` interface; the domain will not import OpenAI, Anthropic, Gemini or another vendor SDK.
@@ -30,3 +30,5 @@ Request and response schemas will be explicit Pydantic contracts at the tool bou
 ## Replacement strategy
 
 The existing `SkillEvaluator`, `WeaknessDetector`, `ResourceRecommender` and `StudyPlanGenerator` interfaces are deterministic baselines. AI implementations may be added alongside them, selected by configuration, and compared using stored algorithm versions and evidence IDs. The UI and persistence layer should not need to change when a rule-based strategy is supplemented or replaced.
+
+The current `AdaptationDecisionService` accepts validated learner overrides only. A future AI action must use a separate typed command and actor value instead of impersonating a user override.

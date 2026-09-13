@@ -36,10 +36,19 @@
 - Persist one plan per learner/date with four independent plan items.
 - Preserve both system-recommended and current values for future overrides.
 
-## M5–M6 · Complete the adaptive loop
+## M5 · Explainable decisions and overrides
 
-1. Adaptation decisions with measurable explanations and manual overrides (next).
-2. Today/Progress integration with historical trends.
+- Append an initial system decision for every generated plan item.
+- Validate manual duration and replacement-resource changes in an application service.
+- Preserve the system recommendation while changing current values and plan total.
+- Keep idempotent, append-only decision history, including reset-to-system actions.
+
+## M6 · First UI integration (next)
+
+- Connect the date-persisted plan to the FastAPI Today page.
+- Show resource title, duration, progress and concise measurable reasons.
+- Add manual duration/resource controls using typed HTTP schemas.
+- Begin Progress integration with learner-profile and assessment history.
 
 ## Later, after the rule-based loop works
 

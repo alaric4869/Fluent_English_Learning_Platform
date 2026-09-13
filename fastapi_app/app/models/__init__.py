@@ -1,3 +1,4 @@
+from app.models.adaptive_learning import AdaptationDecisionModel
 from app.models.ielts import PracticeAttempt, PracticeQuestion, PracticeSection, PracticeSet
 from app.models.learning_evidence import (
     ExerciseAttempt,
@@ -17,6 +18,7 @@ from app.models.weakness_detection import (
 )
 
 __all__ = [
+    "AdaptationDecisionModel",
     "ExerciseAttempt",
     "LearningResource",
     "LearnerProfile",

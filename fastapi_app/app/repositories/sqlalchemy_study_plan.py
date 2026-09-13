@@ -3,7 +3,9 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.domain.adaptive_learning.entities import AdaptationActor, AdaptationDecisionType
 from app.domain.learning_evidence.entities import Skill
+from app.domain.study_plan.config import SKILL_TIME_CONFIG
 from app.domain.study_plan.entities import (
     DailyStudyPlan,
     DailyStudyPlanItem,
@@ -12,6 +14,7 @@ from app.domain.study_plan.entities import (
     StudyPlanStatus,
 )
 from app.models.study_plan import StudyPlanItemModel, StudyPlanModel
+from app.models.adaptive_learning import AdaptationDecisionModel
 
 
 class SqlAlchemyStudyPlanRepository:
@@ -47,23 +50,42 @@ class SqlAlchemyStudyPlanRepository:
         )
         self.session.add(plan)
         self.session.flush()
+        item_models = [
+            StudyPlanItemModel(
+                study_plan_id=plan.id,
+                skill=item.skill.value,
+                position=item.position,
+                system_planned_minutes=item.planned_minutes,
+                planned_minutes=item.planned_minutes,
+                system_resource_id=item.resource_id,
+                resource_id=item.resource_id,
+                status=StudyPlanItemStatus.PENDING.value,
+                recommendation_score=item.recommendation_score,
+                reasons=list(item.reasons),
+                manual_override=False,
+                override_note="",
+            )
+            for item in proposal.items
+        ]
+        self.session.add_all(item_models)
+        self.session.flush()
         self.session.add_all(
             [
-                StudyPlanItemModel(
+                AdaptationDecisionModel(
                     study_plan_id=plan.id,
+                    study_plan_item_id=model.id,
+                    decision_type=AdaptationDecisionType.SYSTEM_RECOMMENDATION.value,
+                    actor=AdaptationActor.RULE_BASED.value,
                     skill=item.skill.value,
-                    position=item.position,
-                    system_planned_minutes=item.planned_minutes,
-                    planned_minutes=item.planned_minutes,
-                    system_resource_id=item.resource_id,
-                    resource_id=item.resource_id,
-                    status=StudyPlanItemStatus.PENDING.value,
-                    recommendation_score=item.recommendation_score,
+                    previous_planned_minutes=SKILL_TIME_CONFIG[
+                        item.skill
+                    ].default_minutes,
+                    new_planned_minutes=item.planned_minutes,
+                    previous_resource_id=None,
+                    new_resource_id=item.resource_id,
                     reasons=list(item.reasons),
-                    manual_override=False,
-                    override_note="",
                 )
-                for item in proposal.items
+                for item, model in zip(proposal.items, item_models, strict=True)
             ]
         )
         self.session.commit()

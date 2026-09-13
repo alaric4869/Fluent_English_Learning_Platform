@@ -26,3 +26,18 @@ class ResourceRecommendation:
     resource_id: int
     score: float
     reasons: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class LearningResourceDetails:
+    id: int
+    slug: str
+    title: str
+    resource_type: str
+    skill: Skill
+    topic: str
+    difficulty: str | None
+    estimated_duration_minutes: int
+    priority: int
+    tags: tuple[str, ...]
+    active: bool

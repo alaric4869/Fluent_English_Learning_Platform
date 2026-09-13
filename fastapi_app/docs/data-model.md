@@ -37,9 +37,9 @@ A snapshot always contains Listening, Speaking, Reading and Vocabulary. A skill 
 
 The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stable`, and `strong`. It needs at least two scored snapshots, and weak/strong classifications require confirmation rather than reacting to one outlier.
 
-## Planned adaptive-decision slice
+## Implemented adaptive-decision slice
 
-- `AdaptationDecision`: a recommendation, its measurable reasons and any manual override.
+- `AdaptationDecision`: append-only system recommendation or learner override, including actor, skill, previous/new duration, previous/new resource, reasons and timestamp.
 
 ## Implemented daily-planning slice
 
@@ -48,4 +48,6 @@ The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stabl
 
 The unique learner/date key makes normal generation idempotent. Separate system/current fields allow a later manual override without destroying the original recommendation. `LearningResource.priority` is explicit metadata; last-studied and last-assigned values remain derived from history instead of becoming duplicate sources of truth.
 
-The next conversion path is `StudyPlan recommendation → explicit AdaptationDecision/manual override → Today UI`.
+An upgrade from the previous plan schema backfills one system decision for every existing plan item, so decision history does not silently start empty.
+
+The next conversion path is `StudyPlan + AdaptationDecision → Today/Progress read models`.

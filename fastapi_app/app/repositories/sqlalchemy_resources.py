@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.domain.learning_evidence.entities import Skill
-from app.domain.resources.entities import ResourceCandidate
+from app.domain.resources.entities import LearningResourceDetails, ResourceCandidate
 from app.models.learning_evidence import LearningResource, StudySession
 from app.models.study_plan import StudyPlanItemModel, StudyPlanModel
 
@@ -89,4 +89,22 @@ class SqlAlchemyResourceRepository:
                 completed_session_count,
                 last_assigned_date,
             ) in self.session.execute(statement)
+        )
+
+    def get(self, resource_id: int) -> LearningResourceDetails | None:
+        resource = self.session.get(LearningResource, resource_id)
+        if resource is None:
+            return None
+        return LearningResourceDetails(
+            id=resource.id,
+            slug=resource.slug,
+            title=resource.title,
+            resource_type=resource.resource_type,
+            skill=Skill(resource.skill),
+            topic=resource.topic,
+            difficulty=resource.difficulty,
+            estimated_duration_minutes=resource.estimated_duration_minutes,
+            priority=resource.priority,
+            tags=tuple(resource.tags),
+            active=resource.active,
         )

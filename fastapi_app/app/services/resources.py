@@ -1,7 +1,7 @@
 from datetime import date
 
 from app.domain.learning_evidence.entities import Skill
-from app.domain.resources.entities import ResourceRecommendation
+from app.domain.resources.entities import LearningResourceDetails, ResourceRecommendation
 from app.domain.resources.recommender import ResourceRecommender
 from app.domain.resources.repository import ResourceRepository
 from app.domain.weakness_detection.entities import SkillClassification
@@ -36,3 +36,6 @@ class ResourceService:
             count=1,
         )
         return recommendations[0] if recommendations else None
+
+    def get_resource(self, resource_id: int) -> LearningResourceDetails | None:
+        return self.repository.get(resource_id)
