@@ -104,6 +104,8 @@ class SqlAlchemyResourceRepository:
             topic=resource.topic,
             difficulty=resource.difficulty,
             estimated_duration_minutes=resource.estimated_duration_minutes,
+            source_url=resource.source_url,
+            content=dict(resource.content),
             priority=resource.priority,
             tags=tuple(resource.tags),
             active=resource.active,

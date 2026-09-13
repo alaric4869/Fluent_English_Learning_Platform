@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its current usable UI slice is G20 Test 1 Listening and Reading. Every completed submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. The backend can also create one persistent, explainable study plan per learner/date and preserve validated learner overrides; Today-page integration comes in the next milestone.
+This directory is the target Python-first application. Its usable UI contains a date-persisted Today plan plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
 
 ## Run locally
 
@@ -12,7 +12,7 @@ python3.12 -m venv .venv
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000/ielts>.
+Open <http://127.0.0.1:8000/today>. IELTS practice remains available at <http://127.0.0.1:8000/ielts>.
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
@@ -35,6 +35,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `api/routes/`: HTTP transport and validation.
 - `presenters/`: converts structured exercise content into a page-specific read model; it does not grade or persist.
 - `templates/` and `static/`: light server-rendered UI and browser interactions.
+- `composition.py`: the explicit application-service composition root shared by routes.
 - `seed/`: structured practice content imported into SQLite.
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
 
@@ -45,5 +46,7 @@ The initial weakness detector examines the latest four profile snapshots. It req
 The initial planner starts from Listening 30, Speaking 25, Reading 30, and Vocabulary/Review 25 minutes. Confirmed weak/developing skills receive gradual increases, confirmed strong skills receive only a small reduction, and the result is capped at 120 minutes. Resource selection prefers unused, appropriately difficult material and penalizes recently studied or recently assigned material so adjacent dates rotate when alternatives exist.
 
 Every initial plan item creates a `system_recommendation` decision. A learner override changes only the current resource/duration, retains the system values, recalculates the plan total, and appends a `manual_override` decision. Repeating the same request is a no-op; incompatible resources and out-of-range durations are rejected.
+
+The Today page is intentionally server-rendered. A small script calls typed endpoints for item completion and manual overrides, then reloads the persisted read model. Only all four completed items complete the plan; undoing one reopens it.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.

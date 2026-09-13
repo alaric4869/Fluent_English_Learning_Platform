@@ -1,7 +1,11 @@
 from datetime import date
 
 from app.domain.learning_evidence.entities import Skill
-from app.domain.resources.entities import LearningResourceDetails, ResourceRecommendation
+from app.domain.resources.entities import (
+    LearningResourceDetails,
+    ResourceCandidate,
+    ResourceRecommendation,
+)
 from app.domain.resources.recommender import ResourceRecommender
 from app.domain.resources.repository import ResourceRepository
 from app.domain.weakness_detection.entities import SkillClassification
@@ -39,3 +43,11 @@ class ResourceService:
 
     def get_resource(self, resource_id: int) -> LearningResourceDetails | None:
         return self.repository.get(resource_id)
+
+    def list_available_for_skill(
+        self,
+        user_key: str,
+        skill: Skill,
+        target_date: date,
+    ) -> tuple[ResourceCandidate, ...]:
+        return self.repository.list_candidates(user_key, skill, target_date)

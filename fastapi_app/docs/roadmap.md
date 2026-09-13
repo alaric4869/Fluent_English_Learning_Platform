@@ -43,12 +43,19 @@
 - Preserve the system recommendation while changing current values and plan total.
 - Keep idempotent, append-only decision history, including reset-to-system actions.
 
-## M6 · First UI integration (next)
+## M6 · Today UI integration
 
 - Connect the date-persisted plan to the FastAPI Today page.
-- Show resource title, duration, progress and concise measurable reasons.
+- Show resource title, duration, module progress and measurable reasons.
 - Add manual duration/resource controls using typed HTTP schemas.
-- Begin Progress integration with learner-profile and assessment history.
+- Complete/reopen individual modules and derive whole-plan status.
+- Keep the established calm green/cream visual system and responsive shell.
+
+## M7–M9 · Next product slices
+
+1. History and Progress read models using persisted plans, sessions and profile snapshots.
+2. Vocabulary/chunk library and configurable spaced-review scheduler.
+3. Listening sentence states, speaking/retelling records, notes and mistake-book links.
 
 ## Later, after the rule-based loop works
 

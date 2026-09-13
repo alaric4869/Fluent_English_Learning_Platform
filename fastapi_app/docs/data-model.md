@@ -48,6 +48,8 @@ The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stabl
 
 The unique learner/date key makes normal generation idempotent. Separate system/current fields allow a later manual override without destroying the original recommendation. `LearningResource.priority` is explicit metadata; last-studied and last-assigned values remain derived from history instead of becoming duplicate sources of truth.
 
+`StudyPlanItem.status` is updated independently. `StudyPlan.status` is derived on every status transition: all items completed means `completed`; otherwise it remains `active`. Completion does not create an adaptation decision because it records study progress, not a change to the recommendation.
+
 An upgrade from the previous plan schema backfills one system decision for every existing plan item, so decision history does not silently start empty.
 
-The next conversion path is `StudyPlan + AdaptationDecision → Today/Progress read models`.
+Today now reads these models through services. The next conversion path is `StudyPlan + StudySession + profile history → History/Progress read models`.

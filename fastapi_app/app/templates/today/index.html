@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Today · Fluent Daily English{% endblock %}
+{% block topbar_label %}{{ plan.total_minutes }} min planned{% endblock %}
+{% block content %}
+<div class="page-wrap today-page" data-plan-date="{{ plan.plan_date.isoformat() }}">
+  <section class="today-hero">
+    <div>
+      <p class="eyebrow">TODAY · {{ display_date|upper }}</p>
+      <h1>{{ greeting }}，Alaric。</h1>
+      <p>今天只需要完成下面四个模块。材料、时长和调整原因都已经放在同一页。</p>
+    </div>
+    <div class="today-progress-card">
+      <div><span>TODAY'S PROGRESS</span><strong>{{ completed_count }} / {{ modules|length }}</strong></div>
+      <div class="today-progress-track"><span style="width: {{ completion_percent }}%"></span></div>
+      <small>{{ completion_percent }}% completed · {{ plan.total_minutes }} min planned</small>
+    </div>
+  </section>
+
+  <section class="today-plan-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">TODAY'S STUDY PLAN</p>
+        <h2>从这里开始今天的学习</h2>
+      </div>
+      <p>计划日期 {{ plan.plan_date.isoformat() }}</p>
+    </div>
+
+    <div class="today-module-grid">
+      {% for module in modules %}
+      <article class="today-module-card{% if module.is_completed %} is-completed{% endif %}" data-plan-item-id="{{ module.item.id }}">
+        <header class="today-module-head">
+          <span class="skill-icon skill-{{ module.item.skill.value }}">{{ module.code }}</span>
+          <div>
+            <small>MODULE {{ "%02d"|format(module.item.position) }}</small>
+            <h3>{{ module.title }}</h3>
+          </div>
+          <strong>{{ module.item.planned_minutes }} min</strong>
+        </header>
+
+        <div class="today-resource">
+          <span>TODAY'S MATERIAL</span>
+          <h4>{{ module.resource_title }}</h4>
+          <p>{{ module.resource_meta }}</p>
+        </div>
+
+        <div class="today-task-copy">
+          <div><span>怎么做</span><p>{{ module.instruction }}</p></div>
+          <div><span>目标</span><p>{{ module.objective }}</p></div>
+        </div>
+
+        <details class="plan-reasons">
+          <summary>为什么这样安排？</summary>
+          <ul>{% for reason in module.item.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+        </details>
+
+        <details class="plan-adjustment">
+          <summary>调整本模块{% if module.item.manual_override %}<b>已手动调整</b>{% endif %}</summary>
+          <form class="plan-override-form">
+            <label>
+              <span>学习时长</span>
+              <input type="number" name="planned_minutes" min="{{ module.minimum_minutes }}" max="{{ module.maximum_minutes }}" value="{{ module.item.planned_minutes }}" required>
+            </label>
+            <label>
+              <span>学习材料</span>
+              <select name="resource_id">
+                <option value="">暂不指定材料</option>
+                {% for option in module.options %}
+                <option value="{{ option.id }}"{% if option.id == module.item.resource_id %} selected{% endif %}>{{ option.title }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label class="adjustment-note">
+              <span>调整说明（可选）</span>
+              <input type="text" name="note" maxlength="500" value="{{ module.item.override_note }}" placeholder="例如：今天想做短一点">
+            </label>
+            <button class="button button-secondary" type="submit">保存调整</button>
+          </form>
+        </details>
+
+        <footer class="today-module-actions">
+          {% if module.start_href %}
+          <a class="button button-primary" href="{{ module.start_href }}"{% if module.start_href.startswith('http') %} target="_blank" rel="noopener noreferrer"{% endif %}>开始学习</a>
+          {% else %}
+          <span class="button button-disabled" aria-disabled="true">等待材料</span>
+          {% endif %}
+          <button
+            class="button module-status-button{% if module.is_completed %} is-done{% endif %}"
+            type="button"
+            data-next-status="{{ 'pending' if module.is_completed else 'completed' }}"
+          >{{ "✓ 已完成" if module.is_completed else "标记完成" }}</button>
+        </footer>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <p id="todayActionStatus" class="today-action-status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/today.js') }}" defer></script>{% endblock %}

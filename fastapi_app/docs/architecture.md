@@ -30,7 +30,9 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 ## Current modules
 
 - `api/routes/practice.py`: translates HTTP requests into use-case calls and safely streams approved local audio files.
+- `api/routes/today.py`: renders today's persisted plan and exposes typed override/completion actions.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
+- `presenters/today.py`: joins plan state with display-only resource and module information.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
 - `domain/learning_evidence/`: the four initial skills and typed, provider-neutral evidence records.
 - `domain/learner_profile/`: `SkillEvaluator` interface, centralized configuration and deterministic baseline implementation.
@@ -52,6 +54,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
 - `migrations/`: Alembic schema history and the adopted pre-Alembic baseline.
+- `composition.py`: one explicit composition root so IELTS and Today use the same service graph.
 
 ## Persistence safety
 
@@ -123,3 +126,9 @@ Resource rotation considers both completed `StudySession` history and resources 
 Creating a plan appends one `system_recommendation` decision per plan item. `AdaptationDecisionService` validates a requested duration against skill limits and verifies that a replacement resource is active and belongs to the same skill. The SQLAlchemy adapter then updates the current item values and plan total in the same transaction as a new `manual_override` decision.
 
 The original system duration/resource never changes. Returning to those values clears the item's current override flag but still appends history, so the system can later answer whether and how recommendations were accepted. A repeated request with no value change is idempotent and does not create another decision.
+
+## Implemented Today presentation
+
+`GET /today` asks `StudyPlanService` for the Sydney calendar date, then passes its result and resource options to a presenter. The presenter contains labels and instructional copy but no persistence or adaptation rules. Jinja renders the established green/cream shell and four module cards.
+
+Small browser interactions call typed endpoints for an override or status change. The override endpoint delegates to `AdaptationDecisionService`; the status endpoint delegates to `StudyPlanService`. A plan becomes complete only when all four items are complete, and reopening any item makes the plan active again. IELTS grading and Today state remain independent use cases connected through the generic evidence pipeline.

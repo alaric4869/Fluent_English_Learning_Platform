@@ -1,10 +1,12 @@
 from datetime import date
 
 from app.domain.learning_evidence.entities import Skill
+from app.domain.study_plan.completion import calculate_plan_status
 from app.domain.study_plan.entities import (
     DailyStudyPlan,
     SkillPlanningSignal,
     StudyPlanGenerationContext,
+    StudyPlanItemStatus,
 )
 from app.domain.study_plan.generator import StudyPlanGenerator
 from app.domain.study_plan.repository import StudyPlanRepository
@@ -51,6 +53,30 @@ class StudyPlanService:
 
     def get_daily_plan(self, user_key: str, plan_date: date) -> DailyStudyPlan | None:
         return self.repository.get_for_date(user_key, plan_date)
+
+    def update_item_status(
+        self,
+        user_key: str,
+        plan_date: date,
+        study_plan_item_id: int,
+        status: StudyPlanItemStatus,
+    ) -> DailyStudyPlan:
+        plan = self.repository.get_for_date(user_key, plan_date)
+        if plan is None:
+            raise LookupError("Study plan not found")
+        if all(item.id != study_plan_item_id for item in plan.items):
+            raise LookupError("Study plan item not found")
+        item_statuses = tuple(
+            status if item.id == study_plan_item_id else item.status
+            for item in plan.items
+        )
+        return self.repository.set_item_status(
+            user_key,
+            plan_date,
+            study_plan_item_id,
+            status,
+            calculate_plan_status(item_statuses),
+        )
 
     def _build_signals(
         self,

@@ -8,6 +8,7 @@ from app.domain.learning_evidence.entities import Skill
 from app.domain.learner_profile.rule_based_evaluator import RuleBasedSkillEvaluator
 from app.domain.resources.rule_based_recommender import RuleBasedResourceRecommender
 from app.domain.study_plan.rule_based_generator import RuleBasedStudyPlanGenerator
+from app.domain.study_plan.entities import StudyPlanItemStatus, StudyPlanStatus
 from app.domain.weakness_detection.rule_based_detector import RuleBasedWeaknessDetector
 from app.models.learning_evidence import LearningResource
 from app.models.study_plan import StudyPlanItemModel, StudyPlanModel
@@ -83,6 +84,42 @@ def test_next_date_rotates_resources_that_were_already_assigned() -> None:
             before.resource_id != after.resource_id
             for before, after in zip(first.items, second.items, strict=True)
         )
+
+
+def test_plan_is_complete_only_after_every_module_is_complete() -> None:
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine, expire_on_commit=False) as session:
+        _add_resources(session)
+        service = _service(session)
+        plan = service.get_or_create_daily_plan("learner", PLAN_DATE)
+
+        for item in plan.items[:-1]:
+            plan = service.update_item_status(
+                "learner",
+                PLAN_DATE,
+                item.id,
+                StudyPlanItemStatus.COMPLETED,
+            )
+            assert plan.status is StudyPlanStatus.ACTIVE
+        plan = service.update_item_status(
+            "learner",
+            PLAN_DATE,
+            plan.items[-1].id,
+            StudyPlanItemStatus.COMPLETED,
+        )
+
+        assert plan.status is StudyPlanStatus.COMPLETED
+        assert all(item.status is StudyPlanItemStatus.COMPLETED for item in plan.items)
+
+        reopened = service.update_item_status(
+            "learner",
+            PLAN_DATE,
+            plan.items[0].id,
+            StudyPlanItemStatus.PENDING,
+        )
+
+        assert reopened.status is StudyPlanStatus.ACTIVE
 
 
 def _service(session: Session) -> StudyPlanService:

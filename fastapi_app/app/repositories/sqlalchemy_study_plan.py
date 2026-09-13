@@ -92,6 +92,37 @@ class SqlAlchemyStudyPlanRepository:
         saved = self._get(plan.id)
         return self._to_plan(saved, created=True)
 
+    def set_item_status(
+        self,
+        user_key: str,
+        plan_date: date,
+        study_plan_item_id: int,
+        status: StudyPlanItemStatus,
+        plan_status: StudyPlanStatus,
+    ) -> DailyStudyPlan:
+        statement = (
+            select(StudyPlanModel)
+            .where(
+                StudyPlanModel.user_key == user_key,
+                StudyPlanModel.plan_date == plan_date,
+            )
+            .options(selectinload(StudyPlanModel.items))
+        )
+        plan = self.session.scalar(statement)
+        if plan is None:
+            raise LookupError("Study plan not found")
+        item = next(
+            (value for value in plan.items if value.id == study_plan_item_id),
+            None,
+        )
+        if item is None:
+            raise LookupError("Study plan item not found")
+        item.status = status.value
+        plan.status = plan_status.value
+        self.session.commit()
+        saved = self._get(plan.id)
+        return self._to_plan(saved, created=False)
+
     def _get(self, plan_id: int) -> StudyPlanModel:
         statement = (
             select(StudyPlanModel)

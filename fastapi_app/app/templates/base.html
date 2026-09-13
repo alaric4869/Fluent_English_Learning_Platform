@@ -10,15 +10,15 @@
   <body>
     <div class="app-shell">
       <aside class="sidebar">
-        <a class="brand" href="/ielts" aria-label="Fluent Daily English 首页">
+        <a class="brand" href="/today" aria-label="Fluent Daily English 首页">
           <span class="brand-mark">F</span>
           <span class="brand-copy"><strong>Fluent</strong><small>DAILY ENGLISH</small></span>
         </a>
 
         <nav class="main-nav" aria-label="主导航">
           <span class="nav-item nav-disabled"><i>01</i><span>Dashboard</span></span>
-          <span class="nav-item nav-disabled"><i>02</i><span>Today</span></span>
-          <a class="nav-item is-active" href="/ielts" aria-current="page"><i>03</i><span>IELTS G</span></a>
+          <a class="nav-item{% if active_page == 'today' %} is-active{% endif %}" href="/today"{% if active_page == 'today' %} aria-current="page"{% endif %}><i>02</i><span>Today</span></a>
+          <a class="nav-item{% if active_page|default('ielts') == 'ielts' %} is-active{% endif %}" href="/ielts"{% if active_page|default('ielts') == 'ielts' %} aria-current="page"{% endif %}><i>03</i><span>IELTS G</span></a>
           <span class="nav-item nav-disabled"><i>04</i><span>Library</span></span>
           <span class="nav-item nav-disabled"><i>05</i><span>Review</span></span>
           <span class="nav-item nav-disabled"><i>06</i><span>History</span></span>
@@ -41,7 +41,7 @@
 
       <div class="main-content">
         <header class="topbar">
-          <a class="mobile-brand" href="/ielts"><span class="brand-mark">F</span><strong>Fluent</strong></a>
+          <a class="mobile-brand" href="/today"><span class="brand-mark">F</span><strong>Fluent</strong></a>
           <p>{% block topbar_label %}IELTS General Training{% endblock %}</p>
           <div class="topbar-meta"><span aria-hidden="true"></span><time id="sydneyDate">Sydney</time></div>
         </header>

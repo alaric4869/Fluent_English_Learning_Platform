@@ -19,7 +19,7 @@ SQLAlchemy / external integration adapters
 - `get_skill_profile()` → `LearnerProfileService`
 - `get_weak_skills()` → `WeaknessDetectionService`
 - `search_learning_resources(filters)` → `ResourceService`
-- `get_today_plan()` / `create_daily_plan()` → `StudyPlanService`
+- `get_today_plan()` / `create_daily_plan()` / `update_daily_plan()` → `StudyPlanService` and `AdaptationDecisionService`
 - `get_recent_study_history(days)` → future `HistoryService`
 - `get_due_reviews()` → future `ReviewService`
 - `save_ai_recommendation()` → `AdaptationDecisionService` after an AI-specific command contract is added

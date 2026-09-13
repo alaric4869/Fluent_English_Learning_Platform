@@ -38,6 +38,8 @@ class LearningResourceDetails:
     topic: str
     difficulty: str | None
     estimated_duration_minutes: int
+    source_url: str | None
+    content: dict
     priority: int
     tags: tuple[str, ...]
     active: bool
