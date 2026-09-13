@@ -27,6 +27,13 @@ class LearningResource(Base):
     tags: Mapped[list[str]] = mapped_column(JSON, default=list)
     priority: Mapped[int] = mapped_column(Integer, default=50)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    owner_user_key: Mapped[str | None] = mapped_column(
+        String(120), nullable=True, index=True
+    )
+    description: Mapped[str] = mapped_column(Text, default="")
+    content_text: Mapped[str] = mapped_column(Text, default="")
+    transcript: Mapped[str] = mapped_column(Text, default="")
+    notes: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -35,6 +42,31 @@ class LearningResource(Base):
     )
     practice_sets: Mapped[list["PracticeSet"]] = relationship(back_populates="learning_resource")
     study_sessions: Mapped[list["StudySession"]] = relationship(back_populates="resource")
+    user_states: Mapped[list["ResourceUserState"]] = relationship(
+        back_populates="resource",
+        cascade="all, delete-orphan",
+    )
+
+
+class ResourceUserState(Base):
+    __tablename__ = "resource_user_states"
+    __table_args__ = (UniqueConstraint("user_key", "resource_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_key: Mapped[str] = mapped_column(String(120), index=True)
+    resource_id: Mapped[int] = mapped_column(
+        ForeignKey("learning_resources.id"), index=True
+    )
+    favorite: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    saved_for_later: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    archived_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+    resource: Mapped[LearningResource] = relationship(back_populates="user_states")
 
 
 class StudySession(Base):

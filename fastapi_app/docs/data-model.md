@@ -59,9 +59,24 @@ Today, History and Progress all read these models through services. History comb
 ## Implemented vocabulary and review slice
 
 - `VocabularyItem`: learner-owned complete expression, meaning, example, learned date, personal note, difficulty, source resource/context, tags and normalized duplicate key.
-- `ReviewItem`: current scheduler version, step, next due date, last reviewed time, review count and active state for one vocabulary item.
+- `SavedSentence`: learner-owned listening sentence, hearing-practice state, source and optional review link.
+- `ReviewItem`: current scheduler version, step, next due date, last reviewed time, review count, mastery and exactly one vocabulary/saved-sentence target.
 - `ReviewAttempt`: immutable rating with idempotency request ID, previous/new step, previous/new due date, interval, previous/new mastery and review time.
 
-The library exposes `new`, `learning`, `familiar` and `mastered`. Current mastery and next-review state are updated atomically with the attempt that caused the transition. Review history is never reconstructed from only the latest state.
+The library exposes `new`, `learning`, `familiar` and `mastered`. Current mastery and next-review state are updated atomically with the attempt that caused the transition. Review history is never reconstructed from only the latest state. Listening hearing status remains independent from review mastery.
 
 The initial configured gaps are 1, 2, 4, 7, 16 and then 30 days. Normal `Good` reviews therefore land at cumulative Day 1, 3, 7, 14 and 30; completing the Day 30 review marks the item mastered and schedules a later maintenance review. The policy is behind `ReviewScheduler`, so a future algorithm can replace it without changing routes or templates.
+
+## Implemented Notebook slice
+
+- `NotebookNote`: typed personal note or mistake with source and tags.
+- `RetellingRecord`: speaking prompt, outline, intended chunks, mistakes, improved version and nullable future recording reference.
+
+Notebook content remains separated by domain responsibility instead of being stored in one arbitrary JSON document.
+
+## Implemented permanent Resource Library slice
+
+- `LearningResource`: stable built-in or learner-owned material with URL, article text, transcript, notes, tags, duration and priority.
+- `ResourceUserState`: per-learner favorite, saved-for-later and recoverable archive state.
+
+Built-in resources have no owner; personal resources belong to one learner. Archiving changes only `ResourceUserState`, so plans, sessions and IELTS content keep their existing resource references. Last-studied time and completion count are derived from `StudySession`, not duplicated on the resource row.

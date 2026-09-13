@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Resource Library · Fluent Daily English{% endblock %}
+{% block topbar_label %}{{ counts.all }} learning resources{% endblock %}
+{% block content %}
+<div class="page-wrap resource-page">
+  <section class="resource-hero">
+    <div>
+      <p class="eyebrow">PERMANENT RESOURCE LIBRARY</p>
+      <h1>所有材料，都有固定的位置。</h1>
+      <p>浏览 IELTS 练习、真实音频、视频、文章和你自己添加的材料。归档只会从今后的推荐中移除，不会破坏历史学习记录。</p>
+    </div>
+    <div class="resource-summary">
+      <div><strong>{{ counts.all }}</strong><span>可用材料</span></div>
+      <div><strong>{{ counts.favorites }}</strong><span>收藏</span></div>
+      <div><strong>{{ counts.saved }}</strong><span>稍后学习</span></div>
+    </div>
+  </section>
+
+  <section class="resource-content">
+    <div class="resource-actions-head">
+      <div class="view-switch" aria-label="资源库视图">
+        <a href="/library" class="{% if view == 'all' %}is-active{% endif %}">全部 <b>{{ counts.all }}</b></a>
+        <a href="/library?view=favorites" class="{% if view == 'favorites' %}is-active{% endif %}">收藏 <b>{{ counts.favorites }}</b></a>
+        <a href="/library?view=saved" class="{% if view == 'saved' %}is-active{% endif %}">稍后学习 <b>{{ counts.saved }}</b></a>
+        <a href="/library?view=archived" class="{% if view == 'archived' %}is-active{% endif %}">已归档 <b>{{ counts.archived }}</b></a>
+      </div>
+    </div>
+
+    <details class="chunk-entry-card resource-entry-card" id="addResource">
+      <summary><span><b>＋</b><strong>添加自己的学习材料</strong><small>YouTube、音频、Podcast、文章或练习网站</small></span></summary>
+      <form id="resourceForm" class="chunk-entry-form" data-resource-form data-method="POST" data-endpoint="/api/resources">
+        <label class="field-wide"><span>标题 *</span><input name="title" maxlength="240" required placeholder="例如 ABC News · Renting in Sydney"></label>
+        <label><span>主要技能 *</span><select name="skill">{% for value, label in skill_options %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+        <label><span>材料类型 *</span><select name="resource_type">{% for value, label in create_type_options %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+        <label><span>主题 *</span><input name="topic" maxlength="120" required placeholder="Daily life in Australia"></label>
+        <label><span>难度</span><select name="difficulty"><option value="">未标注</option><option value="beginner">Beginner</option><option value="lower-intermediate">Lower intermediate</option><option value="intermediate" selected>Intermediate</option><option value="upper-intermediate">Upper intermediate</option><option value="advanced">Advanced</option></select></label>
+        <label><span>预计时长（分钟）*</span><input type="number" name="estimated_duration_minutes" min="1" max="300" value="20" required></label>
+        <label><span>推荐优先级</span><input type="number" name="priority" min="0" max="100" value="50"></label>
+        <label class="field-wide"><span>外部 URL</span><input type="url" name="source_url" maxlength="500" placeholder="https://www.youtube.com/watch?v=..."></label>
+        <label class="field-wide"><span>简介</span><textarea name="description" maxlength="4000" rows="2" placeholder="这份材料练什么、为什么值得学习"></textarea></label>
+        <label class="field-wide"><span>文章 / 网页文字</span><textarea name="content_text" maxlength="100000" rows="5" placeholder="可以直接粘贴文章正文"></textarea></label>
+        <label class="field-wide"><span>Transcript</span><textarea name="transcript" maxlength="100000" rows="5" placeholder="音频或视频的英文 transcript"></textarea></label>
+        <label class="field-wide"><span>个人笔记</span><textarea name="notes" maxlength="12000" rows="3"></textarea></label>
+        <label class="field-wide"><span>标签</span><input name="tags" placeholder="Australia, housing, natural speech"></label>
+        <div class="chunk-entry-actions"><button class="button button-primary" type="submit">保存资源</button><small>保存后会进入轮换候选；你可以随时归档。</small></div>
+      </form>
+    </details>
+
+    <div class="resource-toolbar">
+      <div><p class="eyebrow">BROWSE & FILTER</p><h2>{{ result_count }} 个结果</h2></div>
+      <form method="get" action="/library">
+        <input type="hidden" name="view" value="{{ view }}">
+        <input class="resource-search" type="search" name="search" value="{{ search }}" placeholder="搜索标题、正文、Transcript 或笔记">
+        <select name="skill"><option value="">全部技能</option>{% for value, label in skill_options %}<option value="{{ value }}"{% if selected_skill == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <select name="resource_type"><option value="">全部类型</option>{% for value, label in type_options %}<option value="{{ value }}"{% if selected_type == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <select name="topic"><option value="">全部主题</option>{% for value in topic_options %}<option value="{{ value }}"{% if selected_topic == value %} selected{% endif %}>{{ value }}</option>{% endfor %}</select>
+        <select name="difficulty"><option value="">全部难度</option>{% for value in difficulty_options %}<option value="{{ value }}"{% if selected_difficulty == value %} selected{% endif %}>{{ value|replace('-', ' ')|title }}</option>{% endfor %}</select>
+        <select name="completion">{% for value, label in completion_options %}<option value="{{ value }}"{% if selected_completion == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <select name="sort">{% for value, label in sort_options %}<option value="{{ value }}"{% if selected_sort == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <button class="button button-secondary" type="submit">应用筛选</button>
+      </form>
+    </div>
+
+    <div class="resource-card-grid">
+      {% for entry in items %}
+      <article class="resource-card{% if entry.resource.archived %} is-archived{% endif %}" data-resource-id="{{ entry.resource.id }}">
+        <header><div><span class="resource-type-badge">{{ entry.type_label }}</span><small>{{ entry.skill_label }}</small></div><span>{{ entry.resource.estimated_duration_minutes }} min</span></header>
+        <a class="resource-card-body" href="/library/{{ entry.resource.id }}">
+          <h3>{{ entry.resource.title }}</h3>
+          <p>{{ entry.resource.description or entry.resource.topic }}</p>
+          <div class="resource-meta"><span>{{ entry.resource.topic }}</span><span>{{ entry.resource.difficulty or '难度未标注' }}</span><span>{{ entry.last_studied_label }}</span></div>
+          {% if entry.resource.tags %}<div class="tag-row">{% for tag in entry.resource.tags[:4] %}<span>{{ tag }}</span>{% endfor %}</div>{% endif %}
+        </a>
+        <footer>
+          {% if entry.resource.archived %}
+          <button type="button" data-resource-state="archived" data-state-value="false">恢复资源</button>
+          {% else %}
+          <button type="button" class="{% if entry.resource.favorite %}is-active{% endif %}" data-resource-state="favorite" data-state-value="{{ 'false' if entry.resource.favorite else 'true' }}">{{ '★ 已收藏' if entry.resource.favorite else '☆ 收藏' }}</button>
+          <button type="button" class="{% if entry.resource.saved_for_later %}is-active{% endif %}" data-resource-state="saved_for_later" data-state-value="{{ 'false' if entry.resource.saved_for_later else 'true' }}">{{ '✓ 已保存' if entry.resource.saved_for_later else '＋ 稍后学习' }}</button>
+          <button type="button" class="archive-action" data-resource-state="archived" data-state-value="true">归档</button>
+          {% endif %}
+        </footer>
+      </article>
+      {% else %}<div class="empty-state"><strong>没有匹配的资源</strong><p>调整筛选条件，或在上方添加自己的第一个材料。</p></div>{% endfor %}
+    </div>
+  </section>
+  <p id="resourceActionStatus" class="today-action-status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/resources.js') }}" defer></script>{% endblock %}

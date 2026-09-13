@@ -3,6 +3,7 @@ from app.models.ielts import PracticeAttempt, PracticeQuestion, PracticeSection,
 from app.models.learning_evidence import (
     ExerciseAttempt,
     LearningResource,
+    ResourceUserState,
     SkillPerformance,
     StudySession,
 )
@@ -27,6 +28,7 @@ __all__ = [
     "AdaptationDecisionModel",
     "ExerciseAttempt",
     "LearningResource",
+    "ResourceUserState",
     "LearnerProfile",
     "LearnerProfileSnapshotModel",
     "LearnerSkillSnapshot",

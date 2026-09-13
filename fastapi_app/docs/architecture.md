@@ -34,6 +34,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/insights.py`: renders History and Progress from reporting services without querying tables.
 - `api/routes/review.py`: renders the due queue/chunk library and validates typed create/rating requests.
 - `api/routes/notebook.py`: renders notes, difficult sentences and retellings and exposes their typed write actions.
+- `api/routes/resources.py`: owns Library reads and typed create/edit/user-state actions.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
@@ -62,6 +63,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `repositories/sqlalchemy_vocabulary.py`: persists normalized chunks together with their initial review item.
 - `repositories/sqlalchemy_review.py`: reads the due queue and atomically appends idempotent review attempts.
 - `repositories/sqlalchemy_listening.py`, `sqlalchemy_speaking.py` and `sqlalchemy_notebook.py`: persistence adapters for personal practice records.
+- `repositories/sqlalchemy_resources.py`: combines stable resource content, learner-specific state and derived study history without leaking SQL into pages.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
@@ -170,3 +172,11 @@ Notebook stores three stable concepts rather than one generic JSON document: typ
 Listening sentence status describes hearing comprehension and is changed only by an explicit learner action. Review mastery describes recall scheduling and is changed only by a submitted review rating. Keeping these dimensions separate avoids a hidden side effect such as an `Easy` review silently changing a sentence to `mastered`.
 
 Speaking retellings preserve the prompt, outline, intended chunks, identified mistakes and improved version. `voice_recording_reference` is nullable and currently remains empty; adding recording later does not require reshaping existing records.
+
+## Implemented permanent Resource Library
+
+`LearningResource` remains the stable content record already referenced by IELTS sets, plans and study sessions. Personal additions set `owner_user_key`; built-in resources keep it `NULL`. Rich text, transcript and personal resource notes are stored as explicit fields instead of being embedded in the current Library card layout.
+
+`ResourceUserState` is a separate learner/resource relation containing favorite, saved-for-later and archived state. Archiving is recoverable and user-scoped. Candidate selection excludes that learner's archived resources while old `StudyPlanItem` and `StudySession` foreign keys continue to resolve, so organizing the Library cannot erase history.
+
+`ResourceService` validates and normalizes all writes. The Library route uses typed filters for skill, type, topic, difficulty, completion and sorting. Completion and recent-study values are derived from `StudySession`; the UI does not maintain a competing counter. Only user-owned resources can be edited, because built-in seed resources are synchronized from versioned content at startup.

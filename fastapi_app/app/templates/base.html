@@ -19,7 +19,7 @@
           <span class="nav-item nav-disabled"><i>01</i><span>Dashboard</span></span>
           <a class="nav-item{% if active_page == 'today' %} is-active{% endif %}" href="/today"{% if active_page == 'today' %} aria-current="page"{% endif %}><i>02</i><span>Today</span></a>
           <a class="nav-item{% if active_page|default('ielts') == 'ielts' %} is-active{% endif %}" href="/ielts"{% if active_page|default('ielts') == 'ielts' %} aria-current="page"{% endif %}><i>03</i><span>IELTS G</span></a>
-          <span class="nav-item nav-disabled"><i>04</i><span>Library</span></span>
+          <a class="nav-item{% if active_page == 'library' %} is-active{% endif %}" href="/library"{% if active_page == 'library' %} aria-current="page"{% endif %}><i>04</i><span>Library</span></a>
           <a class="nav-item{% if active_page == 'review' %} is-active{% endif %}" href="/review"{% if active_page == 'review' %} aria-current="page"{% endif %}><i>05</i><span>Review</span></a>
           <a class="nav-item{% if active_page == 'history' %} is-active{% endif %}" href="/history"{% if active_page == 'history' %} aria-current="page"{% endif %}><i>06</i><span>History</span></a>
           <a class="nav-item{% if active_page == 'progress' %} is-active{% endif %}" href="/progress"{% if active_page == 'progress' %} aria-current="page"{% endif %}><i>07</i><span>Progress</span></a>

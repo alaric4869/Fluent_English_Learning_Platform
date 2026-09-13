@@ -73,10 +73,17 @@
 - Add typed, searchable personal notes and mistake-book entries with source links.
 - Generalize review scheduling so chunks and difficult sentences share one replaceable scheduler.
 
-## M10 · Next product slice
+## M10 · Permanent Resource Library
 
-- Permanent Resource Library with add/edit/archive, search, skill/topic/difficulty filters, favorites and saved-for-later state.
-- Keep content management behind `ResourceService`; do not hard-code resources into templates.
+- Add/edit/recoverably archive personal resources with URL, text, transcript, notes, tags, priority and duration.
+- Search and filter by skill, type, topic, difficulty and completion; sort by addition, study recency, title or priority.
+- Keep favorites, saved-for-later and archive state user-scoped while preserving built-in resources and study history.
+- Feed non-archived personal resources into the existing recommendation pipeline through `ResourceService`.
+
+## M11 · Next product slice
+
+- Focused Dashboard with today summary, review queue, streak, weekly time and quick actions.
+- Weekly Review with strongest/weakest area, retention and explicit “review next week” material.
 
 ## Later, after the rule-based loop works
 

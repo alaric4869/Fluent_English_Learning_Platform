@@ -19,6 +19,7 @@ SQLAlchemy / external integration adapters
 - `get_skill_profile()` → `LearnerProfileService`
 - `get_weak_skills()` → `WeaknessDetectionService`
 - `search_learning_resources(filters)` → `ResourceService`
+- `get_resource(resource_id)` / `recommend_resources(...)` → `ResourceService`; write access remains limited to validated service commands
 - `get_today_plan()` / `create_daily_plan()` / `update_daily_plan()` → `StudyPlanService` and `AdaptationDecisionService`
 - `get_recent_study_history(days)` → `HistoryService`
 - `get_due_reviews()` → `ReviewService`

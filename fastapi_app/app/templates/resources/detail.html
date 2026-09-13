@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ resource.title }} · Library{% endblock %}
+{% block topbar_label %}Resource Library{% endblock %}
+{% block content %}
+<div class="page-wrap resource-detail-page" data-resource-id="{{ resource.id }}">
+  <section class="resource-detail-hero">
+    <a class="back-link" href="/library">← 返回资源库</a>
+    <div class="resource-detail-heading">
+      <div><p class="eyebrow">{{ type_label }} · {{ skill_label }}</p><h1>{{ resource.title }}</h1><p>{{ resource.description or resource.topic }}</p></div>
+      <div class="resource-detail-actions">
+        {% if start_href %}<a class="button button-primary" href="{{ start_href }}"{% if start_href.startswith('http') %} target="_blank" rel="noopener noreferrer"{% endif %}>打开学习材料</a>{% endif %}
+        <button type="button" class="button button-secondary{% if resource.favorite %} is-active{% endif %}" data-resource-state="favorite" data-state-value="{{ 'false' if resource.favorite else 'true' }}">{{ '★ 已收藏' if resource.favorite else '☆ 收藏' }}</button>
+        <button type="button" class="button button-secondary{% if resource.saved_for_later %} is-active{% endif %}" data-resource-state="saved_for_later" data-state-value="{{ 'false' if resource.saved_for_later else 'true' }}">{{ '✓ 已保存' if resource.saved_for_later else '＋ 稍后学习' }}</button>
+      </div>
+    </div>
+    <dl class="resource-detail-meta"><div><dt>主题</dt><dd>{{ resource.topic }}</dd></div><div><dt>难度</dt><dd>{{ resource.difficulty or '未标注' }}</dd></div><div><dt>预计时长</dt><dd>{{ resource.estimated_duration_minutes }} min</dd></div><div><dt>学习次数</dt><dd>{{ resource.completed_session_count }}</dd></div><div><dt>优先级</dt><dd>{{ resource.priority }}</dd></div></dl>
+  </section>
+
+  <section class="resource-detail-content">
+    {% if resource.content_text %}<article class="resource-text-panel"><p class="eyebrow">ARTICLE / TEXT</p><div>{{ resource.content_text }}</div></article>{% endif %}
+    {% if resource.transcript %}<article class="resource-text-panel"><p class="eyebrow">TRANSCRIPT</p><div>{{ resource.transcript }}</div></article>{% endif %}
+    {% if resource.notes %}<article class="resource-note-panel"><p class="eyebrow">PERSONAL NOTES</p><div>{{ resource.notes }}</div></article>{% endif %}
+    {% if not resource.content_text and not resource.transcript and not resource.notes %}<div class="empty-state compact"><p>这个资源目前通过原练习页或外部链接学习，尚未保存网页文字或 Transcript。</p></div>{% endif %}
+
+    {% if resource.is_user_owned %}
+    <details class="chunk-entry-card resource-entry-card resource-edit-card">
+      <summary><span><b>✎</b><strong>编辑资源</strong><small>修改只影响这份个人材料</small></span></summary>
+      <form class="chunk-entry-form" data-resource-form data-method="PUT" data-endpoint="/api/resources/{{ resource.id }}">
+        <label class="field-wide"><span>标题 *</span><input name="title" maxlength="240" value="{{ resource.title }}" required></label>
+        <label><span>主要技能 *</span><select name="skill">{% for value, label in skill_options %}<option value="{{ value }}"{% if resource.skill.value == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <label><span>材料类型 *</span><input name="resource_type" maxlength="60" value="{{ resource.resource_type }}" required></label>
+        <label><span>主题 *</span><input name="topic" maxlength="120" value="{{ resource.topic }}" required></label>
+        <label><span>难度</span><input name="difficulty" maxlength="40" value="{{ resource.difficulty or '' }}"></label>
+        <label><span>预计时长 *</span><input type="number" name="estimated_duration_minutes" min="1" max="300" value="{{ resource.estimated_duration_minutes }}" required></label>
+        <label><span>优先级</span><input type="number" name="priority" min="0" max="100" value="{{ resource.priority }}"></label>
+        <label class="field-wide"><span>外部 URL</span><input type="url" name="source_url" maxlength="500" value="{{ resource.source_url or '' }}"></label>
+        <label class="field-wide"><span>简介</span><textarea name="description" maxlength="4000" rows="2">{{ resource.description }}</textarea></label>
+        <label class="field-wide"><span>文章 / 网页文字</span><textarea name="content_text" maxlength="100000" rows="7">{{ resource.content_text }}</textarea></label>
+        <label class="field-wide"><span>Transcript</span><textarea name="transcript" maxlength="100000" rows="7">{{ resource.transcript }}</textarea></label>
+        <label class="field-wide"><span>个人笔记</span><textarea name="notes" maxlength="12000" rows="4">{{ resource.notes }}</textarea></label>
+        <label class="field-wide"><span>标签</span><input name="tags" value="{{ resource.tags|join(', ') }}"></label>
+        <div class="chunk-entry-actions"><button class="button button-primary" type="submit">保存修改</button><button type="button" class="button archive-button" data-resource-state="archived" data-state-value="true">归档这份资源</button></div>
+      </form>
+    </details>
+    {% else %}<p class="resource-readonly-note">这是随 IELTS 内容导入的内置资源。可以收藏或稍后学习，但内容由种子文件统一维护。</p>{% endif %}
+  </section>
+  <p id="resourceActionStatus" class="today-action-status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/resources.js') }}" defer></script>{% endblock %}

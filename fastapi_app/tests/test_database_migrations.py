@@ -26,6 +26,7 @@ EXPECTED_TABLES = {
     "notebook_notes",
     "review_attempts",
     "review_items",
+    "resource_user_states",
     "saved_sentences",
     "skill_performances",
     "study_sessions",
@@ -36,7 +37,7 @@ EXPECTED_TABLES = {
     "weakness_assessment_runs",
     "weakness_skill_assessments",
 }
-HEAD_REVISION = "0009_practice_notebook"
+HEAD_REVISION = "0010_resource_library"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -178,6 +179,51 @@ def test_practice_notebook_migration_preserves_vocabulary_review_state(
             "SELECT mastery_status FROM vocabulary_items"
         ).scalar_one()
         assert restored == "familiar"
+
+
+def test_resource_library_migration_preserves_existing_resources(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    engine = _use_database(tmp_path / "resource-library.db", monkeypatch)
+    database_url = database_migrations.settings.database_url
+    config = Config(FASTAPI_ROOT / "alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+    command.upgrade(config, "0009_practice_notebook")
+    with engine.begin() as connection:
+        resource = connection.exec_driver_sql(
+            """
+            INSERT INTO learning_resources (
+                slug, title, resource_type, skill, topic, difficulty,
+                estimated_duration_minutes, source_url, local_asset_reference,
+                content, tags, priority, active, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "existing-listening-resource", "Existing listening", "audio",
+                "listening", "Daily English", "intermediate", 20,
+                "https://example.com/audio", None, json.dumps({}), json.dumps(["audio"]),
+                60, 1, "2026-09-12 00:00:00", "2026-09-12 00:00:00",
+            ),
+        )
+        resource_id = resource.lastrowid
+
+    command.upgrade(config, "head")
+
+    with engine.connect() as connection:
+        row = connection.exec_driver_sql(
+            "SELECT title, owner_user_key, description, transcript, notes "
+            "FROM learning_resources WHERE id = ?",
+            (resource_id,),
+        ).one()
+        assert tuple(row) == ("Existing listening", None, "", "", "")
+
+    command.downgrade(config, "0009_practice_notebook")
+
+    with engine.connect() as connection:
+        assert connection.exec_driver_sql(
+            "SELECT title FROM learning_resources WHERE id = ?", (resource_id,)
+        ).scalar_one() == "Existing listening"
 
 
 def test_upgrade_backfills_decisions_for_plans_created_at_previous_revision(
