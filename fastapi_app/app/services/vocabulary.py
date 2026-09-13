@@ -79,6 +79,9 @@ class VocabularyService:
             ),
         )
 
+    def get_item(self, user_key: str, vocabulary_item_id: int) -> VocabularyItem | None:
+        return self.repository.get(user_key, vocabulary_item_id)
+
 
 def _normalize_draft(draft: VocabularyDraft) -> VocabularyDraft:
     chunk = " ".join(draft.chunk.split())

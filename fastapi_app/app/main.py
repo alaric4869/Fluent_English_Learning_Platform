@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes.practice import router as practice_router
 from app.api.routes.insights import router as insights_router
 from app.api.routes.review import router as review_router
+from app.api.routes.notebook import router as notebook_router
 from app.api.routes.today import router as today_router
 from app.config import FASTAPI_ROOT, settings
 from app.database import SessionFactory
@@ -28,3 +29,4 @@ app.include_router(practice_router)
 app.include_router(today_router)
 app.include_router(insights_router)
 app.include_router(review_router)
+app.include_router(notebook_router)

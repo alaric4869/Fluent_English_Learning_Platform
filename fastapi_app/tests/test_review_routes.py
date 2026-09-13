@@ -98,7 +98,7 @@ def test_review_page_create_rate_and_today_queue_share_persisted_state() -> None
         assert library_page.status_code == 200
         assert "全部词块" in library_page.text
         assert today_page.status_code == 200
-        assert "今天有 1 个词块需要复习" in today_page.text
+        assert "今天有 1 项需要复习" in today_page.text
         assert rated.status_code == 200
         assert rated.json()["created"] is True
         assert rated.json()["review_count"] == 1

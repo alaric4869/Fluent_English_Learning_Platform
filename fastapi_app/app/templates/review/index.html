@@ -5,9 +5,9 @@
 <div class="page-wrap review-page" data-today="{{ today.isoformat() }}">
   <section class="review-hero">
     <div>
-      <p class="eyebrow">VOCABULARY · SPACED REVIEW</p>
-      <h1>记住完整表达，而不是孤立单词。</h1>
-      <p>新词块会进入 Day 1、3、7、14、30 复习节奏。你的 Again / Hard / Good / Easy 会确定下一次出现时间。</p>
+      <p class="eyebrow">CHUNKS · LISTENING · SPACED REVIEW</p>
+      <h1>记住表达，也重新听见难句。</h1>
+      <p>词块和听力难句共享 Day 1、3、7、14、30 复习节奏。你的 Again / Hard / Good / Easy 会确定下一次出现时间。</p>
     </div>
     <div class="review-summary">
       <div><strong id="dueCount">{{ due_count }}</strong><span>今日到期</span></div>
@@ -29,18 +29,18 @@
     </div>
     <div id="dueReviewList" class="due-review-list">
       {% for entry in due_items %}
-      <article class="due-review-card" data-review-item-id="{{ entry.item.review_item_id }}">
+      <article class="due-review-card" data-review-item-id="{{ entry.review_item.review_item_id }}">
         <header>
-          <div><span class="mastery-badge mastery-{{ entry.item.mastery_status.value }}">{{ entry.mastery_label }}</span><small>{{ entry.due_label }}</small></div>
-          <span>第 {{ entry.item.review_count + 1 }} 次复习</span>
+          <div><span class="mastery-badge mastery-{{ entry.review_item.mastery_status.value }}">{{ entry.mastery_label }}</span><small>{{ entry.target_label }} · {{ entry.due_label }}</small></div>
+          <span>第 {{ entry.review_item.review_count + 1 }} 次复习</span>
         </header>
-        <h3>{{ entry.item.chunk }}</h3>
-        {% if entry.item.example_sentence %}<p class="chunk-example">{{ entry.item.example_sentence }}</p>{% endif %}
+        <h3>{{ entry.title }}</h3>
+        {% if entry.secondary_text %}<p class="chunk-example">{{ entry.secondary_text }}</p>{% endif %}
         <details class="review-answer">
           <summary>显示意思和笔记</summary>
           <div>
-            <span>MEANING</span><strong>{{ entry.item.meaning }}</strong>
-            {% if entry.item.personal_note %}<span>PERSONAL NOTE</span><p>{{ entry.item.personal_note }}</p>{% endif %}
+            <span>{{ entry.answer_label }}</span><strong>{{ entry.answer }}</strong>
+            {% if entry.note %}<span>PERSONAL NOTE</span><p>{{ entry.note }}</p>{% endif %}
             <small>来源：{{ entry.source_title }}</small>
           </div>
         </details>
@@ -52,7 +52,7 @@
         </div>
       </article>
       {% else %}
-      <div class="empty-state" id="reviewEmptyState"><strong>今天没有到期复习</strong><p>可以去词块库添加新表达；新词块默认从学习后的第 1 天开始复习。</p><a class="button button-primary" href="/review?view=library">打开词块库</a></div>
+      <div class="empty-state" id="reviewEmptyState"><strong>今天没有到期复习</strong><p>可以去词块库添加新表达，也可以在 Notebook 保存听力难句。</p><a class="button button-primary" href="/notebook?view=listening">保存听力难句</a></div>
       {% endfor %}
     </div>
     {% else %}

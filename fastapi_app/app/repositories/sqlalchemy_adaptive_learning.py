@@ -63,10 +63,9 @@ class SqlAlchemyAdaptationDecisionRepository:
         statement = (
             select(AdaptationDecisionModel)
             .where(AdaptationDecisionModel.study_plan_id == study_plan_id)
-            .order_by(
-                AdaptationDecisionModel.created_at,
-                AdaptationDecisionModel.id,
-            )
+            # IDs preserve append order even when SQLite normalizes timezone-aware
+            # timestamps differently from server-default timestamps.
+            .order_by(AdaptationDecisionModel.id)
         )
         return tuple(self._to_decision(item) for item in self.session.scalars(statement))
 

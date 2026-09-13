@@ -4,12 +4,12 @@ from datetime import date, datetime, timezone
 from app.domain.review.entities import (
     RecordReviewCommand,
     RecordedReview,
+    ReviewQueueItem,
     ReviewRating,
     ReviewScheduleState,
 )
 from app.domain.review.repository import ReviewRepository
 from app.domain.review.scheduler import ReviewScheduler
-from app.domain.vocabulary.entities import VocabularyItem
 
 
 class ReviewService:
@@ -28,7 +28,7 @@ class ReviewService:
         user_key: str,
         due_on: date,
         limit: int = 50,
-    ) -> tuple[VocabularyItem, ...]:
+    ) -> tuple[ReviewQueueItem, ...]:
         if limit < 1 or limit > 200:
             raise ValueError("limit must be between 1 and 200")
         return self.repository.list_due(user_key, due_on, limit)

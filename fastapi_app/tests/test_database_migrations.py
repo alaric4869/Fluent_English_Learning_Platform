@@ -23,17 +23,20 @@ EXPECTED_TABLES = {
     "learner_profiles",
     "learner_skill_snapshots",
     "learning_resources",
+    "notebook_notes",
     "review_attempts",
     "review_items",
+    "saved_sentences",
     "skill_performances",
     "study_sessions",
     "study_plan_items",
     "study_plans",
+    "speaking_retelling_records",
     "vocabulary_items",
     "weakness_assessment_runs",
     "weakness_skill_assessments",
 }
-HEAD_REVISION = "0008_vocabulary_review"
+HEAD_REVISION = "0009_practice_notebook"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -114,6 +117,67 @@ def test_vocabulary_review_migration_can_downgrade_cleanly(
         assert connection.exec_driver_sql(
             "SELECT version_num FROM alembic_version"
         ).scalar_one() == "0007_plan_item_timestamps"
+
+
+def test_practice_notebook_migration_preserves_vocabulary_review_state(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    engine = _use_database(tmp_path / "practice-notebook.db", monkeypatch)
+    database_url = database_migrations.settings.database_url
+    config = Config(FASTAPI_ROOT / "alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+    command.upgrade(config, "0008_vocabulary_review")
+    with engine.begin() as connection:
+        vocabulary = connection.exec_driver_sql(
+            """
+            INSERT INTO vocabulary_items (
+                user_key, chunk, normalized_chunk, meaning, example_sentence,
+                learned_on, personal_note, difficulty, mastery_status,
+                source_resource_id, source_context, tags, favorite, saved_for_later,
+                created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "learner", "make an appointment", "make an appointment", "预约", "",
+                "2026-09-12", "", "medium", "familiar", None, "Daily English",
+                json.dumps([]), 0, 0, "2026-09-12 00:00:00", "2026-09-12 00:00:00",
+            ),
+        )
+        connection.exec_driver_sql(
+            """
+            INSERT INTO review_items (
+                user_key, item_type, vocabulary_item_id, scheduler_version,
+                schedule_step, next_review_date, last_reviewed_at, review_count,
+                active, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "learner", "vocabulary", vocabulary.lastrowid, "fixed-interval-v1",
+                2, "2026-09-19", "2026-09-12 00:00:00", 2, 1,
+                "2026-09-12 00:00:00", "2026-09-12 00:00:00",
+            ),
+        )
+
+    command.upgrade(config, "head")
+
+    with engine.connect() as connection:
+        row = connection.exec_driver_sql(
+            "SELECT vocabulary_item_id, saved_sentence_id, mastery_status, review_count "
+            "FROM review_items"
+        ).one()
+        assert tuple(row) == (vocabulary.lastrowid, None, "familiar", 2)
+        assert "mastery_status" not in {
+            column["name"] for column in inspect(engine).get_columns("vocabulary_items")
+        }
+
+    command.downgrade(config, "0008_vocabulary_review")
+
+    with engine.connect() as connection:
+        restored = connection.exec_driver_sql(
+            "SELECT mastery_status FROM vocabulary_items"
+        ).scalar_one()
+        assert restored == "familiar"
 
 
 def test_upgrade_backfills_decisions_for_plans_created_at_previous_revision(

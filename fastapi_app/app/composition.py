@@ -14,9 +14,12 @@ from app.repositories.sqlalchemy_adaptive_learning import (
 from app.repositories.sqlalchemy_history import SqlAlchemyStudyHistoryRepository
 from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
 from app.repositories.sqlalchemy_learning_evidence import SqlAlchemyLearningEvidenceRepository
+from app.repositories.sqlalchemy_listening import SqlAlchemyListeningSentenceRepository
+from app.repositories.sqlalchemy_notebook import SqlAlchemyNotebookRepository
 from app.repositories.sqlalchemy_learner_profile import SqlAlchemyLearnerProfileRepository
 from app.repositories.sqlalchemy_resources import SqlAlchemyResourceRepository
 from app.repositories.sqlalchemy_review import SqlAlchemyReviewRepository
+from app.repositories.sqlalchemy_speaking import SqlAlchemySpeakingPracticeRepository
 from app.repositories.sqlalchemy_study_plan import SqlAlchemyStudyPlanRepository
 from app.repositories.sqlalchemy_vocabulary import SqlAlchemyVocabularyRepository
 from app.repositories.sqlalchemy_weakness_detection import (
@@ -27,10 +30,13 @@ from app.services.history import HistoryService
 from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
 from app.services.ielts_practice import IeltsPracticeService
 from app.services.learning_evidence import LearningEvidenceService
+from app.services.listening import ListeningPracticeService
 from app.services.learner_profile import LearnerProfileService
 from app.services.progress_analytics import ProgressAnalyticsService
+from app.services.notebook import NotebookService
 from app.services.resources import ResourceService
 from app.services.review import ReviewService
+from app.services.speaking import SpeakingPracticeService
 from app.services.study_plan import StudyPlanService
 from app.services.weakness_detection import WeaknessDetectionService
 from app.services.vocabulary import VocabularyService
@@ -48,6 +54,9 @@ class ApplicationServices:
     progress_analytics: ProgressAnalyticsService
     vocabulary: VocabularyService
     review: ReviewService
+    listening: ListeningPracticeService
+    speaking: SpeakingPracticeService
+    notebook: NotebookService
 
 
 def build_application_services(session: Session) -> ApplicationServices:
@@ -75,6 +84,21 @@ def build_application_services(session: Session) -> ApplicationServices:
     )
     review_repository = SqlAlchemyReviewRepository(session)
     review_service = ReviewService(review_repository, review_scheduler)
+    listening_service = ListeningPracticeService(
+        SqlAlchemyListeningSentenceRepository(
+            session, review_scheduler.scheduler_version
+        ),
+        resource_repository,
+        review_scheduler,
+    )
+    speaking_service = SpeakingPracticeService(
+        SqlAlchemySpeakingPracticeRepository(session),
+        resource_repository,
+    )
+    notebook_service = NotebookService(
+        SqlAlchemyNotebookRepository(session),
+        resource_repository,
+    )
     plan_repository = SqlAlchemyStudyPlanRepository(session)
     history_repository = SqlAlchemyStudyHistoryRepository(session)
     study_plan_service = StudyPlanService(
@@ -122,4 +146,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         progress_analytics=progress_analytics_service,
         vocabulary=vocabulary_service,
         review=review_service,
+        listening=listening_service,
+        speaking=speaking_service,
+        notebook=notebook_service,
     )

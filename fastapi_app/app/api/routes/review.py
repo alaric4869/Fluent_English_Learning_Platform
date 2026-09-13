@@ -9,6 +9,7 @@ from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
 from app.domain.review.entities import ReviewConflictError
+from app.domain.review.entities import ReviewTargetType
 from app.domain.vocabulary.entities import (
     DuplicateVocabularyError,
     MasteryStatus,
@@ -57,10 +58,24 @@ def review_page(
         mastery_status=mastery_filter,
         difficulty=difficulty_filter,
     )
-    items = (*due_items, *library.items)
+    vocabulary_targets = {
+        item.target_id: target
+        for item in due_items
+        if item.target_type is ReviewTargetType.VOCABULARY
+        if (target := services.vocabulary.get_item(LOCAL_USER_KEY, item.target_id))
+        is not None
+    }
+    sentence_targets = {
+        item.target_id: target
+        for item in due_items
+        if item.target_type is ReviewTargetType.SAVED_SENTENCE
+        if (target := services.listening.get_sentence(LOCAL_USER_KEY, item.target_id))
+        is not None
+    }
+    source_items = (*library.items, *vocabulary_targets.values(), *sentence_targets.values())
     resources = {
         resource_id: resource
-        for item in items
+        for item in source_items
         if item.source_resource_id is not None
         if (resource_id := item.source_resource_id) is not None
         if (resource := services.resources.get_resource(resource_id)) is not None
@@ -72,6 +87,8 @@ def review_page(
             view="library" if view == "library" else "due",
             today=today,
             due_items=due_items,
+            vocabulary_targets=vocabulary_targets,
+            sentence_targets=sentence_targets,
             due_count=services.review.get_due_count(LOCAL_USER_KEY, today),
             library=library,
             resources=resources,

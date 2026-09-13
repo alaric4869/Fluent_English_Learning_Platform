@@ -6,6 +6,11 @@ from app.models.learning_evidence import (
     SkillPerformance,
     StudySession,
 )
+from app.models.practice_notes import (
+    NotebookNoteModel,
+    RetellingRecordModel,
+    SavedSentenceModel,
+)
 from app.models.learner_profile import (
     LearnerProfile,
     LearnerProfileSnapshotModel,
@@ -29,8 +34,11 @@ __all__ = [
     "PracticeQuestion",
     "PracticeSection",
     "PracticeSet",
+    "NotebookNoteModel",
+    "RetellingRecordModel",
     "ReviewAttemptModel",
     "ReviewItemModel",
+    "SavedSentenceModel",
     "SkillPerformance",
     "StudySession",
     "StudyPlanItemModel",

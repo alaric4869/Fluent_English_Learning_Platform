@@ -66,9 +66,17 @@
 - Surface the due count in Today and completed reviews in Progress.
 - Keep scheduling rules configurable and replaceable through `ReviewScheduler`.
 
-## M9 · Next product slice
+## M9 · Notebook and practice records
 
-- Listening sentence states, speaking/retelling records, notes and mistake-book links.
+- Save listening sentences with explicit hearing states and optional spaced review.
+- Store speaking/retelling prompts, outlines, intended chunks, mistakes and improved versions.
+- Add typed, searchable personal notes and mistake-book entries with source links.
+- Generalize review scheduling so chunks and difficult sentences share one replaceable scheduler.
+
+## M10 · Next product slice
+
+- Permanent Resource Library with add/edit/archive, search, skill/topic/difficulty filters, favorites and saved-for-later state.
+- Keep content management behind `ResourceService`; do not hard-code resources into templates.
 
 ## Later, after the rule-based loop works
 

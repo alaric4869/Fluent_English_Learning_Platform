@@ -12,6 +12,11 @@ class ReviewRating(StrEnum):
     EASY = "easy"
 
 
+class ReviewTargetType(StrEnum):
+    VOCABULARY = "vocabulary"
+    SAVED_SENTENCE = "saved_sentence"
+
+
 class ReviewConflictError(RuntimeError):
     pass
 
@@ -41,9 +46,31 @@ class RecordReviewCommand:
 
 
 @dataclass(frozen=True)
+class ReviewQueueItem:
+    review_item_id: int
+    user_key: str
+    target_type: ReviewTargetType
+    target_id: int
+    scheduler_version: str
+    review_step: int
+    next_review_date: date
+    last_reviewed_at: datetime | None
+    review_count: int
+    mastery_status: MasteryStatus
+
+    @property
+    def id(self) -> int:
+        """Backward-compatible target ID for existing vocabulary callers."""
+        return self.target_id
+
+
+@dataclass(frozen=True)
 class RecordedReview:
     review_attempt_id: int
-    vocabulary_item_id: int
+    target_type: ReviewTargetType
+    target_id: int
+    vocabulary_item_id: int | None
+    saved_sentence_id: int | None
     review_item_id: int
     mastery_status: MasteryStatus
     next_review_date: date

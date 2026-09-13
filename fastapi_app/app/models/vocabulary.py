@@ -8,6 +8,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Index,
+    CheckConstraint,
     String,
     Text,
     UniqueConstraint,
@@ -34,7 +35,6 @@ class VocabularyItemModel(Base):
     learned_on: Mapped[date] = mapped_column(Date, index=True)
     personal_note: Mapped[str] = mapped_column(Text, default="")
     difficulty: Mapped[str] = mapped_column(String(30), index=True)
-    mastery_status: Mapped[str] = mapped_column(String(30), index=True)
     source_resource_id: Mapped[int | None] = mapped_column(
         ForeignKey("learning_resources.id"),
         nullable=True,
@@ -61,18 +61,30 @@ class ReviewItemModel(Base):
     __tablename__ = "review_items"
     __table_args__ = (
         Index("ix_review_items_user_key_next_review_date", "user_key", "next_review_date"),
+        CheckConstraint(
+            "(vocabulary_item_id IS NOT NULL AND saved_sentence_id IS NULL) OR "
+            "(vocabulary_item_id IS NULL AND saved_sentence_id IS NOT NULL)",
+            name="ck_review_items_exactly_one_target",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_key: Mapped[str] = mapped_column(String(120), index=True)
     item_type: Mapped[str] = mapped_column(String(40), index=True)
-    vocabulary_item_id: Mapped[int] = mapped_column(
+    vocabulary_item_id: Mapped[int | None] = mapped_column(
         ForeignKey("vocabulary_items.id"),
+        nullable=True,
+        unique=True,
+    )
+    saved_sentence_id: Mapped[int | None] = mapped_column(
+        ForeignKey("saved_sentences.id"),
+        nullable=True,
         unique=True,
     )
     scheduler_version: Mapped[str] = mapped_column(String(60))
     schedule_step: Mapped[int] = mapped_column(Integer)
     next_review_date: Mapped[date] = mapped_column(Date, index=True)
+    mastery_status: Mapped[str] = mapped_column(String(30), index=True)
     last_reviewed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -85,7 +97,10 @@ class ReviewItemModel(Base):
         default=utc_now,
         onupdate=utc_now,
     )
-    vocabulary_item: Mapped[VocabularyItemModel] = relationship(
+    vocabulary_item: Mapped[VocabularyItemModel | None] = relationship(
+        back_populates="review_item"
+    )
+    saved_sentence: Mapped["SavedSentenceModel | None"] = relationship(
         back_populates="review_item"
     )
     attempts: Mapped[list["ReviewAttemptModel"]] = relationship(

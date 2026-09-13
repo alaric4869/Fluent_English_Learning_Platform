@@ -20,10 +20,11 @@ SQLAlchemy / external integration adapters
 - `get_weak_skills()` → `WeaknessDetectionService`
 - `search_learning_resources(filters)` → `ResourceService`
 - `get_today_plan()` / `create_daily_plan()` / `update_daily_plan()` → `StudyPlanService` and `AdaptationDecisionService`
-- `get_recent_study_history(days)` → future `HistoryService`
-- `get_due_reviews()` → future `ReviewService`
+- `get_recent_study_history(days)` → `HistoryService`
+- `get_due_reviews()` → `ReviewService`
+- `get_recent_mistakes()` → `NotebookService`, `ListeningPracticeService` and `SpeakingPracticeService` through a future read-only tool adapter
 - `save_ai_recommendation()` → `AdaptationDecisionService` after an AI-specific command contract is added
-- `generate_weekly_report()` → future `ProgressAnalyticsService`
+- `generate_weekly_report()` → `ProgressAnalyticsService` after a weekly report contract is added
 
 Request and response schemas will be explicit Pydantic contracts at the tool boundary. Provider-specific SDK objects will be contained behind an `AIProvider` interface; the domain will not import OpenAI, Anthropic, Gemini or another vendor SDK.
 

@@ -36,7 +36,6 @@ class SqlAlchemyVocabularyRepository:
             learned_on=draft.learned_on,
             personal_note=draft.personal_note,
             difficulty=draft.difficulty.value,
-            mastery_status=initial_schedule.mastery_status.value,
             source_resource_id=draft.source_resource_id,
             source_context=draft.source_context,
             tags=list(draft.tags),
@@ -49,6 +48,7 @@ class SqlAlchemyVocabularyRepository:
             scheduler_version=self.scheduler_version,
             schedule_step=initial_schedule.step,
             next_review_date=initial_schedule.next_review_date,
+            mastery_status=initial_schedule.mastery_status.value,
             review_count=0,
             active=True,
         )
@@ -74,6 +74,18 @@ class SqlAlchemyVocabularyRepository:
             .where(
                 VocabularyItemModel.user_key == user_key,
                 VocabularyItemModel.normalized_chunk == normalized_chunk,
+            )
+            .options(selectinload(VocabularyItemModel.review_item))
+        )
+        item = self.session.scalar(statement)
+        return to_vocabulary_item(item) if item else None
+
+    def get(self, user_key: str, vocabulary_item_id: int) -> VocabularyItem | None:
+        statement = (
+            select(VocabularyItemModel)
+            .where(
+                VocabularyItemModel.id == vocabulary_item_id,
+                VocabularyItemModel.user_key == user_key,
             )
             .options(selectinload(VocabularyItemModel.review_item))
         )
@@ -109,7 +121,7 @@ class SqlAlchemyVocabularyRepository:
             )
         if mastery_status is not None:
             statement = statement.where(
-                VocabularyItemModel.mastery_status == mastery_status.value
+                ReviewItemModel.mastery_status == mastery_status.value
             )
         if difficulty is not None:
             statement = statement.where(
@@ -128,12 +140,18 @@ class SqlAlchemyVocabularyRepository:
         user_key: str,
         mastery_status: MasteryStatus | None = None,
     ) -> int:
-        statement = select(func.count()).select_from(VocabularyItemModel).where(
-            VocabularyItemModel.user_key == user_key
+        statement = (
+            select(func.count())
+            .select_from(VocabularyItemModel)
+            .join(
+                ReviewItemModel,
+                ReviewItemModel.vocabulary_item_id == VocabularyItemModel.id,
+            )
+            .where(VocabularyItemModel.user_key == user_key)
         )
         if mastery_status is not None:
             statement = statement.where(
-                VocabularyItemModel.mastery_status == mastery_status.value
+                ReviewItemModel.mastery_status == mastery_status.value
             )
         return self.session.scalar(statement) or 0
 
@@ -158,7 +176,7 @@ def to_vocabulary_item(item: VocabularyItemModel) -> VocabularyItem:
         learned_on=item.learned_on,
         personal_note=item.personal_note,
         difficulty=VocabularyDifficulty(item.difficulty),
-        mastery_status=MasteryStatus(item.mastery_status),
+        mastery_status=MasteryStatus(review.mastery_status),
         source_resource_id=item.source_resource_id,
         source_context=item.source_context,
         tags=tuple(item.tags),

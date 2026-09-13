@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its usable UI contains a date-persisted Today plan, a vocabulary/chunk review loop, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
+This directory is the target Python-first application. Its usable UI contains a date-persisted Today plan, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
 
 ## Run locally
 
@@ -12,7 +12,7 @@ python3.12 -m venv .venv
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000/today>. Review is at <http://127.0.0.1:8000/review>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>.
+Open <http://127.0.0.1:8000/today>. Review is at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>.
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
@@ -31,6 +31,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/adaptive_learning/`: typed system/manual decisions and append-only override history.
 - `domain/history/` and `domain/analytics/`: reporting contracts and deterministic progress calculations.
 - `domain/vocabulary/` and `domain/review/`: reusable chunks, typed review state and a replaceable scheduler.
+- `domain/listening/`, `domain/speaking/` and `domain/notebook/`: difficult sentences, retelling records and typed mistake-book notes.
 - `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
@@ -53,6 +54,8 @@ The Today page is intentionally server-rendered. A small script calls typed endp
 
 History can return to any saved date, using a recent timeline, an arbitrary-month calendar, or a single-day detail page. Progress derives streaks and completion metrics from saved plans and submitted sessions. It labels completed plan minutes as estimates and reports real tracked time separately; missing timer data is never inferred.
 
-Review stores complete expressions rather than forcing isolated words. New chunks become due one day after their learned date. The initial scheduler follows cumulative Day 1, 3, 7, 14 and 30 checkpoints for `Good`; `Again`, `Hard` and `Easy` adjust the next step deterministically. Every rating is stored as an immutable attempt and client request IDs make retries idempotent.
+Review stores complete expressions rather than forcing isolated words, and can schedule difficult listening sentences through the same stable contract. New review items become due one day after their learned date. The initial scheduler follows cumulative Day 1, 3, 7, 14 and 30 checkpoints for `Good`; `Again`, `Hard` and `Easy` adjust the next step deterministically. Every rating is stored as an immutable attempt and client request IDs make retries idempotent.
+
+Notebook keeps free-form typed notes, listening sentences and speaking retellings as separate domain records. Listening practice status (`could_not_hear`, `difficult`, `understood`, `mastered`) is intentionally independent from review mastery. Retellings store the prompt, outline, intended chunks, mistakes and improved version; a nullable recording reference is reserved without implementing audio recording yet.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.

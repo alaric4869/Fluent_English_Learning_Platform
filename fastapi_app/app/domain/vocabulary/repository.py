@@ -24,6 +24,8 @@ class VocabularyRepository(Protocol):
         normalized_chunk: str,
     ) -> VocabularyItem | None: ...
 
+    def get(self, user_key: str, vocabulary_item_id: int) -> VocabularyItem | None: ...
+
     def list_items(
         self,
         user_key: str,

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Notebook · Fluent Daily English{% endblock %}
+{% block topbar_label %}Notebook & Mistake Book{% endblock %}
+{% block content %}
+<div class="page-wrap notebook-page">
+  <section class="notebook-hero">
+    <div>
+      <p class="eyebrow">PERSONAL NOTEBOOK · MISTAKE BOOK</p>
+      <h1>把没听见、没说好、容易错的地方留下来。</h1>
+      <p>这里保存可追溯的错误和练习记录。听力难句可以进入复习队列；口语复述保留提纲、目标表达、错误和改进版。</p>
+    </div>
+    <div class="notebook-summary">
+      <div><strong>{{ counts.notes }}</strong><span>笔记</span></div>
+      <div><strong>{{ counts.sentences }}</strong><span>听力难句</span></div>
+      <div><strong>{{ counts.retellings }}</strong><span>复述记录</span></div>
+    </div>
+  </section>
+
+  <section class="notebook-content">
+    <div class="view-switch" aria-label="Notebook 内容类型">
+      <a href="/notebook?view=notes" class="{% if view == 'notes' %}is-active{% endif %}">笔记与错题</a>
+      <a href="/notebook?view=listening" class="{% if view == 'listening' %}is-active{% endif %}">听力难句</a>
+      <a href="/notebook?view=speaking" class="{% if view == 'speaking' %}is-active{% endif %}">口语复述</a>
+    </div>
+
+    {% if view == 'notes' %}
+    <details class="chunk-entry-card" open>
+      <summary><span><b>＋</b><strong>记录一个问题或表达</strong><small>链接来源，让以后回看时知道它来自哪里</small></span></summary>
+      <form id="noteForm" class="chunk-entry-form" data-endpoint="/api/notebook/notes" data-return-view="notes">
+        <label><span>类型</span><select name="note_type">{% for value, label in note_type_options %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+        <label><span>标题 *</span><input name="title" maxlength="300" placeholder="例如：过去时经常漏掉 -ed" required></label>
+        <label class="field-wide"><span>内容 *</span><textarea name="content" maxlength="12000" rows="4" placeholder="写下错误、正确形式和你自己的例句" required></textarea></label>
+        <label><span>来源</span><input name="source_context" maxlength="1000" placeholder="例如 G20 Test 1 Listening Part 2"></label>
+        <label><span>标签</span><input name="tags" placeholder="grammar, phone calls"></label>
+        <div class="chunk-entry-actions"><button class="button button-primary" type="submit">保存到 Notebook</button></div>
+      </form>
+    </details>
+    <div class="library-toolbar">
+      <div><p class="eyebrow">MISTAKE BOOK</p><h2>笔记与错误</h2></div>
+      <form method="get" action="/notebook">
+        <input type="hidden" name="view" value="notes">
+        <input type="search" name="search" value="{{ search }}" placeholder="搜索标题、内容或来源">
+        <select name="note_type"><option value="">全部类型</option>{% for value, label in note_type_options %}<option value="{{ value }}"{% if selected_note_type == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <button class="button button-secondary" type="submit">筛选</button>
+      </form>
+    </div>
+    <div class="notebook-card-grid">
+      {% for entry in notes %}
+      <article class="notebook-card"><header><span>{{ entry.type_label }}</span><time>{{ entry.item.created_at.date().isoformat() }}</time></header><h3>{{ entry.item.title }}</h3><p>{{ entry.item.content }}</p>{% if entry.item.source_context %}<footer>来源：{{ entry.item.source_context }}</footer>{% endif %}</article>
+      {% else %}<div class="empty-state"><strong>还没有笔记</strong><p>从一个经常重复的错误开始记录。</p></div>{% endfor %}
+    </div>
+
+    {% elif view == 'listening' %}
+    <details class="chunk-entry-card" open>
+      <summary><span><b>＋</b><strong>保存一条听力难句</strong><small>标记听辨状态，并决定是否加入间隔复习</small></span></summary>
+      <form id="listeningForm" class="chunk-entry-form" data-endpoint="/api/listening/sentences" data-return-view="listening">
+        <label class="field-wide"><span>原句 *</span><textarea name="sentence" maxlength="4000" rows="3" placeholder="粘贴你刚才没听清的完整英文句子" required></textarea></label>
+        <label class="field-wide"><span>意思</span><textarea name="meaning" maxlength="4000" rows="2" placeholder="中文含义或英文释义"></textarea></label>
+        <label><span>当前状态</span><select name="practice_status">{% for value, label in sentence_status_options %}<option value="{{ value }}"{% if value == 'difficult' %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <label><span>来源</span><input name="source_context" maxlength="1000" placeholder="视频 / Test / Section"></label>
+        <label class="field-wide"><span>听辨笔记</span><textarea name="note" maxlength="4000" rows="2" placeholder="连读、弱读、口音或误听原因"></textarea></label>
+        <label class="notebook-check"><input type="checkbox" name="add_to_review" checked><span>加入间隔复习（首次在明天出现）</span></label>
+        <div class="chunk-entry-actions"><button class="button button-primary" type="submit">保存难句</button></div>
+      </form>
+    </details>
+    <div class="library-toolbar">
+      <div><p class="eyebrow">LISTENING SENTENCES</p><h2>保存的难句</h2></div>
+      <form method="get" action="/notebook">
+        <input type="hidden" name="view" value="listening">
+        <input type="search" name="search" value="{{ search }}" placeholder="搜索句子、笔记或来源">
+        <select name="sentence_status"><option value="">全部状态</option>{% for value, label in sentence_status_options %}<option value="{{ value }}"{% if selected_sentence_status == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <button class="button button-secondary" type="submit">筛选</button>
+      </form>
+    </div>
+    <div class="notebook-card-grid">
+      {% for entry in sentences %}
+      <article class="notebook-card listening-note-card" data-sentence-id="{{ entry.item.id }}">
+        <header><span>{{ entry.status_label }}</span><small>{% if entry.item.review_item_id %}已加入复习 · {{ entry.item.next_review_date.isoformat() }}{% else %}未加入复习{% endif %}</small></header>
+        <h3>{{ entry.item.sentence }}</h3>{% if entry.item.meaning %}<p>{{ entry.item.meaning }}</p>{% endif %}{% if entry.item.note %}<blockquote>{{ entry.item.note }}</blockquote>{% endif %}
+        <footer><span>{{ entry.item.source_context or '手动添加' }}</span><label><span>听辨状态</span><select class="sentence-status-select">{% for value, label in sentence_status_options %}<option value="{{ value }}"{% if entry.item.practice_status.value == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></label></footer>
+      </article>
+      {% else %}<div class="empty-state"><strong>还没有听力难句</strong><p>下次遇到“看文字认识、但听不出来”的句子，就保存在这里。</p></div>{% endfor %}
+    </div>
+
+    {% else %}
+    <details class="chunk-entry-card" open>
+      <summary><span><b>＋</b><strong>保存一次口语复述</strong><small>Retell → 找出卡顿 → 写出更自然的版本</small></span></summary>
+      <form id="retellingForm" class="chunk-entry-form" data-endpoint="/api/speaking/retellings" data-return-view="speaking">
+        <label class="field-wide"><span>复述题目 / Prompt *</span><textarea name="prompt" maxlength="4000" rows="2" placeholder="What happened in the conversation? Retell it in your own words." required></textarea></label>
+        <label class="field-wide"><span>我的提纲</span><textarea name="written_outline" maxlength="8000" rows="3"></textarea></label>
+        <label class="field-wide"><span>想使用的词块</span><input name="intended_vocabulary" placeholder="it turned out that, ask for help, in the end"></label>
+        <label><span>状态</span><select name="practice_status">{% for value, label in speaking_status_options %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+        <label><span>来源</span><input name="source_context" maxlength="1000" placeholder="视频 / Test / Section"></label>
+        <label class="field-wide"><span>发现的错误</span><textarea name="mistakes" maxlength="8000" rows="3"></textarea></label>
+        <label class="field-wide"><span>改进后的版本</span><textarea name="improved_version" maxlength="12000" rows="4"></textarea></label>
+        <div class="chunk-entry-actions"><button class="button button-primary" type="submit">保存复述记录</button><small>数据结构已预留录音引用，录音功能后续接入。</small></div>
+      </form>
+    </details>
+    <div class="library-toolbar"><div><p class="eyebrow">RETELLING RECORDS</p><h2>口语复述</h2></div><form method="get" action="/notebook"><input type="hidden" name="view" value="speaking"><input type="search" name="search" value="{{ search }}" placeholder="搜索题目、提纲、错误或来源"><button class="button button-secondary" type="submit">搜索</button></form></div>
+    <div class="notebook-card-grid">
+      {% for entry in retellings %}
+      <article class="notebook-card"><header><span>{{ entry.status_label }}</span><time>{{ entry.item.created_at.date().isoformat() }}</time></header><h3>{{ entry.item.prompt }}</h3>{% if entry.item.written_outline %}<div class="notebook-section"><b>OUTLINE</b><p>{{ entry.item.written_outline }}</p></div>{% endif %}{% if entry.item.intended_vocabulary %}<div class="tag-row">{% for chunk in entry.item.intended_vocabulary %}<span>{{ chunk }}</span>{% endfor %}</div>{% endif %}{% if entry.item.mistakes %}<div class="notebook-section is-mistake"><b>MISTAKES</b><p>{{ entry.item.mistakes }}</p></div>{% endif %}{% if entry.item.improved_version %}<div class="notebook-section is-improved"><b>IMPROVED VERSION</b><p>{{ entry.item.improved_version }}</p></div>{% endif %}{% if entry.item.source_context %}<footer>来源：{{ entry.item.source_context }}</footer>{% endif %}</article>
+      {% else %}<div class="empty-state"><strong>还没有复述记录</strong><p>练完 shadowing 后，用自己的话讲一次并保存。</p></div>{% endfor %}
+    </div>
+    {% endif %}
+  </section>
+  <p id="notebookActionStatus" class="today-action-status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/notebook.js') }}" defer></script>{% endblock %}
