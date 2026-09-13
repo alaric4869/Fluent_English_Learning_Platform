@@ -22,7 +22,7 @@
 - Persist immutable `LearnerProfileSnapshot` history for Listening, Speaking, Reading and Vocabulary.
 - Explain how every score was derived and handle insufficient evidence explicitly.
 
-## M3 · Weakness detection (next)
+## M3 · Weakness detection
 
 - Add configurable `WeaknessDetector` rules over multiple recent snapshots.
 - Distinguish insufficient evidence from weak performance.
@@ -31,7 +31,7 @@
 
 ## M4–M6 · Adaptive loop
 
-1. Rule-based resource recommender and study-plan generator.
+1. Rule-based resource recommender and date-persisted study-plan generator (next).
 2. Adaptation decisions with measurable explanations and manual overrides.
 3. Today/Progress integration with historical trends.
 

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.domain.learning_evidence.entities import Skill
 from app.domain.learner_profile.entities import (
     EvidenceStatus,
+    HistoricalSkillProfile,
     LearnerProfileEvaluation,
     LearnerProfileSnapshot,
     SkillProfileEvaluation,
@@ -88,6 +89,50 @@ class SqlAlchemyLearnerProfileRepository:
         )
         snapshot = self.session.scalar(statement)
         return self._to_snapshot(snapshot, user_key, created=False) if snapshot else None
+
+    def list_recent_skill_profiles(
+        self,
+        user_key: str,
+        skill: Skill,
+        limit: int,
+    ) -> tuple[HistoricalSkillProfile, ...]:
+        statement = (
+            select(LearnerSkillSnapshot, LearnerProfileSnapshotModel)
+            .join(
+                LearnerProfileSnapshotModel,
+                LearnerProfileSnapshotModel.id == LearnerSkillSnapshot.profile_snapshot_id,
+            )
+            .join(
+                LearnerProfile,
+                LearnerProfile.id == LearnerProfileSnapshotModel.learner_profile_id,
+            )
+            .where(
+                LearnerProfile.user_key == user_key,
+                LearnerSkillSnapshot.skill == skill.value,
+            )
+            .order_by(
+                LearnerProfileSnapshotModel.calculated_at.desc(),
+                LearnerProfileSnapshotModel.id.desc(),
+            )
+            .limit(limit)
+        )
+        return tuple(
+            HistoricalSkillProfile(
+                skill_snapshot_id=item.id,
+                profile_snapshot_id=snapshot.id,
+                calculated_at=snapshot.calculated_at,
+                skill=Skill(item.skill),
+                score=item.score,
+                evidence_status=EvidenceStatus(item.evidence_status),
+                sample_count=item.sample_count,
+                average_accuracy=item.average_accuracy,
+                average_confidence=item.average_confidence,
+                average_difficulty=item.average_difficulty,
+                hard_item_rate=item.hard_item_rate,
+                accuracy_trend=item.accuracy_trend,
+            )
+            for item, snapshot in self.session.execute(statement)
+        )
 
     def _get_snapshot(self, snapshot_id: int) -> LearnerProfileSnapshotModel:
         statement = (

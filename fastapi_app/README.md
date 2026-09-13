@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its current usable slice is G20 Test 1 Listening and Reading. Every completed submission produces immutable question-level attempts, a study session, normalized skill performance, and a new Learner Profile snapshot when the evidence changed.
+This directory is the target Python-first application. Its current usable slice is G20 Test 1 Listening and Reading. Every completed submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes.
 
 ## Run locally
 
@@ -25,6 +25,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/`: deterministic IELTS rules and repository contracts.
 - `domain/learning_evidence/`: provider-neutral session, exercise-attempt, skill and evidence contracts.
 - `domain/learner_profile/`: configurable rule-based scoring with explicit evidence sufficiency and trends.
+- `domain/weakness_detection/`: replaceable, configurable classification over profile history.
 - `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
@@ -35,5 +36,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
 
 The first profile algorithm uses the latest five sessions per skill. Accuracy carries 75% of the configured weight, confidence 15%, and hard-item resilience 10%. Missing optional signals are excluded and the remaining weights are normalized. With no evidence, a skill has no score; one sample is provisional; two or more samples establish the current baseline.
+
+The initial weakness detector examines the latest four profile snapshots. It requires at least two scored snapshots and two consecutive threshold-confirming snapshots before labelling a skill `weak` or `strong`; missing evidence is recorded as `insufficient_evidence`, never as weakness. Each assessment stores the evidence snapshot IDs and measurable reasons that produced it.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.

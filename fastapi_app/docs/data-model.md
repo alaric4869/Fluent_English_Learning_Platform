@@ -30,9 +30,16 @@ These concepts are now persisted:
 
 A snapshot always contains Listening, Speaking, Reading and Vocabulary. A skill with no evidence stores `NULL` as its score and `no_data` as its status. This distinguishes unknown ability from poor ability.
 
+## Implemented weakness-assessment slice
+
+- `WeaknessAssessmentRun`: immutable learner-wide assessment time, detector version and evidence fingerprint.
+- `WeaknessSkillAssessment`: one classification per skill, its smoothed/latest scores, observed metrics, evidence snapshot IDs and measurable reasons.
+
+The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stable`, and `strong`. It needs at least two scored snapshots, and weak/strong classifications require confirmation rather than reacting to one outlier.
+
 ## Planned adaptive-decision slice
 
-- `WeaknessAssessment`: strong/weak evidence derived from multiple profile snapshots.
 - `AdaptationDecision`: a recommendation, its measurable reasons and any manual override.
+- `StudyPlan` and `StudyPlanItem`: the date-persisted plan and its independently completable modules.
 
-The next conversion path is `LearnerProfileSnapshot history → WeaknessAssessment`.
+The next conversion path is `WeaknessAssessmentRun + available resources → explainable StudyPlan`.

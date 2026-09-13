@@ -8,10 +8,14 @@ from sqlalchemy.orm import Session
 from app.config import FASTAPI_ROOT, settings
 from app.database import get_db
 from app.domain.learner_profile.rule_based_evaluator import RuleBasedSkillEvaluator
+from app.domain.weakness_detection.rule_based_detector import RuleBasedWeaknessDetector
 from app.presenters.ielts import present_practice_workspace
 from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
 from app.repositories.sqlalchemy_learning_evidence import SqlAlchemyLearningEvidenceRepository
 from app.repositories.sqlalchemy_learner_profile import SqlAlchemyLearnerProfileRepository
+from app.repositories.sqlalchemy_weakness_detection import (
+    SqlAlchemyWeaknessAssessmentRepository,
+)
 from app.schemas.ielts import SaveAnswerRequest, SavedAnswerResponse, SubmitAttemptResponse
 from app.services.ielts_practice import (
     IeltsPracticeService,
@@ -21,6 +25,7 @@ from app.services.ielts_practice import (
 from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
 from app.services.learning_evidence import LearningEvidenceService
 from app.services.learner_profile import LearnerProfileService
+from app.services.weakness_detection import WeaknessDetectionService
 
 
 router = APIRouter()
@@ -35,7 +40,16 @@ def get_service(session: Session = Depends(get_db)) -> IeltsPracticeService:
         SqlAlchemyLearnerProfileRepository(session),
         RuleBasedSkillEvaluator(),
     )
-    evidence_recorder = IeltsLearningEvidenceRecorder(evidence_service, profile_service)
+    weakness_service = WeaknessDetectionService(
+        profile_service,
+        SqlAlchemyWeaknessAssessmentRepository(session),
+        RuleBasedWeaknessDetector(),
+    )
+    evidence_recorder = IeltsLearningEvidenceRecorder(
+        evidence_service,
+        profile_service,
+        weakness_service,
+    )
     return IeltsPracticeService(
         SqlAlchemyIeltsPracticeRepository(session),
         submission_observer=evidence_recorder,

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from app.domain.learning_evidence.entities import Skill
 from app.domain.learner_profile.entities import (
+    HistoricalSkillProfile,
     LearnerProfileEvaluation,
     LearnerProfileSnapshot,
     SkillProfileEvaluation,
@@ -43,6 +44,16 @@ class LearnerProfileService:
 
     def get_current_profile(self, user_key: str) -> LearnerProfileSnapshot | None:
         return self.repository.get_latest(user_key)
+
+    def get_recent_skill_profiles(
+        self,
+        user_key: str,
+        skill: Skill,
+        limit: int,
+    ) -> tuple[HistoricalSkillProfile, ...]:
+        if limit < 1:
+            raise ValueError("limit must be positive")
+        return self.repository.list_recent_skill_profiles(user_key, skill, limit)
 
     def _evaluate_skill(self, user_key: str, skill: Skill) -> SkillProfileEvaluation:
         history = self.evidence_service.get_recent_skill_performance(

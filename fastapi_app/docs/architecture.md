@@ -34,12 +34,14 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
 - `domain/learning_evidence/`: the four initial skills and typed, provider-neutral evidence records.
 - `domain/learner_profile/`: `SkillEvaluator` interface, centralized configuration and deterministic baseline implementation.
+- `domain/weakness_detection/`: `WeaknessDetector` interface, centralized thresholds and deterministic confirmation rules.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
 - `repositories/sqlalchemy_ielts.py`: the only place that reads and writes IELTS database tables.
 - `repositories/sqlalchemy_learning_evidence.py`: idempotently persists sessions, exercise attempts and skill performance.
 - `repositories/sqlalchemy_learner_profile.py`: writes immutable profile snapshots and reads the latest profile.
+- `repositories/sqlalchemy_weakness_detection.py`: writes idempotent assessment runs and reads the current classification.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
@@ -80,6 +82,14 @@ The conversion belongs in an application service and repository abstraction, not
 
 ## Implemented learner profile pipeline
 
-`LearnerProfileService` reads recent evidence for all four initial skills and calls the replaceable `SkillEvaluator`. `RuleBasedSkillEvaluator` uses centrally configured weights and produces structured inputs, normalized weights, evidence sufficiency, trend and a numeric explanation. It does not classify skills as weak or strong; that remains the responsibility of the next `WeaknessDetector` boundary.
+`LearnerProfileService` reads recent evidence for all four initial skills and calls the replaceable `SkillEvaluator`. `RuleBasedSkillEvaluator` uses centrally configured weights and produces structured inputs, normalized weights, evidence sufficiency, trend and a numeric explanation. It deliberately does not classify skills as weak or strong.
 
 Every snapshot stores the exact `SkillPerformance` IDs used to calculate it. A fingerprint of those IDs plus the algorithm version makes recalculation idempotent. When new evidence arrives, a new immutable snapshot is stored instead of overwriting the previous profile.
+
+## Implemented weakness-detection pipeline
+
+`WeaknessDetectionService` reads recent profile history through `LearnerProfileService` and calls the replaceable `WeaknessDetector`. The initial `RuleBasedWeaknessDetector` smooths the latest four profile scores and requires two consecutive threshold-confirming snapshots before assigning `weak` or `strong`. A single poor or excellent snapshot therefore cannot cause a sudden classification change.
+
+Each immutable assessment run contains one result for every initial skill, the source profile snapshot IDs, actual observed metrics, threshold reasons, and a detector version. A fingerprint prevents duplicate runs when the same submission is retried. Missing or single-snapshot evidence is explicitly classified `insufficient_evidence`, not weak.
+
+The next planning layer will consume the assessment through its service API. It will not read assessment tables directly.

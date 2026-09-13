@@ -8,6 +8,7 @@ from app.domain.learning_evidence.entities import (
 )
 from app.services.learning_evidence import LearningEvidenceService
 from app.services.learner_profile import LearnerProfileService
+from app.services.weakness_detection import WeaknessDetectionService
 
 
 class IeltsLearningEvidenceRecorder:
@@ -17,9 +18,11 @@ class IeltsLearningEvidenceRecorder:
         self,
         service: LearningEvidenceService,
         learner_profile_service: LearnerProfileService | None = None,
+        weakness_detection_service: WeaknessDetectionService | None = None,
     ) -> None:
         self.service = service
         self.learner_profile_service = learner_profile_service
+        self.weakness_detection_service = weakness_detection_service
 
     def record_submission(
         self,
@@ -30,6 +33,8 @@ class IeltsLearningEvidenceRecorder:
         self.service.record(build_ielts_evidence_bundle(practice_set, attempt, grade))
         if self.learner_profile_service is not None:
             self.learner_profile_service.refresh_profile(attempt["user_key"])
+        if self.weakness_detection_service is not None:
+            self.weakness_detection_service.refresh_assessment(attempt["user_key"])
 
 
 def build_ielts_evidence_bundle(
