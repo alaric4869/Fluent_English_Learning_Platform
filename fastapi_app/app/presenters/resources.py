@@ -49,6 +49,7 @@ def present_library_page(
     filters: ResourceLibraryFilters,
     view: str,
     counts: dict[str, int],
+    open_add_resource: bool = False,
 ) -> dict:
     return {
         "active_page": "library",
@@ -72,6 +73,7 @@ def present_library_page(
         ),
         "sort_options": tuple((value.value, label) for value, label in SORT_LABELS.items()),
         "create_type_options": CREATE_TYPE_OPTIONS,
+        "open_add_resource": open_add_resource,
     }
 
 

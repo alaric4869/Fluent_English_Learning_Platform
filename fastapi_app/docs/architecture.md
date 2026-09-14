@@ -35,6 +35,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/review.py`: renders the due queue/chunk library and validates typed create/rating requests.
 - `api/routes/notebook.py`: renders notes, difficult sentences and retellings and exposes their typed write actions.
 - `api/routes/resources.py`: owns Library reads and typed create/edit/user-state actions.
+- `api/routes/dashboard.py`: renders composed Dashboard and current Weekly Review read models.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
@@ -46,6 +47,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/adaptive_learning/`: explicit recommendation/override decision types and repository boundary.
 - `domain/history/`: persisted-session history read contracts.
 - `domain/analytics/`: progress summaries and deterministic streak calculation.
+- `domain/dashboard/` and `domain/weekly_review/`: composed read contracts and learner-local week calculations.
 - `domain/vocabulary/`: chunk entities, mastery states and repository contract.
 - `domain/review/`: scheduler contract, centralized intervals and deterministic fixed-interval implementation.
 - `domain/listening/`, `domain/speaking/` and `domain/notebook/`: feature-specific records and repository contracts; none imports FastAPI or SQLAlchemy.
@@ -180,3 +182,11 @@ Speaking retellings preserve the prompt, outline, intended chunks, identified mi
 `ResourceUserState` is a separate learner/resource relation containing favorite, saved-for-later and archived state. Archiving is recoverable and user-scoped. Candidate selection excludes that learner's archived resources while old `StudyPlanItem` and `StudySession` foreign keys continue to resolve, so organizing the Library cannot erase history.
 
 `ResourceService` validates and normalizes all writes. The Library route uses typed filters for skill, type, topic, difficulty, completion and sorting. Completion and recent-study values are derived from `StudySession`; the UI does not maintain a competing counter. Only user-owned resources can be edited, because built-in seed resources are synchronized from versioned content at startup.
+
+## Implemented Dashboard and Weekly Review
+
+`DashboardService` composes `StudyPlanService`, `ProgressAnalyticsService`, `ReviewService` and `WeeklyReviewService`. It does not receive a database session and does not duplicate their calculations. Opening the Dashboard creates today's idempotent plan when needed, then presents one focused overview of the existing facts.
+
+`WeeklyReviewService` reads plans, study sessions, vocabulary, saved listening sentences and review attempts through repository protocols. Week boundaries use the learner's Sydney timezone and current-week queries stop at the end of today. Skill highlights compare only skills with submitted-session accuracy; unknown performance remains unknown.
+
+The review retention metric means `(Good + Easy) / all ratings recorded this week`. It is not labelled as historical due-item completion because mutable current schedules cannot prove how many items were due on an earlier day. A future event/snapshot can add that metric without changing the existing report contract.

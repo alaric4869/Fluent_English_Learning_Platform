@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its usable UI contains a date-persisted Today plan, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
+This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
 
 ## Run locally
 
@@ -12,7 +12,7 @@ python3.12 -m venv .venv
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000/today>. Library is at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>.
+Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>.
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
@@ -30,6 +30,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/study_plan/`: configurable time allocation and a replaceable plan-generator contract.
 - `domain/adaptive_learning/`: typed system/manual decisions and append-only override history.
 - `domain/history/` and `domain/analytics/`: reporting contracts and deterministic progress calculations.
+- `domain/dashboard/` and `domain/weekly_review/`: composed read models and deterministic week calculations.
 - `domain/vocabulary/` and `domain/review/`: reusable chunks, typed review state and a replaceable scheduler.
 - `domain/listening/`, `domain/speaking/` and `domain/notebook/`: difficult sentences, retelling records and typed mistake-book notes.
 - `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
@@ -59,5 +60,7 @@ Review stores complete expressions rather than forcing isolated words, and can s
 Notebook keeps free-form typed notes, listening sentences and speaking retellings as separate domain records. Listening practice status (`could_not_hear`, `difficult`, `understood`, `mastered`) is intentionally independent from review mastery. Retellings store the prompt, outline, intended chunks, mistakes and improved version; a nullable recording reference is reserved without implementing audio recording yet.
 
 Library treats resource content and learner-specific state separately. Built-in IELTS resources and personal URL/text/transcript resources share the same read model and recommendation pipeline. Favorites, saved-for-later and recoverable archives live in `ResourceUserState`, so one learner's organization does not mutate global content. Archived resources leave future recommendation candidates but remain referenced by existing plans and history.
+
+Dashboard composes existing service results; it does not query tables or own a second copy of plan/progress state. Weekly Review is calculated from persisted plans, submitted sessions, vocabulary, difficult sentences and immutable review attempts. Its retention percentage is explicitly `Good + Easy` divided by this week's review ratings. Historical due-queue completion cannot be reconstructed from the current schema and is therefore not invented.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.

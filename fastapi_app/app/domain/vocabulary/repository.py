@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Protocol
 
 from app.domain.review.entities import ReviewScheduleState
@@ -39,4 +40,11 @@ class VocabularyRepository(Protocol):
         self,
         user_key: str,
         mastery_status: MasteryStatus | None = None,
+    ) -> int: ...
+
+    def count_learned_between(
+        self,
+        user_key: str,
+        start_date: date,
+        end_date: date,
     ) -> int: ...

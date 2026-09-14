@@ -7,6 +7,7 @@ from app.domain.review.entities import (
     RecordReviewCommand,
     RecordedReview,
     ReviewConflictError,
+    ReviewAttemptSummary,
     ReviewQueueItem,
     ReviewScheduleState,
     ReviewTargetType,
@@ -57,6 +58,47 @@ class SqlAlchemyReviewRepository:
                 ReviewItemModel.user_key == user_key,
                 ReviewAttemptModel.reviewed_at < through,
             )
+        )
+        return self.session.scalar(statement) or 0
+
+    def summarize_attempts_between(
+        self,
+        user_key: str,
+        start: datetime,
+        end: datetime,
+    ) -> ReviewAttemptSummary:
+        statement = (
+            select(ReviewAttemptModel.rating, func.count())
+            .join(
+                ReviewItemModel,
+                ReviewItemModel.id == ReviewAttemptModel.review_item_id,
+            )
+            .where(
+                ReviewItemModel.user_key == user_key,
+                ReviewAttemptModel.reviewed_at >= start,
+                ReviewAttemptModel.reviewed_at < end,
+            )
+            .group_by(ReviewAttemptModel.rating)
+        )
+        counts = {rating: count for rating, count in self.session.execute(statement)}
+        return ReviewAttemptSummary(
+            again_count=counts.get("again", 0),
+            hard_count=counts.get("hard", 0),
+            good_count=counts.get("good", 0),
+            easy_count=counts.get("easy", 0),
+        )
+
+    def count_active_scheduled_between(
+        self,
+        user_key: str,
+        start_date: date,
+        end_date: date,
+    ) -> int:
+        statement = select(func.count()).select_from(ReviewItemModel).where(
+            ReviewItemModel.user_key == user_key,
+            ReviewItemModel.active.is_(True),
+            ReviewItemModel.next_review_date >= start_date,
+            ReviewItemModel.next_review_date < end_date,
         )
         return self.session.scalar(statement) or 0
 

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Weekly Review · Fluent Daily English{% endblock %}
+{% block topbar_label %}Weekly learning review{% endblock %}
+{% block content %}
+<div class="page-wrap weekly-review-page">
+  <section class="weekly-review-hero">
+    <div>
+      <a class="back-link" href="/dashboard">← 返回 Dashboard</a>
+      <p class="eyebrow">WEEKLY REVIEW · {{ date_range|upper }}</p>
+      <h1>这周的努力，留下了什么证据？</h1>
+      <p>这里区分计划完成、真实计时和实际作答。没有记录的数据不会被系统猜测。</p>
+    </div>
+    <div class="weekly-review-highlight">
+      <span>STUDY DAYS</span>
+      <strong>{{ review.study_days }}</strong>
+      <small>{{ review.completed_modules }} 个模块 · {{ review.completed_sessions }} 次作答</small>
+    </div>
+  </section>
+
+  <section class="metric-grid weekly-metric-grid">
+    <article><span>ACTUAL TRACKED TIME</span><strong>{{ tracked_time }}</strong><small>仅包含练习保存的真实计时</small></article>
+    <article><span>COMPLETED PLAN TIME</span><strong>{{ completed_planned_time }}</strong><small>已完成模块的计划时长估算</small></article>
+    <article><span>PLAN COMPLETION</span><strong>{{ review.completion_rate }}%</strong><small>{{ review.completed_modules }} / {{ review.assigned_modules }} 个计划模块</small></article>
+    <article><span>VOCABULARY CHUNKS</span><strong>{{ review.vocabulary_learned }}</strong><small>本周保存的完整表达</small></article>
+    <article><span>DIFFICULT SENTENCES</span><strong>{{ review.difficult_sentences_collected }}</strong><small>本周收集的听力难句</small></article>
+    <article><span>REVIEW RETENTION</span><strong>{{ retention_label }}</strong><small>Good / Easy ÷ 本周全部复习评分</small></article>
+  </section>
+
+  <section class="weekly-highlights">
+    <article><span>STRONGEST AREA</span><strong>{{ strongest_label }}</strong><p>只比较本周至少完成一次真实作答的技能。</p></article>
+    <article><span>WEAKEST AREA</span><strong>{{ weakest_label }}</strong><p>只有两个以上技能有作答证据时才给出相对弱项。</p></article>
+    <article><span>NEXT WEEK REVIEWS</span><strong>{{ review.next_week_review_count }}</strong><p>当前已排在下周日期内的活跃复习项目。</p></article>
+  </section>
+
+  <section class="insight-section">
+    <div class="section-heading"><div><p class="eyebrow">SKILL EVIDENCE</p><h2>本周四项技能</h2></div><p>准确率来自已提交练习，不来自自我猜测</p></div>
+    <div class="skill-progress-grid weekly-skill-grid">
+      {% for item in skills %}
+      <article class="skill-progress-card">
+        <header><span class="skill-icon skill-{{ item.summary.skill.value }}">{{ item.code }}</span><div><h3>{{ item.label }}</h3><small>{{ item.summary.completed_sessions }} 次作答 · {{ item.summary.completed_modules }} 个模块</small></div><strong>{{ item.accuracy_label }}</strong></header>
+        <div class="skill-score-track"><span style="width: {{ item.accuracy_percent }}%"></span></div>
+        <dl><div><dt>错题</dt><dd>{{ item.summary.incorrect_item_count }}</dd></div><div><dt>真实计时</dt><dd>{{ item.tracked_time }}</dd></div></dl>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="insight-section review-next-section">
+    <div class="section-heading"><div><p class="eyebrow">THINGS TO REVIEW NEXT WEEK</p><h2>下周优先做这些</h2></div><p>建议由复习排期和本周错题确定</p></div>
+    <div class="weekly-recommendation-list">
+      {% for item in review.recommendations %}
+      <a href="{{ item.href }}"><span>{{ "%02d"|format(loop.index) }}</span><div><strong>{{ item.title }}</strong><p>{{ item.reason }}</p></div><i>→</i></a>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

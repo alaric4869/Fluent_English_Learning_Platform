@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.api.routes.practice import router as practice_router
+from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.insights import router as insights_router
 from app.api.routes.review import router as review_router
 from app.api.routes.notebook import router as notebook_router
@@ -27,6 +28,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=FASTAPI_ROOT / "app" / "static"), name="static")
 app.include_router(practice_router)
+app.include_router(dashboard_router)
 app.include_router(today_router)
 app.include_router(insights_router)
 app.include_router(review_router)

@@ -397,6 +397,87 @@ a { color: inherit; text-decoration: none; }
 .skill-score-track { overflow: hidden; height: 6px; margin-top: 17px; border-radius: 99px; background: #dfe4df; }
 .skill-score-track span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
 
+.dashboard-page, .weekly-review-page { padding-bottom: 70px; }
+.dashboard-hero, .weekly-review-hero { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 48px; align-items: end; padding: 48px 0 38px; border-bottom: 1px solid var(--line); }
+.dashboard-hero h1, .weekly-review-hero h1 { margin: 0; font: 500 clamp(2.2rem, 4.3vw, 4.2rem)/1 Georgia, serif; letter-spacing: -.04em; }
+.dashboard-hero > div > p:last-child, .weekly-review-hero > div > p:last-child { max-width: 700px; margin: 17px 0 0; color: var(--muted); line-height: 1.7; }
+.dashboard-primary-action { display: block; padding: 21px; border: 1px solid #a9c7bc; border-radius: 14px; background: var(--accent-soft); box-shadow: var(--shadow); }
+.dashboard-primary-action > span, .dashboard-primary-action > strong, .dashboard-primary-action > small { display: block; }
+.dashboard-primary-action > span { color: var(--accent); font-size: .62rem; font-weight: 850; letter-spacing: .14em; }
+.dashboard-primary-action > strong { margin-top: 9px; font: 650 1.75rem Georgia, serif; }
+.dashboard-primary-action > small { margin-top: 11px; color: var(--accent-dark); font-size: .7rem; font-weight: 750; }
+.dashboard-progress-track { overflow: hidden; height: 6px; margin-top: 15px; border-radius: 99px; background: rgba(255, 255, 255, .7); }
+.dashboard-progress-track i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.dashboard-main-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(300px, .75fr); gap: 18px; padding-top: 30px; }
+.dashboard-plan-card, .dashboard-weekly-card, .dashboard-quick-card { padding: 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.dashboard-card-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+.dashboard-card-heading h2, .dashboard-quick-card h2 { margin: 0; font: 600 1.55rem Georgia, serif; }
+.dashboard-card-heading > a { color: var(--accent); font-size: .7rem; font-weight: 750; }
+.dashboard-module-list { display: grid; }
+.dashboard-module-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto 78px; gap: 12px; align-items: center; min-height: 76px; border-top: 1px solid var(--line); }
+.dashboard-module-row:first-child { border-top: 0; }
+.dashboard-module-row.is-completed { opacity: .65; }
+.dashboard-module-copy strong, .dashboard-module-copy small { display: block; }
+.dashboard-module-copy strong { font: 600 .96rem Georgia, serif; }
+.dashboard-module-copy small { overflow: hidden; margin-top: 5px; color: var(--muted); font-size: .69rem; text-overflow: ellipsis; white-space: nowrap; }
+.dashboard-module-time { color: var(--muted); font-size: .7rem; font-weight: 700; }
+.dashboard-module-state { color: var(--accent); font-size: .7rem; font-weight: 800; text-align: right; }
+.dashboard-side-stack { display: grid; gap: 12px; }
+.dashboard-review-card { display: block; padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.dashboard-review-card.has-due { color: white; border-color: var(--accent-dark); background: var(--sidebar); }
+.dashboard-review-card > span, .dashboard-review-card > strong, .dashboard-review-card > p, .dashboard-review-card > small { display: block; }
+.dashboard-review-card > span { color: #8fb8aa; font-size: .61rem; font-weight: 850; letter-spacing: .14em; }
+.dashboard-review-card > strong { margin-top: 11px; font: 650 2.7rem/.95 Georgia, serif; }
+.dashboard-review-card > p { margin: 8px 0 17px; color: var(--muted); font-size: .78rem; }
+.dashboard-review-card.has-due > p { color: #c7d4cf; }
+.dashboard-review-card > small { color: var(--accent); font-size: .69rem; font-weight: 750; }
+.dashboard-review-card.has-due > small { color: #b8d5ca; }
+.dashboard-week-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.dashboard-week-stats > div { min-height: 115px; padding: 17px; }
+.dashboard-week-stats > div:nth-child(even) { border-left: 1px solid var(--line); }
+.dashboard-week-stats > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+.dashboard-week-stats span, .dashboard-week-stats strong, .dashboard-week-stats small { display: block; }
+.dashboard-week-stats span { min-height: 24px; color: var(--accent); font-size: .52rem; font-weight: 850; letter-spacing: .1em; }
+.dashboard-week-stats strong { margin-top: 7px; font: 650 1.35rem Georgia, serif; }
+.dashboard-week-stats small { margin-top: 6px; color: var(--muted); font-size: .57rem; line-height: 1.35; }
+.dashboard-lower-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, .6fr); gap: 18px; padding-top: 18px; }
+.dashboard-weekly-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-block: 1px solid var(--line); }
+.dashboard-weekly-summary > div { padding: 18px 10px; text-align: center; }
+.dashboard-weekly-summary > div + div { border-left: 1px solid var(--line); }
+.dashboard-weekly-summary strong, .dashboard-weekly-summary span { display: block; }
+.dashboard-weekly-summary strong { font: 650 1.5rem Georgia, serif; }
+.dashboard-weekly-summary span { margin-top: 5px; color: var(--muted); font-size: .6rem; }
+.dashboard-next-focus { display: grid; grid-template-columns: 110px 1fr; gap: 18px; margin-top: 19px; }
+.dashboard-next-focus > span { color: var(--accent); font-size: .6rem; font-weight: 850; letter-spacing: .13em; }
+.dashboard-next-focus strong { font: 600 .95rem Georgia, serif; }
+.dashboard-next-focus p { margin: 5px 0 0; color: var(--muted); font-size: .68rem; line-height: 1.5; }
+.dashboard-quick-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
+.dashboard-quick-links a { min-height: 115px; padding: 14px; border: 1px solid var(--line); border-radius: 9px; background: #fafaf6; }
+.dashboard-quick-links span, .dashboard-quick-links strong, .dashboard-quick-links small { display: block; }
+.dashboard-quick-links span { color: var(--accent); font-size: 1.15rem; }
+.dashboard-quick-links strong { margin-top: 10px; font-size: .76rem; }
+.dashboard-quick-links small { margin-top: 5px; color: var(--muted); font-size: .57rem; line-height: 1.4; }
+
+.weekly-review-hero .back-link { margin-bottom: 24px; }
+.weekly-review-highlight { min-width: 250px; padding: 23px; border: 1px solid #a9c7bc; border-radius: 14px; background: var(--accent-soft); }
+.weekly-review-highlight span, .weekly-review-highlight strong, .weekly-review-highlight small { display: block; }
+.weekly-review-highlight span { color: var(--accent); font-size: .62rem; font-weight: 850; letter-spacing: .14em; }
+.weekly-review-highlight strong { margin-top: 10px; font: 650 2.7rem/.95 Georgia, serif; }
+.weekly-review-highlight small { margin-top: 9px; color: var(--muted); font-size: .68rem; }
+.weekly-highlights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 12px; }
+.weekly-highlights article { padding: 20px; border: 1px solid var(--line); border-radius: 11px; background: #fafaf6; }
+.weekly-highlights span, .weekly-highlights strong { display: block; }
+.weekly-highlights span { color: var(--accent); font-size: .58rem; font-weight: 850; letter-spacing: .12em; }
+.weekly-highlights strong { margin-top: 12px; font: 600 1.18rem Georgia, serif; }
+.weekly-highlights p { margin: 8px 0 0; color: var(--muted); font-size: .65rem; line-height: 1.45; }
+.weekly-recommendation-list { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+.weekly-recommendation-list a { display: grid; grid-template-columns: 36px 1fr auto; gap: 15px; align-items: center; min-height: 84px; padding: 15px 20px; }
+.weekly-recommendation-list a + a { border-top: 1px solid var(--line); }
+.weekly-recommendation-list a > span { color: #8aa399; font: 650 .8rem Georgia, serif; }
+.weekly-recommendation-list strong { font: 600 .98rem Georgia, serif; }
+.weekly-recommendation-list p { margin: 5px 0 0; color: var(--muted); font-size: .7rem; line-height: 1.45; }
+.weekly-recommendation-list i { color: var(--accent); font-style: normal; }
+
 .practice-page { padding: 24px 0 70px; }
 .workspace { overflow: visible; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
 .workspace-head { display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 22px 26px; border-bottom: 1px solid var(--line); }
@@ -543,6 +624,9 @@ a { color: inherit; text-decoration: none; }
   .resource-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .resource-detail-heading { align-items: flex-start; flex-direction: column; }
   .resource-detail-actions { justify-content: flex-start; }
+  .dashboard-hero, .weekly-review-hero { grid-template-columns: 1fr; gap: 24px; }
+  .dashboard-primary-action, .weekly-review-highlight { width: min(100%, 420px); }
+  .dashboard-main-grid, .dashboard-lower-grid { grid-template-columns: 1fr; }
   .library-toolbar { align-items: stretch; flex-direction: column; }
   .library-toolbar form { width: 100%; }
 }
@@ -598,4 +682,13 @@ a { color: inherit; text-decoration: none; }
   .library-toolbar form { grid-template-columns: 1fr; }
   .notebook-page .library-toolbar form { grid-template-columns: 1fr; }
   .review-rating-row { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-module-row { grid-template-columns: 36px minmax(0, 1fr) auto; padding-block: 11px; }
+  .dashboard-module-state { grid-column: 2 / -1; text-align: left; }
+  .dashboard-weekly-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dashboard-weekly-summary > div + div { border-left: 0; }
+  .dashboard-weekly-summary > div:nth-child(even) { border-left: 1px solid var(--line); }
+  .dashboard-weekly-summary > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .dashboard-next-focus { grid-template-columns: 1fr; gap: 8px; }
+  .dashboard-quick-links, .weekly-highlights { grid-template-columns: 1fr; }
+  .dashboard-quick-links a { min-height: 96px; }
 }

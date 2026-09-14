@@ -76,3 +76,25 @@ class RecordedReview:
     next_review_date: date
     review_count: int
     created: bool
+
+
+@dataclass(frozen=True)
+class ReviewAttemptSummary:
+    again_count: int
+    hard_count: int
+    good_count: int
+    easy_count: int
+
+    @property
+    def total_count(self) -> int:
+        return self.again_count + self.hard_count + self.good_count + self.easy_count
+
+    @property
+    def retained_count(self) -> int:
+        return self.good_count + self.easy_count
+
+    @property
+    def retention_rate(self) -> float | None:
+        if self.total_count == 0:
+            return None
+        return round(self.retained_count / self.total_count * 100, 1)

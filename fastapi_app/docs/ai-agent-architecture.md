@@ -25,7 +25,7 @@ SQLAlchemy / external integration adapters
 - `get_due_reviews()` → `ReviewService`
 - `get_recent_mistakes()` → `NotebookService`, `ListeningPracticeService` and `SpeakingPracticeService` through a future read-only tool adapter
 - `save_ai_recommendation()` → `AdaptationDecisionService` after an AI-specific command contract is added
-- `generate_weekly_report()` → `ProgressAnalyticsService` after a weekly report contract is added
+- `generate_weekly_report()` → `WeeklyReviewService`; a future AI layer may explain its typed evidence but must not replace the measured values
 
 Request and response schemas will be explicit Pydantic contracts at the tool boundary. Provider-specific SDK objects will be contained behind an `AIProvider` interface; the domain will not import OpenAI, Anthropic, Gemini or another vendor SDK.
 

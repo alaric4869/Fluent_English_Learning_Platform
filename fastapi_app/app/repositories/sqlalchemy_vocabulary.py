@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
@@ -153,6 +153,19 @@ class SqlAlchemyVocabularyRepository:
             statement = statement.where(
                 ReviewItemModel.mastery_status == mastery_status.value
             )
+        return self.session.scalar(statement) or 0
+
+    def count_learned_between(
+        self,
+        user_key: str,
+        start_date: date,
+        end_date: date,
+    ) -> int:
+        statement = select(func.count()).select_from(VocabularyItemModel).where(
+            VocabularyItemModel.user_key == user_key,
+            VocabularyItemModel.learned_on >= start_date,
+            VocabularyItemModel.learned_on < end_date,
+        )
         return self.session.scalar(statement) or 0
 
     def _get(self, vocabulary_item_id: int) -> VocabularyItemModel:

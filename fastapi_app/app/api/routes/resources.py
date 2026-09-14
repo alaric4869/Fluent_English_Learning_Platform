@@ -41,6 +41,7 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 @router.get("/library")
 def library_page(
     request: Request,
+    add: bool = False,
     view: str = "all",
     search: str = "",
     skill: str = "",
@@ -93,6 +94,7 @@ def library_page(
             filters=filters,
             view=view,
             counts=counts,
+            open_add_resource=add,
         ),
     )
 

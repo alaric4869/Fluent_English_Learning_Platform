@@ -34,7 +34,7 @@ Copyrighted books and audio remain in the git-ignored `resources/` directory. Th
 
 The application remains a modular monolith. Presentation calls application services, application services call domain policies and repository protocols, and SQLAlchemy implements persistence. Future agent tools must call stable services rather than database tables.
 
-The current FastAPI slice covers Cambridge G20 Test 1 Listening and Reading, converts submitted work into the learning-data pipeline, maintains deterministic Learner Profile history, records explainable strong/weak skill assessments, and serves a date-persisted Today plan with rotating resources. System recommendations and learner overrides are retained as an audit history. History and Progress read persisted evidence without inventing missing study time, while the vocabulary/chunk library now feeds a configurable spaced-review queue. The next milestone is sentence-level listening, speaking/retelling records and the mistake book, not bulk unverified IELTS import.
+The current FastAPI slice covers Cambridge G20 Test 1 Listening and Reading, converts submitted work into the learning-data pipeline, maintains deterministic Learner Profile history, records explainable strong/weak skill assessments, and serves a date-persisted Today plan with rotating resources. System recommendations and learner overrides are retained as an audit history. Dashboard, Weekly Review, History and Progress read persisted evidence without inventing missing study time; the permanent Library, Notebook and configurable multi-target spaced-review queue are also usable. The next milestone is real per-module session recording and the intensive-listening workflow, not bulk unverified IELTS import.
 
 ## Run the FastAPI edition
 

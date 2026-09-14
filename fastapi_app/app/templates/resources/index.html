@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <details class="chunk-entry-card resource-entry-card" id="addResource">
+    <details class="chunk-entry-card resource-entry-card" id="addResource"{% if open_add_resource %} open{% endif %}>
       <summary><span><b>＋</b><strong>添加自己的学习材料</strong><small>YouTube、音频、Podcast、文章或练习网站</small></span></summary>
       <form id="resourceForm" class="chunk-entry-form" data-resource-form data-method="POST" data-endpoint="/api/resources">
         <label class="field-wide"><span>标题 *</span><input name="title" maxlength="240" required placeholder="例如 ABC News · Renting in Sydney"></label>

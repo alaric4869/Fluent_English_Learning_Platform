@@ -80,10 +80,18 @@
 - Keep favorites, saved-for-later and archive state user-scoped while preserving built-in resources and study history.
 - Feed non-archived personal resources into the existing recommendation pipeline through `ResourceService`.
 
-## M11 · Next product slice
+## M11 · Dashboard and Weekly Review
 
 - Focused Dashboard with today summary, review queue, streak, weekly time and quick actions.
 - Weekly Review with strongest/weakest area, retention and explicit “review next week” material.
+- Keep actual tracked time separate from completed planned minutes.
+- Generate the report from persisted learning facts without a duplicate weekly-summary table.
+
+## M12 · Next product slice
+
+- Add real per-module study sessions with timer, notes, difficulty and confidence to Today.
+- Build the intensive-listening sentence workflow around real audio/video resources and transcripts.
+- Feed those new signals into the existing learner profile without changing Dashboard contracts.
 
 ## Later, after the rule-based loop works
 

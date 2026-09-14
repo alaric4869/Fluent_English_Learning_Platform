@@ -26,6 +26,7 @@ from app.repositories.sqlalchemy_weakness_detection import (
     SqlAlchemyWeaknessAssessmentRepository,
 )
 from app.services.adaptive_learning import AdaptationDecisionService
+from app.services.dashboard import DashboardService
 from app.services.history import HistoryService
 from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
 from app.services.ielts_practice import IeltsPracticeService
@@ -40,6 +41,7 @@ from app.services.speaking import SpeakingPracticeService
 from app.services.study_plan import StudyPlanService
 from app.services.weakness_detection import WeaknessDetectionService
 from app.services.vocabulary import VocabularyService
+from app.services.weekly_review import WeeklyReviewService
 
 
 @dataclass(frozen=True)
@@ -57,6 +59,8 @@ class ApplicationServices:
     listening: ListeningPracticeService
     speaking: SpeakingPracticeService
     notebook: NotebookService
+    weekly_review: WeeklyReviewService
+    dashboard: DashboardService
 
 
 def build_application_services(session: Session) -> ApplicationServices:
@@ -77,17 +81,21 @@ def build_application_services(session: Session) -> ApplicationServices:
         RuleBasedResourceRecommender(),
     )
     review_scheduler = FixedIntervalReviewScheduler()
+    vocabulary_repository = SqlAlchemyVocabularyRepository(
+        session, review_scheduler.scheduler_version
+    )
     vocabulary_service = VocabularyService(
-        SqlAlchemyVocabularyRepository(session, review_scheduler.scheduler_version),
+        vocabulary_repository,
         resource_repository,
         review_scheduler,
     )
     review_repository = SqlAlchemyReviewRepository(session)
     review_service = ReviewService(review_repository, review_scheduler)
+    listening_repository = SqlAlchemyListeningSentenceRepository(
+        session, review_scheduler.scheduler_version
+    )
     listening_service = ListeningPracticeService(
-        SqlAlchemyListeningSentenceRepository(
-            session, review_scheduler.scheduler_version
-        ),
+        listening_repository,
         resource_repository,
         review_scheduler,
     )
@@ -126,6 +134,20 @@ def build_application_services(session: Session) -> ApplicationServices:
         review_repository,
         timezone,
     )
+    weekly_review_service = WeeklyReviewService(
+        plan_repository,
+        history_repository,
+        vocabulary_repository,
+        listening_repository,
+        review_repository,
+        timezone,
+    )
+    dashboard_service = DashboardService(
+        study_plan_service,
+        progress_analytics_service,
+        review_service,
+        weekly_review_service,
+    )
     evidence_recorder = IeltsLearningEvidenceRecorder(
         evidence_service,
         profile_service,
@@ -149,4 +171,6 @@ def build_application_services(session: Session) -> ApplicationServices:
         listening=listening_service,
         speaking=speaking_service,
         notebook=notebook_service,
+        weekly_review=weekly_review_service,
+        dashboard=dashboard_service,
     )

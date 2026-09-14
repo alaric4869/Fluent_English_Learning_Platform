@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Protocol
 
 from app.domain.listening.entities import (
@@ -32,3 +33,10 @@ class ListeningSentenceRepository(Protocol):
         sentence_id: int,
         status: ListeningSentenceStatus,
     ) -> SavedListeningSentence | None: ...
+
+    def count_learned_between(
+        self,
+        user_key: str,
+        start_date: date,
+        end_date: date,
+    ) -> int: ...

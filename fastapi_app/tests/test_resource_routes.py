@@ -48,6 +48,7 @@ def test_resource_library_create_edit_favorite_and_archive_flow() -> None:
             created = client.post("/api/resources", json=payload)
             resource_id = created.json()["id"]
             library = client.get("/library?search=reception&skill=listening")
+            add_page = client.get("/library?add=true#addResource")
             detail = client.get(f"/library/{resource_id}")
             favorite = client.patch(
                 f"/api/resources/{resource_id}/state", json={"favorite": True}
@@ -66,6 +67,7 @@ def test_resource_library_create_edit_favorite_and_archive_flow() -> None:
         assert created.status_code == 201
         assert library.status_code == 200
         assert "Real Australian Conversation" in library.text
+        assert '<details class="chunk-entry-card resource-entry-card" id="addResource" open>' in add_page.text
         assert detail.status_code == 200
         assert "Would it be possible to move the appointment?" in detail.text
         assert favorite.status_code == 200

@@ -80,3 +80,7 @@ Notebook content remains separated by domain responsibility instead of being sto
 - `ResourceUserState`: per-learner favorite, saved-for-later and recoverable archive state.
 
 Built-in resources have no owner; personal resources belong to one learner. Archiving changes only `ResourceUserState`, so plans, sessions and IELTS content keep their existing resource references. Last-studied time and completion count are derived from `StudySession`, not duplicated on the resource row.
+
+## Dashboard and Weekly Review read models
+
+Dashboard and Weekly Review add no database tables. They aggregate the existing dated plan items, immutable study sessions, learned dates, saved sentences and immutable review attempts through repository interfaces. This avoids a second stored total that could drift from the source records. If weekly reports later need immutable publication or AI commentary, that output can be stored as a versioned report while keeping the measured inputs unchanged.

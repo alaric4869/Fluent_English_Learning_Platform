@@ -28,7 +28,7 @@ def get_service(session: Session = Depends(get_db)) -> IeltsPracticeService:
 
 @router.get("/")
 def home() -> RedirectResponse:
-    return RedirectResponse(url="/today")
+    return RedirectResponse(url="/dashboard")
 
 
 @router.get("/ielts")

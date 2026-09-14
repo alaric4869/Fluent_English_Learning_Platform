@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Fluent Daily English{% endblock %}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><circle cx=%2232%22 cy=%2232%22 r=%2230%22 fill=%22%231c2d29%22/><text x=%2232%22 y=%2242%22 text-anchor=%22middle%22 font-size=%2232%22 fill=%22white%22 font-family=%22Georgia%22>F</text></svg>">
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/app.css') }}?v=11">
   </head>
   <body>
     <div class="app-shell">
       <aside class="sidebar">
-        <a class="brand" href="/today" aria-label="Fluent Daily English 首页">
+        <a class="brand" href="/dashboard" aria-label="Fluent Daily English 首页">
           <span class="brand-mark">F</span>
           <span class="brand-copy"><strong>Fluent</strong><small>DAILY ENGLISH</small></span>
         </a>
 
         <nav class="main-nav" aria-label="主导航">
-          <span class="nav-item nav-disabled"><i>01</i><span>Dashboard</span></span>
+          <a class="nav-item{% if active_page == 'dashboard' %} is-active{% endif %}" href="/dashboard"{% if active_page == 'dashboard' %} aria-current="page"{% endif %}><i>01</i><span>Dashboard</span></a>
           <a class="nav-item{% if active_page == 'today' %} is-active{% endif %}" href="/today"{% if active_page == 'today' %} aria-current="page"{% endif %}><i>02</i><span>Today</span></a>
           <a class="nav-item{% if active_page|default('ielts') == 'ielts' %} is-active{% endif %}" href="/ielts"{% if active_page|default('ielts') == 'ielts' %} aria-current="page"{% endif %}><i>03</i><span>IELTS G</span></a>
           <a class="nav-item{% if active_page == 'library' %} is-active{% endif %}" href="/library"{% if active_page == 'library' %} aria-current="page"{% endif %}><i>04</i><span>Library</span></a>
@@ -41,7 +41,7 @@
 
       <div class="main-content">
         <header class="topbar">
-          <a class="mobile-brand" href="/today"><span class="brand-mark">F</span><strong>Fluent</strong></a>
+          <a class="mobile-brand" href="/dashboard"><span class="brand-mark">F</span><strong>Fluent</strong></a>
           <p>{% block topbar_label %}IELTS General Training{% endblock %}</p>
           <div class="topbar-meta"><span aria-hidden="true"></span><time id="sydneyDate">Sydney</time></div>
         </header>

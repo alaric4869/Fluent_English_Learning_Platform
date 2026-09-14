@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
@@ -112,6 +112,19 @@ class SqlAlchemyListeningSentenceRepository:
         item.practice_status = status.value
         self.session.commit()
         return self._get(item.id)
+
+    def count_learned_between(
+        self,
+        user_key: str,
+        start_date: date,
+        end_date: date,
+    ) -> int:
+        statement = select(func.count()).select_from(SavedSentenceModel).where(
+            SavedSentenceModel.user_key == user_key,
+            SavedSentenceModel.learned_on >= start_date,
+            SavedSentenceModel.learned_on < end_date,
+        )
+        return self.session.scalar(statement) or 0
 
     def _get(self, sentence_id: int) -> SavedListeningSentence:
         item = self.session.scalar(

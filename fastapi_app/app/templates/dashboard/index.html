@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Fluent Daily English{% endblock %}
+{% block topbar_label %}{{ plan.total_minutes }} min planned today{% endblock %}
+{% block content %}
+<div class="page-wrap dashboard-page">
+  <section class="dashboard-hero">
+    <div>
+      <p class="eyebrow">{{ display_date|upper }}</p>
+      <h1>{{ greeting }}，Alaric。</h1>
+      <p>今天的材料、到期复习和本周状态都在这里。先看清任务，再开始学习。</p>
+    </div>
+    <a class="dashboard-primary-action" href="/today">
+      <span>TODAY'S PROGRESS</span>
+      <strong>{{ completed_count }} / {{ modules|length }}</strong>
+      <div class="dashboard-progress-track"><i style="width: {{ completion_percent }}%"></i></div>
+      <small>继续今天的学习计划 →</small>
+    </a>
+  </section>
+
+  <section class="dashboard-main-grid">
+    <article class="dashboard-plan-card">
+      <header class="dashboard-card-heading">
+        <div><p class="eyebrow">TODAY'S STUDY PLAN</p><h2>今天具体学什么</h2></div>
+        <a href="/today">打开完整计划 →</a>
+      </header>
+      <div class="dashboard-module-list">
+        {% for module in modules %}
+        <a href="/today" class="dashboard-module-row{% if module.is_completed %} is-completed{% endif %}">
+          <span class="skill-icon skill-{{ module.item.skill.value }}">{{ module.code }}</span>
+          <span class="dashboard-module-copy"><strong>{{ module.title }}</strong><small>{{ module.resource_title }}</small></span>
+          <span class="dashboard-module-time">{{ module.item.planned_minutes }} min</span>
+          <span class="dashboard-module-state">{{ '✓ 已完成' if module.is_completed else '开始 →' }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </article>
+
+    <aside class="dashboard-side-stack">
+      <a class="dashboard-review-card{% if due_review_count %} has-due{% endif %}" href="/review">
+        <span>REVIEWS DUE TODAY</span>
+        <strong>{{ due_review_count }}</strong>
+        <p>{{ '项内容需要复习' if due_review_count else '今天没有到期内容' }}</p>
+        <small>{{ '现在开始 →' if due_review_count else '查看复习库 →' }}</small>
+      </a>
+      <div class="dashboard-week-stats">
+        <div><span>CURRENT STREAK</span><strong>{{ progress.current_streak }}</strong><small>days · longest {{ progress.longest_streak }}</small></div>
+        <div><span>ACTUAL TIME THIS WEEK</span><strong>{{ weekly_tracked_time }}</strong><small>只统计真实计时</small></div>
+        <div><span>COMPLETED PLAN TIME</span><strong>{{ weekly_planned_time }}</strong><small>已完成模块的估算时长</small></div>
+        <div><span>WEEKLY COMPLETION</span><strong>{{ weekly.completion_rate }}%</strong><small>{{ weekly.completed_modules }} / {{ weekly.assigned_modules }} 模块</small></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="dashboard-lower-grid">
+    <article class="dashboard-weekly-card">
+      <header class="dashboard-card-heading">
+        <div><p class="eyebrow">WEEKLY REVIEW</p><h2>本周学习反馈</h2></div>
+        <a href="/weekly-review">查看完整周报 →</a>
+      </header>
+      <div class="dashboard-weekly-summary">
+        <div><strong>{{ weekly.study_days }}</strong><span>学习天数</span></div>
+        <div><strong>{{ weekly.completed_sessions }}</strong><span>真实作答</span></div>
+        <div><strong>{{ weekly.vocabulary_learned }}</strong><span>新增词块</span></div>
+        <div><strong>{{ weekly.difficult_sentences_collected }}</strong><span>听力难句</span></div>
+        <div><strong>{{ weekly.review_attempts.total_count }}</strong><span>完成复习</span></div>
+      </div>
+      <div class="dashboard-next-focus">
+        <span>NEXT FOCUS</span>
+        <div><strong>{{ weekly.recommendations[0].title }}</strong><p>{{ weekly.recommendations[0].reason }}</p></div>
+      </div>
+    </article>
+
+    <article class="dashboard-quick-card">
+      <p class="eyebrow">QUICK ACTIONS</p>
+      <h2>快速进入</h2>
+      <div class="dashboard-quick-links">
+        <a href="/library?add=true#addResource"><span>＋</span><strong>添加材料</strong><small>URL、文章或 Transcript</small></a>
+        <a href="/review"><span>↻</span><strong>开始复习</strong><small>Again / Hard / Good / Easy</small></a>
+        <a href="/library"><span>⌕</span><strong>浏览资源库</strong><small>搜索全部学习材料</small></a>
+        <a href="/history"><span>◷</span><strong>查看历史</strong><small>返回任何学习日期</small></a>
+      </div>
+    </article>
+  </section>
+</div>
+{% endblock %}
