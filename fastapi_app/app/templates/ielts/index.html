@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% block title %}IELTS G · Fluent Daily English{% endblock %}
-{% block topbar_label %}110 min planned{% endblock %}
+{% block topbar_label %}IELTS General Training · Practice Library{% endblock %}
 {% block content %}
 <div class="page-wrap ielts-home">
   <section class="page-intro">
     <div>
       <p class="eyebrow">IELTS GENERAL TRAINING</p>
       <h1>Practice with purpose.</h1>
-      <p>听力与阅读直接作答并查看错题精解；写作在网页列提纲、限时完成并保留每次提交。</p>
+      <p>听力与阅读直接作答并查看错题精解；口语跟随真实对话逐句模仿；写作在网页列提纲、限时完成并保留每次提交。</p>
     </div>
     <div class="target-card">
       <span>EXAM TARGET</span>
@@ -22,7 +22,7 @@
         <p class="eyebrow">CAMBRIDGE 20 · TEST 1</p>
         <h2>选择练习模块</h2>
       </div>
-      <p>{{ (practice_sets|length) + (writing_resources|length) }} modules available</p>
+      <p>{{ (practice_sets|length) + (speaking_resources|length) + (writing_resources|length) }} modules available</p>
     </div>
 
     <div class="set-grid">
@@ -41,6 +41,24 @@
           <div><dt>Format</dt><dd>Interactive</dd></div>
         </dl>
         <a class="button button-primary" href="/ielts/{{ item.slug }}">开始 / 继续练习</a>
+      </article>
+      {% endfor %}
+      {% for resource in speaking_resources %}
+      {% set practice = resource.content.get("speaking_practice", {}) %}
+      <article class="set-card">
+        <div class="set-card-top">
+          <span class="skill-icon skill-speaking">SP</span>
+          <span>{{ resource.estimated_duration_minutes }} min</span>
+        </div>
+        <p class="card-kicker">GENERAL TRAINING · TEST {{ resource.content.get("test_number", 1) }}</p>
+        <h3>跟读与复述 Speaking</h3>
+        <p>{{ resource.description }}</p>
+        <dl>
+          <div><dt>Sentences</dt><dd>{{ practice.get("sentences", [])|length }}</dd></div>
+          <div><dt>Audio</dt><dd>Authentic</dd></div>
+          <div><dt>Draft</dt><dd>Autosave</dd></div>
+        </dl>
+        <a class="button button-primary" href="/speaking/{{ resource.id }}">开始 / 继续练习</a>
       </article>
       {% endfor %}
       {% for resource in writing_resources %}
@@ -66,7 +84,7 @@
 
   <aside class="roadmap-note">
     <span>NEXT</span>
-    <p>后续按相同格式导入 Cambridge 20 Test 2–4。客观题继续自动评分；写作保留提交快照与学习证据，AI 评分会通过独立评估服务接入。</p>
+    <p>后续按相同格式导入 Cambridge 20 Test 2–4。客观题继续自动评分；口语与写作保留提交快照和真实学习证据，AI 评分会通过独立评估服务接入。</p>
   </aside>
 </div>
 {% endblock %}

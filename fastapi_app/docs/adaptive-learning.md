@@ -13,7 +13,7 @@ Submitted activity
 → date-persisted study plan
 ```
 
-IELTS produces objective evidence. Completed Today modules additionally produce duration, perceived-difficulty and confidence evidence with no fabricated accuracy. Every stage after either producer uses generic skills, resources, sessions and repository contracts.
+IELTS produces objective evidence. Completed Today modules and submitted Speaking/Writing workspaces additionally produce duration, perceived-difficulty and confidence evidence with no fabricated accuracy. Every stage after these producers uses generic skills, resources, sessions and repository contracts.
 
 ## Skill evaluation and classification
 
@@ -33,7 +33,8 @@ Profile snapshots, weakness assessments and daily plans store their algorithm ve
 
 ## Known limits
 
-- Listening, Reading and G20 Test 1 Writing currently have curated real resources; missing Speaking or Vocabulary resources stay explicit rather than being fabricated.
+- Listening, Reading, Writing and one G20 Test 1 real-audio Speaking practice currently have curated resources; missing Vocabulary resources stay explicit rather than being fabricated.
+- Speaking evidence currently uses marked-sentence counts, time, intended chunks, difficulty and confidence. Fluency, pronunciation and lexical scores remain unknown until a later recording/transcription evaluator is explicitly invoked.
 - Writing evidence currently uses word count, time, difficulty and confidence. IELTS Band criteria remain unknown until M17 adds an evaluator; the profile explanation must keep that distinction visible.
 - Topic balancing and richer comprehension/listening measurements remain later inputs.
 - Rule thresholds require tuning after enough real usage data exists.

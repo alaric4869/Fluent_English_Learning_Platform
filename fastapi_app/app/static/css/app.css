@@ -695,11 +695,67 @@ a { color: inherit; text-decoration: none; }
 .writing-submission-note strong { font: 600 1rem Georgia, serif; }
 .writing-submission-note p { margin: 7px 0 0; color: #52645e; font-size: .72rem; line-height: 1.6; }
 
+.speaking-workspace { padding-bottom: 70px; }
+.speaking-heading { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 38px; align-items: end; padding: 42px 0 28px; }
+.speaking-heading h1 { margin: 7px 0 8px; font: 600 clamp(2rem, 4vw, 3.6rem)/1 Georgia, serif; letter-spacing: -.035em; }
+.speaking-heading p:last-child { max-width: 820px; margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.55; }
+.speaking-workflow { display: grid; grid-template-columns: repeat(6, minmax(105px, 1fr)); margin-bottom: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
+.speaking-workflow div { display: flex; align-items: center; gap: 9px; min-height: 64px; padding: 12px 14px; }
+.speaking-workflow div + div { border-left: 1px solid var(--line); }
+.speaking-workflow b { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; border-radius: 50%; color: var(--accent); background: var(--accent-soft); font-size: .6rem; }
+.speaking-workflow span { font-size: .69rem; font-weight: 760; }
+.speaking-audio-panel { display: grid; grid-template-columns: minmax(250px, .65fr) minmax(380px, 1.35fr); gap: 24px; align-items: center; margin-bottom: 18px; padding: 22px 25px; border-radius: 14px; color: #f3f6f3; background: var(--sidebar); box-shadow: var(--shadow); }
+.speaking-audio-panel h2 { margin: 3px 0 6px; font: 600 1.25rem Georgia, serif; }
+.speaking-audio-panel p:last-child { margin: 0; color: #aabbb5; font-size: .67rem; line-height: 1.45; }
+.speaking-audio-panel audio { width: 100%; height: 40px; color-scheme: dark; }
+.speaking-practice-grid { display: grid; grid-template-columns: minmax(480px, 1.15fr) minmax(390px, .85fr); gap: 18px; align-items: start; }
+.speaking-sentence-panel, .retelling-editor-card { border: 1px solid var(--line); border-radius: 15px; background: var(--surface); box-shadow: var(--shadow); }
+.speaking-sentence-panel { overflow: hidden; }
+.speaking-panel-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 24px 25px 20px; border-bottom: 1px solid var(--line); }
+.speaking-panel-heading h2, .retelling-editor-card > header h2 { margin: 2px 0 5px; font: 600 1.45rem Georgia, serif; }
+.speaking-panel-heading p:last-child, .retelling-editor-card > header p:last-child { margin: 0; color: var(--muted); font-size: .7rem; line-height: 1.55; }
+.shadowing-sentence-list { display: grid; }
+.shadowing-sentence { padding: 22px 25px; transition: background .15s; }
+.shadowing-sentence + .shadowing-sentence { border-top: 1px solid var(--line); }
+.shadowing-sentence.has-status { background: #fcfdf9; }
+.shadowing-sentence-head { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.shadowing-sentence-head > span { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 6px; color: var(--accent-dark); background: var(--accent-soft); font-size: .64rem; font-weight: 850; }
+.shadowing-sentence-head > b { color: var(--accent); font-size: .61rem; letter-spacing: .12em; }
+.shadowing-sentence-head > small { color: var(--muted); font-size: .58rem; }
+.shadowing-transcript-text { margin: 14px 0 0 36px; color: #27332f; font: 1rem/1.7 Georgia, serif; }
+.shadowing-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 13px 0 0 36px; }
+.shadowing-notes p { margin: 0; padding: 10px 11px; border-radius: 7px; color: #56635f; background: var(--surface-soft); font-size: .65rem; line-height: 1.5; }
+.shadowing-notes b { display: block; margin-bottom: 4px; color: var(--accent); font-size: .52rem; letter-spacing: .1em; }
+.shadowing-chunks { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0 36px; }
+.shadowing-chunks span { padding: 5px 8px; border: 1px solid #c8d8d1; border-radius: 99px; color: var(--accent-dark); background: #f2f8f5; font-size: .62rem; }
+.shadowing-status-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 14px 0 0 36px; }
+.shadowing-status-buttons button { padding: 8px; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); background: white; cursor: pointer; font: inherit; font-size: .66rem; font-weight: 700; }
+.shadowing-status-buttons button:hover { border-color: var(--accent); }
+.shadowing-status-buttons button.is-active { color: white; border-color: var(--accent); background: var(--accent); }
+.shadowing-status-buttons button:disabled { cursor: wait; opacity: .58; }
+.transcript-hidden .shadowing-transcript-text, .transcript-hidden .shadowing-notes, .transcript-hidden .shadowing-chunks { display: none; }
+.transcript-hidden .shadowing-sentence { padding-block: 14px; }
+.retelling-editor-card { padding: 25px; }
+.retelling-editor-card > header { padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+.retelling-guidance { margin: 16px 0 20px; padding: 13px 16px 13px 31px; border: 1px solid #d7cbb0; border-radius: 9px; background: var(--warning-soft); }
+.retelling-guidance li { color: #6c5b36; font-size: .67rem; line-height: 1.55; }
+.retelling-guidance li + li { margin-top: 4px; }
+.retelling-editor-card .writing-field + .writing-field { margin-top: 13px; }
+.retelling-editor-card .writing-field textarea { font-size: .77rem; }
+.speaking-assessment-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 15px; }
+.speaking-assessment-grid label { display: grid; gap: 7px; }
+.speaking-assessment-grid label span { color: var(--muted); font-size: .58rem; font-weight: 800; }
+.speaking-assessment-grid select { width: 100%; min-width: 0; padding: 9px 7px; border: 1px solid var(--line-strong); border-radius: 8px; color: var(--ink); background: white; font: inherit; font-size: .69rem; }
+.voice-recording-placeholder { margin-top: 15px; padding: 13px 15px; border: 1px dashed var(--line-strong); border-radius: 9px; background: #fafaf7; }
+.voice-recording-placeholder span { color: var(--muted); font-size: .54rem; font-weight: 850; letter-spacing: .12em; }
+.voice-recording-placeholder p { margin: 5px 0 0; color: var(--muted); font-size: .63rem; line-height: 1.55; }
+
 @media (max-width: 1180px) {
   .practice-workspace-grid { grid-template-columns: minmax(0, 1fr) 250px; }
   .exam-paper { width: calc(100% - 24px); padding: 30px; }
   .question-index { grid-template-columns: repeat(4, 1fr); }
   .writing-grid { grid-template-columns: minmax(300px, .82fr) minmax(460px, 1.18fr); }
+  .speaking-practice-grid { grid-template-columns: minmax(450px, 1.1fr) minmax(380px, .9fr); }
 }
 
 @media (max-width: 920px) {
@@ -743,6 +799,10 @@ a { color: inherit; text-decoration: none; }
   .writing-timer-card { width: min(100%, 360px); }
   .writing-grid { grid-template-columns: 1fr; }
   .writing-prompt-card { position: static; }
+  .speaking-heading { grid-template-columns: 1fr; }
+  .speaking-timer-card { width: min(100%, 360px); }
+  .speaking-workflow { grid-template-columns: repeat(6, minmax(115px, 1fr)); overflow-x: auto; }
+  .speaking-practice-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 680px) {
@@ -814,4 +874,11 @@ a { color: inherit; text-decoration: none; }
   .writing-editor-head, .writing-submit-row { align-items: flex-start; flex-direction: column; }
   .writing-rating-grid { grid-template-columns: 1fr; }
   .writing-submit-row .button { width: 100%; }
+  .speaking-heading { padding-top: 30px; }
+  .speaking-audio-panel { grid-template-columns: 1fr; padding: 18px; }
+  .speaking-panel-heading { align-items: flex-start; flex-direction: column; padding: 20px 17px; }
+  .shadowing-sentence { padding: 18px 17px; }
+  .shadowing-transcript-text, .shadowing-notes, .shadowing-chunks, .shadowing-status-buttons { margin-left: 0; }
+  .shadowing-notes, .speaking-assessment-grid { grid-template-columns: 1fr; }
+  .retelling-editor-card { padding: 20px 17px; }
 }

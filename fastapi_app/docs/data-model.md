@@ -72,9 +72,16 @@ The initial configured gaps are 1, 2, 4, 7, 16 and then 30 days. Normal `Good` r
 ## Implemented Notebook slice
 
 - `NotebookNote`: typed personal note or mistake with source and tags.
-- `RetellingRecord`: speaking prompt, outline, intended chunks, mistakes, improved version and nullable future recording reference.
+- `RetellingRecord`: speaking prompt, current outline, intended chunks, optional written retelling, mistakes, improved version, active time, self-ratings, submission state and nullable future recording reference.
 
 Notebook content remains separated by domain responsibility instead of being stored in one arbitrary JSON document.
+
+## Implemented Speaking slice
+
+- `SpeakingSentenceProgress`: learner/resource/sentence state (`need_practice`, `good`, `mastered`) plus an explicit practice count.
+- `RetellingSubmission`: immutable snapshot of the learner-authored retelling fields, active duration and self-ratings for one revision.
+
+One workspace-managed `RetellingRecord` holds the current editable state for a source resource. Older manual Notebook records remain valid and are not converted into workspace drafts. A submission creates generic `StudySession` and `SkillPerformance` evidence with `NULL` accuracy; marked-sentence counts, intended-chunk count, time, confidence and perceived difficulty are stored as measurable signals. Voice recording and AI evaluation remain separate future adapters.
 
 ## Implemented Writing slice
 

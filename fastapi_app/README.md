@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan with timed study records, an intensive-listening workspace for real audio/video and sentence marking, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening, Reading and web-native Writing. Objective IELTS submissions produce question-level evidence; Writing and completed daily modules produce duration/difficulty/confidence evidence without inventing an accuracy. Both refresh the provider-neutral Learner Profile and explainable skill assessment.
+This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan with timed study records, an intensive-listening workspace for real audio/video and sentence marking, a real-audio Speaking/Shadowing/Retelling workspace, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening, Reading and web-native Writing. Objective IELTS submissions produce question-level evidence; Speaking, Writing and completed daily modules produce duration/difficulty/confidence evidence without inventing an accuracy. All refresh the provider-neutral Learner Profile and explainable skill assessment.
 
 ## Run locally
 
@@ -12,7 +12,7 @@ python3.12 -m venv .venv
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open at `/listening/{resource_id}` and Writing tasks at `/writing/{resource_id}`.
+Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open at `/listening/{resource_id}`, Speaking practices at `/speaking/{resource_id}`, and Writing tasks at `/writing/{resource_id}`.
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
@@ -34,7 +34,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/history/` and `domain/analytics/`: reporting contracts and deterministic progress calculations.
 - `domain/dashboard/` and `domain/weekly_review/`: composed read models and deterministic week calculations.
 - `domain/vocabulary/` and `domain/review/`: reusable chunks, typed review state and a replaceable scheduler.
-- `domain/listening/`, `domain/speaking/` and `domain/notebook/`: difficult sentences, retelling records and typed mistake-book notes.
+- `domain/listening/`, `domain/speaking/` and `domain/notebook/`: difficult sentences, revisioned shadowing/retelling practice and typed mistake-book notes.
 - `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
@@ -59,7 +59,7 @@ History can return to any saved date, using a recent timeline, an arbitrary-mont
 
 Review stores complete expressions rather than forcing isolated words, and can schedule difficult listening sentences through the same stable contract. New review items become due one day after their learned date. The initial scheduler follows cumulative Day 1, 3, 7, 14 and 30 checkpoints for `Good`; `Again`, `Hard` and `Easy` adjust the next step deterministically. Every rating is stored as an immutable attempt and client request IDs make retries idempotent.
 
-Notebook keeps free-form typed notes, listening sentences and speaking retellings as separate domain records. Listening practice status (`could_not_hear`, `difficult`, `understood`, `mastered`) is intentionally independent from review mastery. Retellings store the prompt, outline, intended chunks, mistakes and improved version; a nullable recording reference is reserved without implementing audio recording yet.
+Notebook keeps free-form typed notes, listening sentences and speaking retellings as separate domain records. Listening practice status (`could_not_hear`, `difficult`, `understood`, `mastered`) is intentionally independent from review mastery. Speaking uses a real local G20 conversation, learner-specific sentence states, one autosaved retelling record and immutable submission revisions. It stores the outline, intended chunks, optional written retelling, mistakes, improved version, timer and self-ratings. A nullable recording reference remains the seam for a later recording adapter; this milestone does not fabricate an IELTS Speaking score.
 
 Library treats resource content and learner-specific state separately. Built-in IELTS resources and personal URL/text/transcript resources share the same read model and recommendation pipeline. Favorites, saved-for-later and recoverable archives live in `ResourceUserState`, so one learner's organization does not mutate global content. Archived resources leave future recommendation candidates but remain referenced by existing plans and history.
 

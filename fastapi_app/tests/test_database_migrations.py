@@ -33,13 +33,15 @@ EXPECTED_TABLES = {
     "study_plan_items",
     "study_plans",
     "speaking_retelling_records",
+    "speaking_retelling_submissions",
+    "speaking_sentence_progress",
     "vocabulary_items",
     "weakness_assessment_runs",
     "weakness_skill_assessments",
     "writing_drafts",
     "writing_submissions",
 }
-HEAD_REVISION = "0012_writing_practice"
+HEAD_REVISION = "0013_speaking_workspace"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:

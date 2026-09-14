@@ -47,6 +47,13 @@ def ielts_index(
         name="ielts/index.html",
         context={
             "practice_sets": services.ielts_practice.list_practice_sets(),
+            "speaking_resources": services.resources.get_library(
+                LOCAL_USER_KEY,
+                ResourceLibraryFilters(
+                    skill=Skill.SPEAKING,
+                    sort=ResourceSort.PRIORITY,
+                ),
+            ).items,
             "writing_resources": services.resources.get_library(
                 LOCAL_USER_KEY,
                 ResourceLibraryFilters(

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{{ workspace.resource.title }} · Speaking{% endblock %}
+{% block topbar_label %}Shadowing · Speaking · Retelling{% endblock %}
+{% block content %}
+<div
+  class="page-wrap speaking-workspace"
+  data-resource-id="{{ workspace.resource.id }}"
+  data-saved-seconds="{{ record.active_duration_seconds }}"
+  data-draft-status="{{ record.status.value if record.status.value is defined else record.status }}"
+>
+  <header class="speaking-heading">
+    <div>
+      <a class="back-link" href="/ielts">← 返回 IELTS G</a>
+      <p class="eyebrow">REAL CONVERSATION · SHADOWING & RETELLING</p>
+      <h1>{{ workspace.resource.title }}</h1>
+      <p>{{ workspace.context }} · 预计 {{ workspace.resource.estimated_duration_minutes }} 分钟</p>
+    </div>
+    <div class="writing-timer-card speaking-timer-card">
+      <small>ACTIVE SPEAKING TIME</small>
+      <strong id="speakingTimer">00:00</strong>
+      <button class="button button-secondary" id="speakingTimerToggle" type="button">开始计时</button>
+    </div>
+  </header>
+
+  <section class="speaking-workflow" aria-label="口语练习流程">
+    {% for step in workspace.workflow %}
+    <div><b>{{ "%02d"|format(loop.index) }}</b><span>{{ step }}</span></div>
+    {% endfor %}
+  </section>
+
+  <section class="speaking-audio-panel">
+    <div>
+      <p class="eyebrow">AUTHENTIC AUDIO</p>
+      <h2>先听真实双人对话，再逐句模仿</h2>
+      <p>{{ workspace.source_label }}</p>
+    </div>
+    <audio controls preload="metadata" src="{{ workspace.audio_url }}"></audio>
+  </section>
+
+  <div class="speaking-practice-grid">
+    <section class="speaking-sentence-panel">
+      <header class="speaking-panel-heading">
+        <div>
+          <p class="eyebrow">SENTENCE LAB</p>
+          <h2>逐句跟读与自然语流</h2>
+          <p><strong id="speakingMarkedCount">{{ marked_count }}</strong> / {{ workspace.sentences|length }} 已标记 · <strong id="speakingMasteredCount">{{ mastered_count }}</strong> 已掌握</p>
+        </div>
+        <button class="button button-secondary" id="toggleSpeakingTranscript" type="button">隐藏 Transcript</button>
+      </header>
+
+      <div class="shadowing-sentence-list" id="shadowingSentenceList">
+        {% for sentence in workspace.sentences %}
+        {% set status = sentence.progress.practice_status.value if sentence.progress else '' %}
+        <article class="shadowing-sentence{% if status %} has-status{% endif %}" data-sentence-key="{{ sentence.key }}" data-current-status="{{ status }}">
+          <div class="shadowing-sentence-head">
+            <span>{{ "%02d"|format(loop.index) }}</span>
+            <b>{{ sentence.speaker }}</b>
+            <small class="sentence-practice-count">{% if sentence.progress %}练习 {{ sentence.progress.practice_count }} 次{% else %}尚未标记{% endif %}</small>
+          </div>
+          <p class="shadowing-transcript-text">{{ sentence.text }}</p>
+          <div class="shadowing-notes">
+            {% if sentence.pronunciation_note %}<p><b>PRONUNCIATION</b>{{ sentence.pronunciation_note }}</p>{% endif %}
+            {% if sentence.connected_speech_note %}<p><b>CONNECTED SPEECH</b>{{ sentence.connected_speech_note }}</p>{% endif %}
+          </div>
+          {% if sentence.chunks %}<div class="shadowing-chunks">{% for chunk in sentence.chunks %}<span>{{ chunk }}</span>{% endfor %}</div>{% endif %}
+          <div class="shadowing-status-buttons" role="group" aria-label="第 {{ loop.index }} 句练习状态">
+            <button type="button" data-speaking-status="need_practice"{% if status == 'need_practice' %} class="is-active"{% endif %}>需要练习</button>
+            <button type="button" data-speaking-status="good"{% if status == 'good' %} class="is-active"{% endif %}>不错</button>
+            <button type="button" data-speaking-status="mastered"{% if status == 'mastered' %} class="is-active"{% endif %}>已掌握</button>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="retelling-editor-card">
+      <header>
+        <p class="eyebrow">HIDE → RETELL → REFINE</p>
+        <h2>用自己的英语复述</h2>
+        <p>{{ workspace.retelling_prompt }}</p>
+      </header>
+      {% if workspace.retelling_guidance %}
+      <ul class="retelling-guidance">{% for item in workspace.retelling_guidance %}<li>{{ item }}</li>{% endfor %}</ul>
+      {% endif %}
+
+      <label class="writing-field">
+        <span>MY OUTLINE · 我的提纲</span>
+        <textarea id="speakingOutline" rows="4" maxlength="12000" placeholder="人物、目的、关键信息、顺序…">{{ record.written_outline }}</textarea>
+      </label>
+      <label class="writing-field">
+        <span>CHUNKS I WANT TO USE · 每行或逗号分隔</span>
+        <textarea id="speakingVocabulary" rows="4" maxlength="4000" placeholder="I'd definitely recommend…&#10;for a special occasion&#10;It's got a great atmosphere.">{{ record.intended_vocabulary_text }}</textarea>
+      </label>
+      <label class="writing-field">
+        <span>MY RETELLING · 可选文字记录</span>
+        <textarea id="speakingRetelling" rows="8" maxlength="20000" spellcheck="true" placeholder="先开口复述；需要保留文字时再写在这里…">{{ record.retelling_text }}</textarea>
+      </label>
+      <label class="writing-field">
+        <span>MISTAKES / BLOCKS · 卡顿或错误</span>
+        <textarea id="speakingMistakes" rows="4" maxlength="12000" placeholder="我想表达什么？卡在哪里？">{{ record.mistakes }}</textarea>
+      </label>
+      <label class="writing-field">
+        <span>IMPROVED VERSION · 改进版</span>
+        <textarea id="speakingImproved" rows="6" maxlength="20000" spellcheck="true" placeholder="把最不自然的部分改成更清楚、自然的英语…">{{ record.improved_version }}</textarea>
+      </label>
+
+      <div class="speaking-assessment-grid">
+        <label><span>句子状态</span><select id="speakingPracticeStatus">
+          <option value="need_practice"{% if record.practice_status == 'need_practice' %} selected{% endif %}>需要练习</option>
+          <option value="good"{% if record.practice_status == 'good' %} selected{% endif %}>不错</option>
+          <option value="mastered"{% if record.practice_status == 'mastered' %} selected{% endif %}>已掌握</option>
+        </select></label>
+        <label><span>难度 Difficulty</span><select id="speakingDifficulty">
+          <option value="">暂不评分</option>
+          {% for value in range(1, 6) %}<option value="{{ value }}"{% if record.perceived_difficulty == value %} selected{% endif %}>{{ value }} / 5</option>{% endfor %}
+        </select></label>
+        <label><span>信心 Confidence</span><select id="speakingConfidence">
+          <option value="">暂不评分</option>
+          {% for value in range(1, 6) %}<option value="{{ value }}"{% if record.confidence == value %} selected{% endif %}>{{ value }} / 5</option>{% endfor %}
+        </select></label>
+      </div>
+
+      <div class="voice-recording-placeholder">
+        <span>VOICE RECORDING · LATER</span>
+        <p>本版先记录文本、计时和练习状态；录音引用接口已预留，M17 之后可接入录音与语音转写。</p>
+      </div>
+
+      <footer class="writing-submit-row">
+        <div>
+          <strong id="speakingSaveState">{% if record.status == 'submitted' %}第 {{ record.submission_revision }} 版已提交{% elif record.id %}草稿已保存{% else %}尚未保存{% endif %}</strong>
+          <small>输入后自动保存；编辑已提交版本会生成新的提交快照。</small>
+        </div>
+        <button class="button button-primary" id="submitSpeaking" type="button">完成本次练习</button>
+      </footer>
+      <div class="writing-submission-note{% if record.status != 'submitted' %} is-hidden{% endif %}" id="speakingSubmissionNote">
+        <strong>口语练习已记录</strong>
+        <p>本次练习已进入 History 与 Progress。当前只保存真实练习信号，不伪造 AI 口语分数。</p>
+      </div>
+    </section>
+  </div>
+  <p class="today-action-status" id="speakingActionStatus" role="status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/speaking.js') }}?v=1" defer></script>{% endblock %}

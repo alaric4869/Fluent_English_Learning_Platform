@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, String, Text
+from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -45,6 +45,7 @@ class RetellingRecordModel(Base):
     prompt: Mapped[str] = mapped_column(Text)
     written_outline: Mapped[str] = mapped_column(Text, default="")
     intended_vocabulary: Mapped[list[str]] = mapped_column(JSON, default=list)
+    retelling_text: Mapped[str] = mapped_column(Text, default="")
     mistakes: Mapped[str] = mapped_column(Text, default="")
     improved_version: Mapped[str] = mapped_column(Text, default="")
     practice_status: Mapped[str] = mapped_column(String(40), index=True)
@@ -55,9 +56,23 @@ class RetellingRecordModel(Base):
     voice_recording_reference: Mapped[str | None] = mapped_column(
         String(1000), nullable=True
     )
+    workspace_managed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    active_duration_seconds: Mapped[int] = mapped_column(Integer, default=0)
+    perceived_difficulty: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    confidence: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    status: Mapped[str] = mapped_column(String(30), default="in_progress", index=True)
+    submission_revision: Mapped[int] = mapped_column(Integer, default=0)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    submitted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+    submissions: Mapped[list["SpeakingRetellingSubmissionModel"]] = relationship(
+        back_populates="retelling_record",
+        cascade="all, delete-orphan",
     )
 
 

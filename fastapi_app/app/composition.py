@@ -108,6 +108,9 @@ def build_application_services(session: Session) -> ApplicationServices:
     speaking_service = SpeakingPracticeService(
         SqlAlchemySpeakingPracticeRepository(session),
         resource_repository,
+        evidence_service,
+        profile_service,
+        weakness_service,
     )
     writing_service = WritingPracticeService(
         SqlAlchemyWritingRepository(session),

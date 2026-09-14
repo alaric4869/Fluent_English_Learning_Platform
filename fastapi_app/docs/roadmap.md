@@ -102,10 +102,10 @@
 
 ## M14 · Speaking and retelling workspace
 
-- Add a focused Speaking / retelling workspace around the existing typed record.
-- Guide Listen → Pause → Repeat → Hide transcript → Retell without adding AI evaluation yet.
-- Save outline, intended chunks, mistakes and improved version against the source resource.
-- Keep `voice_recording_reference` as the stable seam for a later recording adapter.
+- Added a focused Speaking / retelling workspace around the existing typed record.
+- Uses G20 Test 1 Part 1 real audio and proofread script excerpts for Listen → Pause → Repeat → Imitate → Hide transcript → Retell.
+- Persists per-sentence practice state/count, autosaved current work and immutable submission revisions.
+- Emits subjective learning evidence without a fabricated score and keeps `voice_recording_reference` as the stable seam for a later recording adapter.
 
 ## M15 · Content import and expansion
 

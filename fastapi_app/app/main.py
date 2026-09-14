@@ -10,6 +10,7 @@ from app.api.routes.listening import router as listening_router
 from app.api.routes.review import router as review_router
 from app.api.routes.notebook import router as notebook_router
 from app.api.routes.resources import router as resources_router
+from app.api.routes.speaking import router as speaking_router
 from app.api.routes.today import router as today_router
 from app.api.routes.writing import router as writing_router
 from app.config import FASTAPI_ROOT, settings
@@ -37,4 +38,5 @@ app.include_router(listening_router)
 app.include_router(review_router)
 app.include_router(notebook_router)
 app.include_router(resources_router)
+app.include_router(speaking_router)
 app.include_router(writing_router)

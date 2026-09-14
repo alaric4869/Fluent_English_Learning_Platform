@@ -135,6 +135,8 @@ def _resource_href(resource: LearningResourceDetails | None) -> str | None:
         return None
     if resource.skill is Skill.LISTENING:
         return f"/listening/{resource.id}"
+    if resource.skill is Skill.SPEAKING:
+        return f"/speaking/{resource.id}"
     if resource.skill is Skill.WRITING:
         return f"/writing/{resource.id}"
     practice_slug = resource.content.get("practice_set_slug")

@@ -245,6 +245,121 @@
   ],
   "learning_resources": [
     {
+      "slug": "g20-test-1-speaking-restaurants",
+      "title": "G20 · Restaurant Recommendations",
+      "resource_type": "shadowing_retelling",
+      "skill": "speaking",
+      "topic": "IELTS General Training · Restaurants & Celebrations",
+      "difficulty": "intermediate",
+      "estimated_duration_minutes": 25,
+      "local_asset_reference": "ielts_paper/G20真题.pdf#page=96",
+      "description": "使用 G20 Test 1 Part 1 真实双人对话，逐句跟读、模仿自然语流，再隐藏文本完成复述。",
+      "tags": ["ielts", "general-training", "g20", "test-1", "speaking", "shadowing", "retelling", "restaurants"],
+      "priority": 88,
+      "content": {
+        "book_number": 20,
+        "test_number": 1,
+        "source_pdf_pages": [96, 97],
+        "speaking_practice": {
+          "audio": {
+            "practice_set_slug": "g20-test-1-listening",
+            "section_number": 1,
+            "label": "G20 Test 1 · Listening Part 1 · real two-person conversation"
+          },
+          "context": "A woman asks a friend for restaurant advice because she is planning her sister's 30th-birthday celebration.",
+          "workflow": ["Listen", "Pause", "Repeat", "Imitate", "Hide transcript", "Retell"],
+          "sentences": [
+            {
+              "key": "restaurant-01",
+              "speaker": "WOMAN",
+              "text": "I've been meaning to ask you for some advice about restaurants – I need to book somewhere to celebrate my sister's 30th birthday and I liked the sound of that place you went to for your mum's 50th.",
+              "pronunciation_note": "Keep the opening light; do not stress every word. Stress meaning, ask, advice, restaurants and birthday.",
+              "connected_speech_note": "been meaning to and need to use a weak ‘to’; liked the links the final /d/ into ‘the’.",
+              "chunks": ["I've been meaning to ask you…", "ask someone for advice", "I liked the sound of…"]
+            },
+            {
+              "key": "restaurant-02",
+              "speaker": "MAN",
+              "text": "The Junction? Yeah, I'd definitely recommend that for a special occasion. We had a great time there. Everyone really enjoyed it.",
+              "pronunciation_note": "Emphasise definitely, special occasion and great time to sound genuinely positive.",
+              "connected_speech_note": "I’d definitely is one smooth unit; had a links naturally before the vowel in ‘a’.",
+              "chunks": ["I'd definitely recommend…", "for a special occasion", "We had a great time."]
+            },
+            {
+              "key": "restaurant-03",
+              "speaker": "WOMAN",
+              "text": "Where is it again? I can't remember.",
+              "pronunciation_note": "Use a rising tone on the genuine question, then a falling tone on the explanation.",
+              "connected_speech_note": "Where is commonly flows together; can’t remember has the main stress on remember.",
+              "chunks": ["Where is it again?", "I can't remember."]
+            },
+            {
+              "key": "restaurant-04",
+              "speaker": "MAN",
+              "text": "It's on Greyson Street, only about a two-minute walk from the station.",
+              "pronunciation_note": "Stress Greyson Street, two-minute walk and station; reduce the smaller grammar words.",
+              "connected_speech_note": "It’s on links consonant to vowel; about a is spoken as one rhythm group.",
+              "chunks": ["only about a two-minute walk", "from the station"]
+            },
+            {
+              "key": "restaurant-05",
+              "speaker": "WOMAN",
+              "text": "Oh, that's good. I'd prefer not to have to drive anywhere. But I don't want to have to walk too far either.",
+              "pronunciation_note": "Contrast drive anywhere with walk too far; let the second sentence sound like a practical condition.",
+              "connected_speech_note": "have to is usually reduced in natural speech; want to is also compressed and unstressed.",
+              "chunks": ["I'd prefer not to…", "I don't want to have to…", "too far either"]
+            },
+            {
+              "key": "restaurant-06",
+              "speaker": "MAN",
+              "text": "Yes, the location's perfect but that's not necessarily why I'd recommend it. The food's amazing. If you like fish, it's probably the best restaurant in town for that.",
+              "pronunciation_note": "Use contrastive stress on not necessarily and why; then sound enthusiastic on amazing and best.",
+              "connected_speech_note": "location’s and food’s keep short contractions; why I’d links across the two vowels.",
+              "chunks": ["That's not necessarily why…", "The food's amazing.", "the best … in town"]
+            },
+            {
+              "key": "restaurant-07",
+              "speaker": "WOMAN",
+              "text": "Is it really expensive?",
+              "pronunciation_note": "Stress really and expensive, with a clear rising question tone.",
+              "connected_speech_note": "Is it links smoothly; avoid pausing between the three words.",
+              "chunks": ["Is it really expensive?"]
+            },
+            {
+              "key": "restaurant-08",
+              "speaker": "MAN",
+              "text": "It's certainly not cheap but for a special occasion I think it's fine. It's got a great atmosphere and before dinner you can go up on the roof and have a drink.",
+              "pronunciation_note": "Contrast not cheap with fine. Keep the list of benefits lively rather than reading it word by word.",
+              "connected_speech_note": "for a and go up link into the following vowel; can is weak when it is not contrasted.",
+              "chunks": ["It's certainly not cheap, but…", "It's got a great atmosphere.", "go up on the roof", "have a drink"]
+            },
+            {
+              "key": "restaurant-09",
+              "speaker": "WOMAN",
+              "text": "Sounds good. So that's definitely a possibility then. Is there anywhere else you can think of?",
+              "pronunciation_note": "Let Sounds good fall; use a rising tone to invite another suggestion at the end.",
+              "connected_speech_note": "Is there and think of link naturally; can stays weak before think.",
+              "chunks": ["Sounds good.", "That's definitely a possibility.", "Can you think of anywhere else?"]
+            },
+            {
+              "key": "restaurant-10",
+              "speaker": "MAN",
+              "text": "If you want somewhere a bit less formal, then you could try Paloma.",
+              "pronunciation_note": "Stress less formal and Paloma; keep the recommendation friendly and tentative.",
+              "connected_speech_note": "If you and could try are compact rhythm groups; could is weak before try.",
+              "chunks": ["If you want somewhere…", "a bit less formal", "you could try…"]
+            }
+          ],
+          "retelling_prompt": "Retell the conversation in your own words. Explain why the woman needs a restaurant, what matters to her, which restaurant the man first recommends, and the reasons for his recommendation.",
+          "retelling_guidance": [
+            "Do not memorise every sentence; keep the meaning and sequence.",
+            "Use at least three chunks from the conversation naturally.",
+            "Aim for 60–90 seconds, then write a short version if you want a record for later AI feedback."
+          ]
+        }
+      }
+    },
+    {
       "slug": "g20-test-1-writing-task-1",
       "title": "G20 · Test 1 Writing Task 1",
       "resource_type": "ielts_writing",

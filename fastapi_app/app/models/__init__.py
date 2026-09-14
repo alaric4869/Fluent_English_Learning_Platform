@@ -12,6 +12,10 @@ from app.models.practice_notes import (
     RetellingRecordModel,
     SavedSentenceModel,
 )
+from app.models.speaking import (
+    SpeakingRetellingSubmissionModel,
+    SpeakingSentenceProgressModel,
+)
 from app.models.learner_profile import (
     LearnerProfile,
     LearnerProfileSnapshotModel,
@@ -43,6 +47,8 @@ __all__ = [
     "ReviewItemModel",
     "SavedSentenceModel",
     "SkillPerformance",
+    "SpeakingRetellingSubmissionModel",
+    "SpeakingSentenceProgressModel",
     "StudySession",
     "StudyPlanItemModel",
     "StudyPlanModel",
