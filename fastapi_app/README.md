@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan with timed study records, an intensive-listening workspace for real audio/video and sentence marking, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Completed IELTS submissions produce objective question-level evidence; completed daily modules produce separate duration/difficulty/confidence evidence without inventing an accuracy. Both refresh the provider-neutral Learner Profile and explainable skill assessment.
+This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan with timed study records, an intensive-listening workspace for real audio/video and sentence marking, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening, Reading and web-native Writing. Objective IELTS submissions produce question-level evidence; Writing and completed daily modules produce duration/difficulty/confidence evidence without inventing an accuracy. Both refresh the provider-neutral Learner Profile and explainable skill assessment.
 
 ## Run locally
 
@@ -12,7 +12,7 @@ python3.12 -m venv .venv
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open a focused workspace at `/listening/{resource_id}`.
+Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open at `/listening/{resource_id}` and Writing tasks at `/writing/{resource_id}`.
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
@@ -29,6 +29,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/resources/`: provider-neutral resource candidates and replaceable recommendation policy.
 - `domain/study_plan/`: configurable time allocation and a replaceable plan-generator contract.
 - `domain/study_session/`: timed daily-module lifecycle and persistence contract.
+- `domain/writing/`: web-native writing draft/submission contracts, separate from objective grading.
 - `domain/adaptive_learning/`: typed system/manual decisions and append-only override history.
 - `domain/history/` and `domain/analytics/`: reporting contracts and deterministic progress calculations.
 - `domain/dashboard/` and `domain/weekly_review/`: composed read models and deterministic week calculations.
@@ -48,7 +49,7 @@ The profile algorithm uses the latest five sessions per skill. Objective evidenc
 
 The initial weakness detector examines the latest four profile snapshots. It requires at least two scored snapshots and two consecutive threshold-confirming snapshots before labelling a skill `weak` or `strong`; missing evidence is recorded as `insufficient_evidence`, never as weakness. Each assessment stores the evidence snapshot IDs and measurable reasons that produced it.
 
-The initial planner starts from Listening 30, Speaking 25, Reading 30, and Vocabulary/Review 25 minutes. Confirmed weak/developing skills receive gradual increases, confirmed strong skills receive only a small reduction, and the result is capped at 120 minutes. Resource selection prefers unused, appropriately difficult material and penalizes recently studied or recently assigned material so adjacent dates rotate when alternatives exist.
+The planner keeps four modules: Listening 30, Speaking 25, Vocabulary/Review 25, plus a 30-minute Reading or Writing module that alternates deterministically by date. Confirmed weak/developing skills receive gradual increases, confirmed strong skills receive only a small reduction, and the result is capped at 120 minutes. Resource selection prefers unused, appropriately difficult material and penalizes recently studied or recently assigned material so adjacent dates rotate when alternatives exist.
 
 Every initial plan item creates a `system_recommendation` decision. A learner override changes only the current resource/duration, retains the system values, recalculates the plan total, and appends a `manual_override` decision. Repeating the same request is a no-op; incompatible resources and out-of-range durations are rejected.
 

@@ -12,6 +12,7 @@ SKILL_PRESENTATION = {
     Skill.LISTENING: ("LI", "精听 Listening"),
     Skill.SPEAKING: ("SP", "跟读与复述 Speaking"),
     Skill.READING: ("RE", "阅读 Reading"),
+    Skill.WRITING: ("WR", "写作 Writing"),
     Skill.VOCABULARY: ("VO", "词块与复习 Vocabulary"),
 }
 SYDNEY = ZoneInfo("Australia/Sydney")

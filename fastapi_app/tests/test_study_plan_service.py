@@ -9,6 +9,7 @@ from app.domain.learner_profile.rule_based_evaluator import RuleBasedSkillEvalua
 from app.domain.resources.rule_based_recommender import RuleBasedResourceRecommender
 from app.domain.study_plan.rule_based_generator import RuleBasedStudyPlanGenerator
 from app.domain.study_plan.entities import StudyPlanItemStatus, StudyPlanStatus
+from app.domain.study_plan.rotation import daily_plan_skills
 from app.domain.weakness_detection.rule_based_detector import RuleBasedWeaknessDetector
 from app.models.learning_evidence import LearningResource
 from app.models.study_plan import StudyPlanItemModel, StudyPlanModel
@@ -44,7 +45,7 @@ def test_daily_plan_is_persisted_once_with_four_independent_items() -> None:
         assert repeated.created is False
         assert repeated.id == first.id
         assert first.total_minutes == 110
-        assert [item.skill for item in first.items] == list(Skill)
+        assert [item.skill for item in first.items] == list(daily_plan_skills(PLAN_DATE))
         assert all(item.resource_id is not None for item in first.items)
         assert all(item.system_resource_id == item.resource_id for item in first.items)
         assert all(item.system_planned_minutes == item.planned_minutes for item in first.items)
@@ -78,6 +79,13 @@ def test_next_date_rotates_resources_that_were_already_assigned() -> None:
             date(2026, 9, 15),
         )
 
+        assert [item.skill for item in second.items] == [
+            Skill.LISTENING,
+            Skill.SPEAKING,
+            Skill.WRITING,
+            Skill.VOCABULARY,
+        ]
+        assert second.total_minutes == 110
         assert [item.resource_id for item in first.items] != [
             item.resource_id for item in second.items
         ]

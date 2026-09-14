@@ -8,6 +8,7 @@ SKILL_PRESENTATION = {
     Skill.LISTENING: ("LI", "听力 Listening"),
     Skill.SPEAKING: ("SP", "口语 Speaking"),
     Skill.READING: ("RE", "阅读 Reading"),
+    Skill.WRITING: ("WR", "写作 Writing"),
     Skill.VOCABULARY: ("VO", "词汇 Vocabulary"),
 }
 

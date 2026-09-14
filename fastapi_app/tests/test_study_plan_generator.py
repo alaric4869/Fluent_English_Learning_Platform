@@ -3,6 +3,7 @@ from datetime import date
 from app.domain.learning_evidence.entities import Skill
 from app.domain.study_plan.entities import SkillPlanningSignal, StudyPlanGenerationContext
 from app.domain.study_plan.rule_based_generator import RuleBasedStudyPlanGenerator
+from app.domain.study_plan.rotation import daily_plan_skills
 from app.domain.weakness_detection.entities import SkillClassification
 
 
@@ -11,7 +12,12 @@ PLAN_DATE = date(2026, 9, 14)
 
 def test_no_evidence_uses_the_default_110_minute_plan() -> None:
     plan = RuleBasedStudyPlanGenerator().generate(
-        _context({skill: SkillClassification.INSUFFICIENT_EVIDENCE for skill in Skill})
+        _context(
+            {
+                skill: SkillClassification.INSUFFICIENT_EVIDENCE
+                for skill in daily_plan_skills(PLAN_DATE)
+            }
+        )
     )
 
     assert plan.total_minutes == 110
@@ -40,7 +46,12 @@ def test_confirmed_weakness_increases_time_and_strength_reduces_it_gradually() -
 
 def test_daily_cap_reduces_only_the_adaptive_increment() -> None:
     plan = RuleBasedStudyPlanGenerator().generate(
-        _context({skill: SkillClassification.WEAK for skill in Skill})
+        _context(
+            {
+                skill: SkillClassification.WEAK
+                for skill in daily_plan_skills(PLAN_DATE)
+            }
+        )
     )
 
     assert plan.total_minutes == 120
@@ -66,6 +77,21 @@ def _context(
                 assessment_reasons=("真实评估原因",),
                 resource_recommendation=None,
             )
-            for skill in Skill
+            for skill in daily_plan_skills(PLAN_DATE)
         ),
+    )
+
+
+def test_reading_and_writing_rotate_without_adding_a_fifth_daily_module() -> None:
+    assert daily_plan_skills(date(2026, 9, 14)) == (
+        Skill.LISTENING,
+        Skill.SPEAKING,
+        Skill.READING,
+        Skill.VOCABULARY,
+    )
+    assert daily_plan_skills(date(2026, 9, 15)) == (
+        Skill.LISTENING,
+        Skill.SPEAKING,
+        Skill.WRITING,
+        Skill.VOCABULARY,
     )

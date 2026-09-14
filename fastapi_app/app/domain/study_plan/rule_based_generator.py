@@ -17,6 +17,7 @@ SKILL_LABELS = {
     Skill.LISTENING: "听力",
     Skill.SPEAKING: "口语",
     Skill.READING: "阅读",
+    Skill.WRITING: "写作",
     Skill.VOCABULARY: "词汇与复习",
 }
 
@@ -34,10 +35,13 @@ class RuleBasedStudyPlanGenerator:
 
     def generate(self, context: StudyPlanGenerationContext) -> StudyPlanProposal:
         signals = {item.skill: item for item in context.skill_signals}
+        skill_order = tuple(item.skill for item in context.skill_signals)
+        if len(signals) != len(skill_order):
+            raise ValueError("Study-plan skills must be unique")
         planned_minutes = {
-            skill: self._desired_minutes(signals.get(skill)) for skill in Skill
+            skill: self._desired_minutes(signals.get(skill)) for skill in skill_order
         }
-        capped_skills = self._cap_total(planned_minutes, signals)
+        capped_skills = self._cap_total(planned_minutes, signals, skill_order)
         items = tuple(
             self._build_item(
                 skill,
@@ -46,7 +50,7 @@ class RuleBasedStudyPlanGenerator:
                 signals.get(skill),
                 skill in capped_skills,
             )
-            for position, skill in enumerate(Skill, start=1)
+            for position, skill in enumerate(skill_order, start=1)
         )
         total_minutes = sum(item.planned_minutes for item in items)
         cap_explanation = (
@@ -56,6 +60,7 @@ class RuleBasedStudyPlanGenerator:
         )
         explanation = (
             f"计划由 {self.generator_version} 生成，总时长 {total_minutes} 分钟。",
+            _literacy_rotation_reason(skill_order),
             *cap_explanation,
         )
         return StudyPlanProposal(
@@ -89,15 +94,16 @@ class RuleBasedStudyPlanGenerator:
         self,
         planned_minutes: dict[Skill, int],
         signals: dict[Skill, SkillPlanningSignal],
+        skill_order: tuple[Skill, ...],
     ) -> set[Skill]:
         excess = sum(planned_minutes.values()) - self.config.maximum_total_minutes
         if excess <= 0:
             return set()
         reduction_order = sorted(
-            Skill,
+            skill_order,
             key=lambda skill: (
                 _adaptation_priority(signals[skill].classification),
-                list(Skill).index(skill),
+                skill_order.index(skill),
             ),
         )
         capped: set[Skill] = set()
@@ -176,3 +182,11 @@ def _duration_reason(
         f"{label}从默认 {default} 分钟{direction}到 {planned} 分钟，"
         f"因为当前状态为 {classification.value}。"
     )
+
+
+def _literacy_rotation_reason(skills: tuple[Skill, ...]) -> str:
+    if Skill.WRITING in skills:
+        return "阅读与写作按日期轮换；今天安排写作，保持每日四个核心模块。"
+    if Skill.READING in skills:
+        return "阅读与写作按日期轮换；今天安排阅读，保持每日四个核心模块。"
+    return "本计划使用调用方指定的技能组合。"

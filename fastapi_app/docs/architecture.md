@@ -32,6 +32,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/practice.py`: translates HTTP requests into use-case calls and safely streams approved local audio files.
 - `api/routes/today.py`: renders today's persisted plan and exposes typed override/completion actions.
 - `api/routes/listening.py`: renders the focused real-media/transcript workspace and exposes sentence-marking actions.
+- `api/routes/writing.py`: renders web-native IELTS tasks and exposes typed draft/submission actions.
 - `api/routes/insights.py`: renders History and Progress from reporting services without querying tables.
 - `api/routes/review.py`: renders the due queue/chunk library and validates typed create/rating requests.
 - `api/routes/notebook.py`: renders notes, difficult sentences and retellings and exposes their typed write actions.
@@ -40,8 +41,9 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `presenters/listening.py`: derives safe media presentation and stable transcript sentences without persistence.
+- `presenters/writing.py`: builds the writing workspace view without scoring or database access.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
-- `domain/learning_evidence/`: the four initial skills and typed, provider-neutral evidence records.
+- `domain/learning_evidence/`: the five tracked skills and typed, provider-neutral evidence records.
 - `domain/learner_profile/`: `SkillEvaluator` interface, centralized configuration and deterministic baseline implementation.
 - `domain/weakness_detection/`: `WeaknessDetector` interface, centralized thresholds and deterministic confirmation rules.
 - `domain/resources/`: resource selection inputs and the replaceable `ResourceRecommender` contract.
@@ -54,10 +56,12 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/vocabulary/`: chunk entities, mastery states and repository contract.
 - `domain/review/`: scheduler contract, centralized intervals and deterministic fixed-interval implementation.
 - `domain/listening/`, `domain/speaking/` and `domain/notebook/`: feature-specific records and repository contracts; none imports FastAPI or SQLAlchemy.
+- `domain/writing/`: revisioned draft/submission contracts; it deliberately does not define a fake objective grader.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
 - `services/study_session.py`: starts, resumes, saves and completes Today sessions, then refreshes adaptive evidence.
+- `services/writing.py`: validates task content and drafts, submits immutable revisions and emits generic evidence.
 - `repositories/sqlalchemy_ielts.py`: the only place that reads and writes IELTS database tables.
 - `repositories/sqlalchemy_learning_evidence.py`: idempotently persists sessions, exercise attempts and skill performance.
 - `repositories/sqlalchemy_learner_profile.py`: writes immutable profile snapshots and reads the latest profile.
@@ -70,6 +74,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `repositories/sqlalchemy_vocabulary.py`: persists normalized chunks together with their initial review item.
 - `repositories/sqlalchemy_review.py`: reads the due queue and atomically appends idempotent review attempts.
 - `repositories/sqlalchemy_listening.py`, `sqlalchemy_speaking.py` and `sqlalchemy_notebook.py`: persistence adapters for personal practice records.
+- `repositories/sqlalchemy_writing.py`: persists one autosaved draft and immutable submission revisions.
 - `repositories/sqlalchemy_resources.py`: combines stable resource content, learner-specific state and derived study history without leaking SQL into pages.
 - `models/ielts.py`: stable relational persistence concepts.
 - `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
@@ -93,7 +98,7 @@ Structured content contains semantic blocks such as `table`, `figure`, and quest
 
 - A single local learner key is used until authentication is added.
 - One working attempt is stored per learner and practice set. Attempt history and retakes will change this to multiple immutable submissions.
-- Only G20 Test 1 Listening and Reading have been curated and quality checked.
+- G20 Test 1 Listening, Reading and both Writing tasks have been curated and quality checked.
 - G20 Test 1 has no map question. The figure block preserves a verified crop and answer association; coordinate overlays should be added and visually checked when a real map resource is curated.
 
 ## Implemented learning-data pipeline
@@ -112,7 +117,7 @@ The conversion belongs in an application service and repository abstraction, not
 
 ## Implemented learner profile pipeline
 
-`LearnerProfileService` reads recent evidence for all four initial skills and calls the replaceable `SkillEvaluator`. `RuleBasedSkillEvaluator` uses centrally configured weights and produces structured inputs, normalized weights, evidence sufficiency, trend and a numeric explanation. It deliberately does not classify skills as weak or strong.
+`LearnerProfileService` reads recent evidence for all five tracked skills and calls the replaceable `SkillEvaluator`. `RuleBasedSkillEvaluator` uses centrally configured weights and produces structured inputs, normalized weights, evidence sufficiency, trend and a numeric explanation. It deliberately does not classify skills as weak or strong.
 
 Every snapshot stores the exact `SkillPerformance` IDs used to calculate it. A fingerprint of those IDs plus the algorithm version makes recalculation idempotent. When new evidence arrives, a new immutable snapshot is stored instead of overwriting the previous profile.
 
@@ -185,6 +190,14 @@ Notebook stores three stable concepts rather than one generic JSON document: typ
 Listening sentence status describes hearing comprehension and is changed only by an explicit learner action. Review mastery describes recall scheduling and is changed only by a submitted review rating. Keeping these dimensions separate avoids a hidden side effect such as an `Easy` review silently changing a sentence to `mastered`.
 
 Speaking retellings preserve the prompt, outline, intended chunks, identified mistakes and improved version. `voice_recording_reference` is nullable and currently remains empty; adding recording later does not require reshaping existing records.
+
+## Implemented IELTS Writing workspace
+
+Writing prompts are stored as structured `LearningResource.content`, so the browser renders real task text without loading the source PDF. `WritingPracticeService` validates the resource and word threshold, while the browser owns only timer display, word counting and autosave requests.
+
+One `WritingDraft` retains current editable work. An explicit submit creates an immutable `WritingSubmission` revision and idempotent `StudySession`/`SkillPerformance` evidence. The evidence includes word count, active time and self-ratings with `NULL` accuracy. Future IELTS rubric evaluation will be a separate provider-neutral service and cannot overwrite the learner's original response.
+
+The date rotation policy keeps Listening, Speaking and Vocabulary, then selects Reading or Writing for the fourth learning concern. It is deterministic and independently testable; existing saved daily plans remain unchanged.
 
 ## Implemented permanent Resource Library
 

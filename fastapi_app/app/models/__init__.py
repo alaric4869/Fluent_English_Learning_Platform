@@ -23,6 +23,7 @@ from app.models.weakness_detection import (
     WeaknessAssessmentRunModel,
     WeaknessSkillAssessmentModel,
 )
+from app.models.writing import WritingDraftModel, WritingSubmissionModel
 
 __all__ = [
     "AdaptationDecisionModel",
@@ -48,4 +49,6 @@ __all__ = [
     "VocabularyItemModel",
     "WeaknessAssessmentRunModel",
     "WeaknessSkillAssessmentModel",
+    "WritingDraftModel",
+    "WritingSubmissionModel",
 ]

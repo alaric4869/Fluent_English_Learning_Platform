@@ -36,8 +36,10 @@ EXPECTED_TABLES = {
     "vocabulary_items",
     "weakness_assessment_runs",
     "weakness_skill_assessments",
+    "writing_drafts",
+    "writing_submissions",
 }
-HEAD_REVISION = "0011_module_sessions"
+HEAD_REVISION = "0012_writing_practice"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:

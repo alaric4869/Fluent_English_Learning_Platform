@@ -16,6 +16,7 @@ SKILL_LABELS = {
     Skill.LISTENING: "听力",
     Skill.SPEAKING: "口语",
     Skill.READING: "阅读",
+    Skill.WRITING: "写作",
     Skill.VOCABULARY: "词汇",
 }
 

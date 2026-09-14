@@ -63,9 +63,9 @@ def test_submitted_ielts_attempt_becomes_immutable_learning_evidence() -> None:
         assert _count(session, SkillPerformance) == 1
         assert _count(session, LearnerProfile) == 1
         assert _count(session, LearnerProfileSnapshotModel) == 1
-        assert _count(session, LearnerSkillSnapshot) == 4
+        assert _count(session, LearnerSkillSnapshot) == 5
         assert _count(session, WeaknessAssessmentRunModel) == 1
-        assert _count(session, WeaknessSkillAssessmentModel) == 4
+        assert _count(session, WeaknessSkillAssessmentModel) == 5
         first_performance = session.scalar(select(SkillPerformance))
         assert first_performance is not None
         assert first_performance.skill == "listening"
@@ -76,6 +76,7 @@ def test_submitted_ielts_attempt_becomes_immutable_learning_evidence() -> None:
             "listening",
             "speaking",
             "reading",
+            "writing",
             "vocabulary",
         ]
         listening = next(item for item in first_profile.skills if item.skill.value == "listening")
@@ -122,9 +123,9 @@ def test_submitted_ielts_attempt_becomes_immutable_learning_evidence() -> None:
         assert _count(session, ExerciseAttempt) == 80
         assert _count(session, SkillPerformance) == 2
         assert _count(session, LearnerProfileSnapshotModel) == 2
-        assert _count(session, LearnerSkillSnapshot) == 8
+        assert _count(session, LearnerSkillSnapshot) == 10
         assert _count(session, WeaknessAssessmentRunModel) == 2
-        assert _count(session, WeaknessSkillAssessmentModel) == 8
+        assert _count(session, WeaknessSkillAssessmentModel) == 10
         sessions = session.scalars(select(StudySession).order_by(StudySession.source_revision)).all()
         assert [item.source_revision for item in sessions] == [1, 2]
         assert [item.accuracy for item in sessions] == [1.0, 39 / 40]

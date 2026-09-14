@@ -28,7 +28,7 @@ These concepts are now persisted:
 - `LearnerProfileSnapshot`: immutable calculation timestamp, algorithm version and evidence fingerprint.
 - `LearnerSkillSnapshot`: one row per skill with score, evidence status, averages, trend, calculation weights, evidence IDs and explanation.
 
-A snapshot always contains Listening, Speaking, Reading and Vocabulary. A skill with no evidence stores `NULL` as its score and `no_data` as its status. This distinguishes unknown ability from poor ability.
+A snapshot always contains Listening, Speaking, Reading, Writing and Vocabulary. A skill with no evidence stores `NULL` as its score and `no_data` as its status. This distinguishes unknown ability from poor ability.
 
 ## Implemented weakness-assessment slice
 
@@ -75,6 +75,13 @@ The initial configured gaps are 1, 2, 4, 7, 16 and then 30 days. Normal `Good` r
 - `RetellingRecord`: speaking prompt, outline, intended chunks, mistakes, improved version and nullable future recording reference.
 
 Notebook content remains separated by domain responsibility instead of being stored in one arbitrary JSON document.
+
+## Implemented Writing slice
+
+- `WritingDraft`: the learner's current response, outline, word count, active time, self-ratings and latest submission revision for one resource.
+- `WritingSubmission`: an immutable response/outline snapshot for one explicit submission revision.
+
+The writing task itself remains a `LearningResource` with structured task metadata. A submission produces a generic `StudySession` and `SkillPerformance` with `NULL` accuracy plus word-count, duration and self-assessment signals. No rule-based code invents IELTS rubric scores; a later evaluator writes separate measured feedback through an application service.
 
 ## Implemented permanent Resource Library slice
 

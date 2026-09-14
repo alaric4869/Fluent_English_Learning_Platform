@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ workspace.resource.title }} · Fluent Daily English{% endblock %}
+{% block topbar_label %}IELTS General Training · Writing{% endblock %}
+{% block content %}
+<div
+  class="page-wrap writing-workspace"
+  data-resource-id="{{ workspace.resource.id }}"
+  data-minimum-words="{{ workspace.minimum_words }}"
+  data-saved-seconds="{{ draft.active_duration_seconds }}"
+  data-draft-status="{{ draft.status.value if draft.status.value is defined else draft.status }}"
+>
+  <header class="writing-heading">
+    <div>
+      <a class="back-link" href="/ielts">← 返回 IELTS G</a>
+      <p class="eyebrow">CAMBRIDGE 20 · TEST {{ workspace.resource.content.get("test_number", 1) }}</p>
+      <h1>{{ workspace.task_type }}</h1>
+      <p>{{ workspace.instructions }} · 至少 {{ workspace.minimum_words }} 词</p>
+    </div>
+    <div class="writing-timer-card">
+      <small>ACTIVE TIME · TARGET {{ workspace.recommended_minutes }} MIN</small>
+      <strong id="writingTimer">00:00</strong>
+      <button class="button button-secondary" id="writingTimerToggle" type="button">开始计时</button>
+    </div>
+  </header>
+
+  <div class="writing-grid">
+    <article class="writing-prompt-card">
+      <div class="writing-paper-label">OFFICIAL TASK · WEB TEXT</div>
+      {% if workspace.situation %}<p class="writing-situation">{{ workspace.situation }}</p>{% endif %}
+      <p class="writing-prompt">{{ workspace.prompt }}</p>
+      {% if workspace.bullet_points %}
+      <ul>
+        {% for point in workspace.bullet_points %}<li>{{ point }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      {% if workspace.closing_instruction %}<p>{{ workspace.closing_instruction }}</p>{% endif %}
+      <div class="writing-requirement">
+        <span>WORD REQUIREMENT</span>
+        <strong>Write at least {{ workspace.minimum_words }} words.</strong>
+      </div>
+      <p class="writing-source-note">已从本地 G20 真题第 {{ workspace.resource.content.get("source_pdf_page") }} 页转换为网页文字。</p>
+    </article>
+
+    <section class="writing-editor-card">
+      <div class="writing-editor-head">
+        <div>
+          <p class="eyebrow">YOUR RESPONSE</p>
+          <h2>Plan, write, revise.</h2>
+        </div>
+        <div class="writing-word-count" id="writingWordCount">
+          <strong>{{ draft.word_count }}</strong><span>/ {{ workspace.minimum_words }} words</span>
+        </div>
+      </div>
+      <div class="writing-target-track" aria-hidden="true"><span id="writingTargetProgress" style="width: {{ target_progress }}%"></span></div>
+      <label class="writing-field writing-outline-field">
+        <span>OUTLINE / KEY IDEAS</span>
+        <textarea id="writingOutline" rows="4" maxlength="12000" placeholder="先写要点、段落结构和想使用的词块…">{{ draft.outline }}</textarea>
+      </label>
+      <label class="writing-field writing-response-field">
+        <span>FINAL RESPONSE</span>
+        <textarea id="writingResponse" rows="20" maxlength="30000" spellcheck="true" placeholder="Write your answer here…">{{ draft.response_text }}</textarea>
+      </label>
+      <div class="writing-rating-grid">
+        <label><span>难度 Difficulty</span><select id="writingDifficulty">
+          <option value="">暂不评分</option>
+          {% for value in range(1, 6) %}<option value="{{ value }}"{% if draft.perceived_difficulty == value %} selected{% endif %}>{{ value }} / 5</option>{% endfor %}
+        </select></label>
+        <label><span>信心 Confidence</span><select id="writingConfidence">
+          <option value="">暂不评分</option>
+          {% for value in range(1, 6) %}<option value="{{ value }}"{% if draft.confidence == value %} selected{% endif %}>{{ value }} / 5</option>{% endfor %}
+        </select></label>
+      </div>
+      <footer class="writing-submit-row">
+        <div>
+          <strong id="writingSaveState">{% if draft.status == "submitted" %}第 {{ draft.submission_revision }} 版已提交{% elif draft.id %}草稿已保存{% else %}尚未保存{% endif %}</strong>
+          <small>输入内容会自动保存。编辑已提交版本后，可生成新的提交快照。</small>
+        </div>
+        <button class="button button-primary" id="submitWriting" type="button">完整提交</button>
+      </footer>
+      <div class="writing-submission-note{% if draft.status != 'submitted' %} is-hidden{% endif %}" id="writingSubmissionNote">
+        <strong>写作已记录</strong>
+        <p>当前版本已进入 History 与 Progress。M17 接入 AI 评估后，会在这里显示 Task Response、Coherence、Lexical Resource 和 Grammar 反馈；现在不会伪造 Band 分数。</p>
+      </div>
+    </section>
+  </div>
+  <p class="today-action-status" id="writingActionStatus" role="status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/writing.js') }}?v=1" defer></script>{% endblock %}

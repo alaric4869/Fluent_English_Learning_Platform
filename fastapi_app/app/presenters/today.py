@@ -27,6 +27,12 @@ MODULE_PRESENTATION = {
         "instruction": "先在限定时间内完成材料；只查影响理解的词，并记录可复用的完整表达。",
         "objective": "提高定位、理解和 IELTS G 阅读准确率。",
     },
+    Skill.WRITING: {
+        "code": "WR",
+        "title": "写作 Writing",
+        "instruction": "先列出要点与段落结构，再限时完成全文；提交前检查任务要求、衔接和字数。",
+        "objective": "提高 IELTS G 书信与议论文的任务回应、组织和限时输出能力。",
+    },
     Skill.VOCABULARY: {
         "code": "VO",
         "title": "词块与复习 Vocabulary",
@@ -129,6 +135,8 @@ def _resource_href(resource: LearningResourceDetails | None) -> str | None:
         return None
     if resource.skill is Skill.LISTENING:
         return f"/listening/{resource.id}"
+    if resource.skill is Skill.WRITING:
+        return f"/writing/{resource.id}"
     practice_slug = resource.content.get("practice_set_slug")
     if isinstance(practice_slug, str) and practice_slug:
         return f"/ielts/{practice_slug}"

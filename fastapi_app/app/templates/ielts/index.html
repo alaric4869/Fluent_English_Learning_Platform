@@ -7,7 +7,7 @@
     <div>
       <p class="eyebrow">IELTS GENERAL TRAINING</p>
       <h1>Practice with purpose.</h1>
-      <p>直接在网页完成真题，答案自动保存；提交后查看每道错题的中文精解。</p>
+      <p>听力与阅读直接作答并查看错题精解；写作在网页列提纲、限时完成并保留每次提交。</p>
     </div>
     <div class="target-card">
       <span>EXAM TARGET</span>
@@ -22,7 +22,7 @@
         <p class="eyebrow">CAMBRIDGE 20 · TEST 1</p>
         <h2>选择练习模块</h2>
       </div>
-      <p>{{ practice_sets|length }} modules available</p>
+      <p>{{ (practice_sets|length) + (writing_resources|length) }} modules available</p>
     </div>
 
     <div class="set-grid">
@@ -43,12 +43,30 @@
         <a class="button button-primary" href="/ielts/{{ item.slug }}">开始 / 继续练习</a>
       </article>
       {% endfor %}
+      {% for resource in writing_resources %}
+      {% set task = resource.content.get("writing_task", {}) %}
+      <article class="set-card">
+        <div class="set-card-top">
+          <span class="skill-icon skill-writing">WR</span>
+          <span>{{ resource.estimated_duration_minutes }} min</span>
+        </div>
+        <p class="card-kicker">GENERAL TRAINING · TEST {{ resource.content.get("test_number", 1) }}</p>
+        <h3>{{ task.get("task_type", "写作 Writing") }}</h3>
+        <p>{{ resource.description }}</p>
+        <dl>
+          <div><dt>Minimum</dt><dd>{{ task.get("minimum_words", "—") }} words</dd></div>
+          <div><dt>Draft</dt><dd>Autosave</dd></div>
+          <div><dt>Format</dt><dd>Interactive</dd></div>
+        </dl>
+        <a class="button button-primary" href="/writing/{{ resource.id }}">开始 / 继续写作</a>
+      </article>
+      {% endfor %}
     </div>
   </section>
 
   <aside class="roadmap-note">
     <span>NEXT</span>
-    <p>后续按相同格式导入 Cambridge 20 Test 2–4。题表、地图与流程图会保留原卷视觉结构，同时继续支持网页作答和自动评分。</p>
+    <p>后续按相同格式导入 Cambridge 20 Test 2–4。客观题继续自动评分；写作保留提交快照与学习证据，AI 评分会通过独立评估服务接入。</p>
   </aside>
 </div>
 {% endblock %}

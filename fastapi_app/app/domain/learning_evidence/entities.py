@@ -7,6 +7,7 @@ class Skill(StrEnum):
     LISTENING = "listening"
     SPEAKING = "speaking"
     READING = "reading"
+    WRITING = "writing"
     VOCABULARY = "vocabulary"
 
 

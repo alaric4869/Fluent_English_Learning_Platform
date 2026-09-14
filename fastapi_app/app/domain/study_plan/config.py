@@ -23,6 +23,7 @@ SKILL_TIME_CONFIG = {
     Skill.LISTENING: SkillTimeConfig(30, 15, 45),
     Skill.SPEAKING: SkillTimeConfig(25, 15, 40),
     Skill.READING: SkillTimeConfig(30, 15, 45),
+    Skill.WRITING: SkillTimeConfig(30, 20, 60),
     Skill.VOCABULARY: SkillTimeConfig(25, 15, 40),
 }
 

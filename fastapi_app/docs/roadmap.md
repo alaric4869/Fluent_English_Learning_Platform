@@ -19,7 +19,7 @@
 
 - Read recent performance through a repository/service boundary.
 - Add deterministic, configurable `SkillEvaluator` logic.
-- Persist immutable `LearnerProfileSnapshot` history for Listening, Speaking, Reading and Vocabulary.
+- Persist immutable `LearnerProfileSnapshot` history for the tracked skill set (expanded to include Writing in M13).
 - Explain how every score was derived and handle insufficient evidence explicitly.
 
 ## M3 · Weakness detection
@@ -93,19 +93,41 @@
 - Build the intensive-listening sentence workflow around real audio/video resources and transcripts.
 - Feed those new signals into the existing learner profile without changing Dashboard contracts.
 
-## M13 · Next product slice
+## M13 · IELTS G Writing foundation
+
+- Promote Writing to a first-class profile, weakness, resource and planning skill.
+- Alternate Reading and Writing by date while keeping four daily modules and the same baseline time.
+- Convert G20 Test 1 Writing Tasks 1–2 into web text with timer, outline, word count, autosave and explicit submission.
+- Preserve immutable submission revisions and record subjective evidence without fabricating a Band score.
+
+## M14 · Speaking and retelling workspace
 
 - Add a focused Speaking / retelling workspace around the existing typed record.
 - Guide Listen → Pause → Repeat → Hide transcript → Retell without adding AI evaluation yet.
 - Save outline, intended chunks, mistakes and improved version against the source resource.
 - Keep `voice_recording_reference` as the stable seam for a later recording adapter.
 
-## Later, after the rule-based loop works
+## M15 · Content import and expansion
 
-- Expose stable application services as provider-neutral AI agent tools; the agent never gets raw database access.
-- Add AI evaluation and planning behind replaceable interfaces.
-- Expand curated IELTS, PTE, podcast, article, Australian English and custom-resource content.
-- Add authentication, PostgreSQL and synchronization without rewriting domain logic.
-- After AI Agent integration, refine the Reading workspace into a responsive source-left/questions-right split view.
+- Build repeatable, validated imports for G20 Test 2–4 Listening, Reading and Writing.
+- Preserve native tables, maps and figures while keeping all answers web-interactive.
+- Add curated real-world Australian audio/video, articles and speaking prompts.
+
+## M16 · Provider-neutral AI Agent tool layer
+
+- Expose stable application services as typed agent tools; never expose raw tables.
+- Add provider, tool authorization, recommendation and report interfaces with a mock implementation.
+
+## M17 · AI evaluation and adaptive planning
+
+- Add Writing/retelling evaluation behind replaceable interfaces.
+- Store rubric evidence and explanations separately from learner-authored work.
+- Let AI recommendations supplement, not silently replace, deterministic planning and manual overrides.
+
+## M18 · Reading split layout and product polish
+
+- Refine Reading into a responsive source-left/questions-right workspace.
+- Finish keyboard, accessibility, empty-state and cross-page consistency passes.
+- Prepare optional authentication, PostgreSQL and synchronization adapters without rewriting domain logic.
 
 Do not bulk-import more IELTS tests before M1–M6 establish the adaptive feedback loop.

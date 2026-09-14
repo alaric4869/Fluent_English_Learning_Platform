@@ -23,7 +23,7 @@ The weakness detector smooths up to four recent profile snapshots. It needs at l
 
 ## Daily planning
 
-Default minutes are Listening 30, Speaking 25, Reading 30 and Vocabulary/Review 25. Weak skills gain 10 minutes, developing skills gain 5, and strong skills lose 5. Per-skill limits and a 120-minute daily cap are centralized in configuration. If the cap applies, only adaptive increments are reduced; base practice is preserved.
+The four-module baseline is Listening 30, Speaking 25, Vocabulary/Review 25 and either Reading 30 or Writing 30. Reading/Writing alternation is deterministic by calendar date. Weak skills gain 10 minutes, developing skills gain 5, and strong skills lose 5. Per-skill limits and a 120-minute daily cap are centralized in configuration. If the cap applies, only adaptive increments are reduced; base practice is preserved.
 
 Resources are scored from explicit priority, target difficulty, completed-study recency and earlier plan assignment. Recently assigned material is penalized even if it was not completed, which produces date rotation when alternatives exist. A single available resource may still be reused, with the reason retained.
 
@@ -33,7 +33,7 @@ Profile snapshots, weakness assessments and daily plans store their algorithm ve
 
 ## Known limits
 
-- Only Listening and Reading currently have curated real resources; missing Speaking or Vocabulary resources stay explicit rather than being fabricated.
-- Today currently has real Listening and Reading resources only; Speaking and Vocabulary remain explicit empty assignments until those content modules exist.
+- Listening, Reading and G20 Test 1 Writing currently have curated real resources; missing Speaking or Vocabulary resources stay explicit rather than being fabricated.
+- Writing evidence currently uses word count, time, difficulty and confidence. IELTS Band criteria remain unknown until M17 adds an evaluator; the profile explanation must keep that distinction visible.
 - Topic balancing and richer comprehension/listening measurements remain later inputs.
 - Rule thresholds require tuning after enough real usage data exists.

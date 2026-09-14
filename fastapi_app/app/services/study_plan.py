@@ -11,6 +11,7 @@ from app.domain.study_plan.entities import (
 )
 from app.domain.study_plan.generator import StudyPlanGenerator
 from app.domain.study_plan.repository import StudyPlanRepository
+from app.domain.study_plan.rotation import daily_plan_skills
 from app.domain.study_plan.status_transition import calculate_item_status_transition
 from app.domain.weakness_detection.entities import (
     SkillClassification,
@@ -110,7 +111,7 @@ class StudyPlanService:
     ) -> tuple[SkillPlanningSignal, ...]:
         assessments = {item.skill: item for item in assessment.skills}
         signals = []
-        for skill in Skill:
+        for skill in daily_plan_skills(plan_date):
             skill_assessment = assessments.get(skill)
             classification = (
                 skill_assessment.classification

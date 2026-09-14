@@ -15,6 +15,7 @@ SKILL_LABELS = {
     Skill.LISTENING: "听力 Listening",
     Skill.SPEAKING: "口语 Speaking",
     Skill.READING: "阅读 Reading",
+    Skill.WRITING: "写作 Writing",
     Skill.VOCABULARY: "词块 Vocabulary",
 }
 COMPLETION_LABELS = {
@@ -37,6 +38,7 @@ CREATE_TYPE_OPTIONS = (
     ("pronunciation", "Pronunciation"),
     ("grammar", "Grammar"),
     ("ielts", "IELTS"),
+    ("ielts_writing", "IELTS Writing"),
     ("pte", "PTE"),
     ("other", "Other"),
 )
@@ -136,6 +138,8 @@ def _display_type(value: str) -> str:
 def _start_href(resource: LearningResourceDetails) -> str | None:
     if resource.skill is Skill.LISTENING:
         return f"/listening/{resource.id}"
+    if resource.skill is Skill.WRITING:
+        return f"/writing/{resource.id}"
     practice_slug = resource.content.get("practice_set_slug")
     if isinstance(practice_slug, str) and practice_slug:
         return f"/ielts/{practice_slug}"

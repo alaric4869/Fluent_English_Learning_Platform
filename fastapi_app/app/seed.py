@@ -50,6 +50,8 @@ def import_seed_data(session: Session, seed_path: Path) -> None:
                     session.add(question)
                     questions_by_number[number] = question
                 _update_question(question, section, question_payload)
+    for item in payload.get("learning_resources", []):
+        _upsert_standalone_learning_resource(session, item)
     session.commit()
 
 
@@ -115,3 +117,28 @@ def _update_question(
     question.accepted_answers = payload["accepted_answers"]
     question.answer_group = payload.get("answer_group")
     question.explanation = payload["explanation"]
+
+
+def _upsert_standalone_learning_resource(session: Session, payload: dict) -> None:
+    resource = session.scalar(
+        select(LearningResource).where(LearningResource.slug == payload["slug"])
+    )
+    if resource is None:
+        resource = LearningResource(slug=payload["slug"])
+        session.add(resource)
+    resource.title = payload["title"]
+    resource.resource_type = payload["resource_type"]
+    resource.skill = payload["skill"]
+    resource.topic = payload["topic"]
+    resource.difficulty = payload.get("difficulty")
+    resource.estimated_duration_minutes = payload["estimated_duration_minutes"]
+    resource.source_url = payload.get("source_url")
+    resource.local_asset_reference = payload.get("local_asset_reference")
+    resource.content = payload.get("content", {})
+    resource.tags = payload.get("tags", [])
+    resource.priority = payload.get("priority", 50)
+    resource.active = payload.get("active", True)
+    resource.description = payload.get("description", "")
+    resource.content_text = payload.get("content_text", "")
+    resource.transcript = payload.get("transcript", "")
+    resource.notes = payload.get("notes", "")

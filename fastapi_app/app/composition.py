@@ -26,6 +26,7 @@ from app.repositories.sqlalchemy_vocabulary import SqlAlchemyVocabularyRepositor
 from app.repositories.sqlalchemy_weakness_detection import (
     SqlAlchemyWeaknessAssessmentRepository,
 )
+from app.repositories.sqlalchemy_writing import SqlAlchemyWritingRepository
 from app.services.adaptive_learning import AdaptationDecisionService
 from app.services.dashboard import DashboardService
 from app.services.history import HistoryService
@@ -44,6 +45,7 @@ from app.services.study_session import StudySessionService
 from app.services.weakness_detection import WeaknessDetectionService
 from app.services.vocabulary import VocabularyService
 from app.services.weekly_review import WeeklyReviewService
+from app.services.writing import WritingPracticeService
 
 
 @dataclass(frozen=True)
@@ -61,6 +63,7 @@ class ApplicationServices:
     review: ReviewService
     listening: ListeningPracticeService
     speaking: SpeakingPracticeService
+    writing: WritingPracticeService
     notebook: NotebookService
     weekly_review: WeeklyReviewService
     dashboard: DashboardService
@@ -105,6 +108,13 @@ def build_application_services(session: Session) -> ApplicationServices:
     speaking_service = SpeakingPracticeService(
         SqlAlchemySpeakingPracticeRepository(session),
         resource_repository,
+    )
+    writing_service = WritingPracticeService(
+        SqlAlchemyWritingRepository(session),
+        resource_repository,
+        evidence_service,
+        profile_service,
+        weakness_service,
     )
     notebook_service = NotebookService(
         SqlAlchemyNotebookRepository(session),
@@ -180,6 +190,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         review=review_service,
         listening=listening_service,
         speaking=speaking_service,
+        writing=writing_service,
         notebook=notebook_service,
         weekly_review=weekly_review_service,
         dashboard=dashboard_service,

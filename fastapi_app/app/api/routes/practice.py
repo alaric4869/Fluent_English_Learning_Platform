@@ -5,9 +5,11 @@ from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
-from app.composition import build_application_services
+from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT, settings
 from app.database import get_db
+from app.domain.learning_evidence.entities import Skill
+from app.domain.resources.entities import ResourceLibraryFilters, ResourceSort
 from app.presenters.ielts import present_practice_workspace
 from app.schemas.ielts import SaveAnswerRequest, SavedAnswerResponse, SubmitAttemptResponse
 from app.services.ielts_practice import (
@@ -26,17 +28,33 @@ def get_service(session: Session = Depends(get_db)) -> IeltsPracticeService:
     return build_application_services(session).ielts_practice
 
 
+def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
+    return build_application_services(session)
+
+
 @router.get("/")
 def home() -> RedirectResponse:
     return RedirectResponse(url="/dashboard")
 
 
 @router.get("/ielts")
-def ielts_index(request: Request, service: IeltsPracticeService = Depends(get_service)):
+def ielts_index(
+    request: Request,
+    services: ApplicationServices = Depends(get_services),
+):
     return templates.TemplateResponse(
         request=request,
         name="ielts/index.html",
-        context={"practice_sets": service.list_practice_sets()},
+        context={
+            "practice_sets": services.ielts_practice.list_practice_sets(),
+            "writing_resources": services.resources.get_library(
+                LOCAL_USER_KEY,
+                ResourceLibraryFilters(
+                    skill=Skill.WRITING,
+                    sort=ResourceSort.PRIORITY,
+                ),
+            ).items,
+        },
     )
 
 

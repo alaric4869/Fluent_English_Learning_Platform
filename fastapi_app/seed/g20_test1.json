@@ -242,5 +242,67 @@
         }
       ]
     }
+  ],
+  "learning_resources": [
+    {
+      "slug": "g20-test-1-writing-task-1",
+      "title": "G20 · Test 1 Writing Task 1",
+      "resource_type": "ielts_writing",
+      "skill": "writing",
+      "topic": "IELTS General Training · Letter",
+      "difficulty": "intermediate",
+      "estimated_duration_minutes": 20,
+      "local_asset_reference": "ielts_paper/G20真题.pdf#page=28",
+      "description": "General Training 书信任务。直接在网页列提纲、限时写作、统计字数并提交。",
+      "tags": ["ielts", "general-training", "g20", "test-1", "writing", "task-1", "letter"],
+      "priority": 85,
+      "content": {
+        "book_number": 20,
+        "test_number": 1,
+        "source_pdf_page": 28,
+        "writing_task": {
+          "task_type": "Writing Task 1 · Letter",
+          "instructions": "You should spend about 20 minutes on this task.",
+          "situation": "It is ten years since you left college. You'd like to organise an event to celebrate this anniversary with all your friends and classmates from college.",
+          "prompt": "Write a letter to one of your college friends. In your letter:",
+          "bullet_points": [
+            "say what kind of celebration event you'd like to organise",
+            "explain why you think it would be good to celebrate in this way",
+            "describe what help you need to organise this event"
+          ],
+          "closing_instruction": "You do not need to write any addresses. Begin your letter with: Dear …",
+          "minimum_words": 150,
+          "recommended_minutes": 20
+        }
+      }
+    },
+    {
+      "slug": "g20-test-1-writing-task-2",
+      "title": "G20 · Test 1 Writing Task 2",
+      "resource_type": "ielts_writing",
+      "skill": "writing",
+      "topic": "IELTS General Training · Opinion Essay",
+      "difficulty": "intermediate",
+      "estimated_duration_minutes": 40,
+      "local_asset_reference": "ielts_paper/G20真题.pdf#page=29",
+      "description": "General Training 观点议论文任务。直接在网页列提纲、限时写作、统计字数并提交。",
+      "tags": ["ielts", "general-training", "g20", "test-1", "writing", "task-2", "opinion"],
+      "priority": 84,
+      "content": {
+        "book_number": 20,
+        "test_number": 1,
+        "source_pdf_page": 29,
+        "writing_task": {
+          "task_type": "Writing Task 2 · Opinion Essay",
+          "instructions": "You should spend about 40 minutes on this task.",
+          "situation": "It is important for children, young adults, working people and the retired to have at least one hobby.",
+          "prompt": "What's your opinion about this?",
+          "bullet_points": [],
+          "closing_instruction": "Give reasons for your answer and include any relevant examples from your own knowledge or experience.",
+          "minimum_words": 250,
+          "recommended_minutes": 40
+        }
+      }
+    }
   ]
 }
