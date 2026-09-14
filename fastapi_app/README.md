@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Every completed IELTS submission produces immutable question-level attempts, a study session, normalized skill performance, a Learner Profile snapshot when the evidence changes, and an explainable skill assessment when the profile history changes. Today uses that pipeline to select resources and durations, and preserves validated learner overrides.
+This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan with timed study records, an intensive-listening workspace for real audio/video and sentence marking, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening and Reading. Completed IELTS submissions produce objective question-level evidence; completed daily modules produce separate duration/difficulty/confidence evidence without inventing an accuracy. Both refresh the provider-neutral Learner Profile and explainable skill assessment.
 
 ## Run locally
 
@@ -12,7 +12,7 @@ python3.12 -m venv .venv
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>.
+Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open a focused workspace at `/listening/{resource_id}`.
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
@@ -28,6 +28,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `domain/weakness_detection/`: replaceable, configurable classification over profile history.
 - `domain/resources/`: provider-neutral resource candidates and replaceable recommendation policy.
 - `domain/study_plan/`: configurable time allocation and a replaceable plan-generator contract.
+- `domain/study_session/`: timed daily-module lifecycle and persistence contract.
 - `domain/adaptive_learning/`: typed system/manual decisions and append-only override history.
 - `domain/history/` and `domain/analytics/`: reporting contracts and deterministic progress calculations.
 - `domain/dashboard/` and `domain/weekly_review/`: composed read models and deterministic week calculations.
@@ -43,7 +44,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `seed/`: structured practice content imported into SQLite.
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
 
-The first profile algorithm uses the latest five sessions per skill. Accuracy carries 75% of the configured weight, confidence 15%, and hard-item resilience 10%. Missing optional signals are excluded and the remaining weights are normalized. With no evidence, a skill has no score; one sample is provisional; two or more samples establish the current baseline.
+The profile algorithm uses the latest five sessions per skill. Objective evidence keeps the accuracy/confidence/hard-item weighting. A daily module without questions has `NULL` accuracy and is scored only from explicitly provided confidence and perceived difficulty; its explanation says that this is subjective evidence. Missing signals are excluded and weights are normalized. With no evidence, a skill has no score; one sample is provisional; two or more samples establish the current baseline.
 
 The initial weakness detector examines the latest four profile snapshots. It requires at least two scored snapshots and two consecutive threshold-confirming snapshots before labelling a skill `weak` or `strong`; missing evidence is recorded as `insufficient_evidence`, never as weakness. Each assessment stores the evidence snapshot IDs and measurable reasons that produced it.
 
@@ -51,7 +52,7 @@ The initial planner starts from Listening 30, Speaking 25, Reading 30, and Vocab
 
 Every initial plan item creates a `system_recommendation` decision. A learner override changes only the current resource/duration, retains the system values, recalculates the plan total, and appends a `manual_override` decision. Repeating the same request is a no-op; incompatible resources and out-of-range durations are rejected.
 
-The Today page is intentionally server-rendered. A small script calls typed endpoints for item completion and manual overrides, then reloads the persisted read model. Only all four completed items complete the plan; undoing one reopens it. Item status transitions retain their first start time and current completion time.
+The Today page is intentionally server-rendered. A small script starts a module session, accumulates active timer seconds, autosaves notes and self-ratings, and completes the session through typed endpoints. Refreshing restores saved progress. Only all four completed items complete the plan; undoing one reopens it and a later start creates a new session revision. Replacing a resource is blocked while its session is active or the module is still completed.
 
 History can return to any saved date, using a recent timeline, an arbitrary-month calendar, or a single-day detail page. Progress derives streaks and completion metrics from saved plans and submitted sessions. It labels completed plan minutes as estimates and reports real tracked time separately; missing timer data is never inferred.
 

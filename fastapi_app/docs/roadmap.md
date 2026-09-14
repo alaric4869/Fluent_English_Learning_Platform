@@ -87,11 +87,18 @@
 - Keep actual tracked time separate from completed planned minutes.
 - Generate the report from persisted learning facts without a duplicate weekly-summary table.
 
-## M12 · Next product slice
+## M12 · Timed study sessions and intensive listening
 
 - Add real per-module study sessions with timer, notes, difficulty and confidence to Today.
 - Build the intensive-listening sentence workflow around real audio/video resources and transcripts.
 - Feed those new signals into the existing learner profile without changing Dashboard contracts.
+
+## M13 · Next product slice
+
+- Add a focused Speaking / retelling workspace around the existing typed record.
+- Guide Listen → Pause → Repeat → Hide transcript → Retell without adding AI evaluation yet.
+- Save outline, intended chunks, mistakes and improved version against the source resource.
+- Keep `voice_recording_reference` as the stable seam for a later recording adapter.
 
 ## Later, after the rule-based loop works
 

@@ -16,11 +16,11 @@ Content synchronization preserves stable IDs and existing attempts. Database sha
 These concepts are now persisted:
 
 - `LearningResource`: provider-neutral material metadata. Each current IELTS `PracticeSet` links to one resource.
-- `StudySession`: an immutable submitted activity with skill, resource, timestamps, accuracy and optional self-ratings.
+- `StudySession`: one revision of a skill/resource activity. Daily modules are mutable only while `in_progress`; completion freezes their duration, notes and self-ratings. Submitted IELTS revisions are created directly as completed immutable sessions.
 - `ExerciseAttempt`: one immutable question result with answer, correctness, score and prompt/answer/explanation snapshots.
 - `SkillPerformance`: normalized session evidence such as accuracy and correct/incorrect counts. Unknown ratings remain `NULL`; the system does not invent confidence or difficulty values.
 
-`PracticeAttempt.submission_revision` identifies each completed version. The same submission can safely be retried without duplicating evidence; changing an answer and submitting again creates a new historical session.
+`StudySession.accuracy` and `SkillPerformance.accuracy` are nullable by design. A question-based exercise writes objective accuracy; a timed module writes difficulty/confidence evidence and leaves accuracy unknown. `PracticeAttempt.submission_revision` identifies each completed IELTS version. The same submission can safely be retried without duplicating evidence; changing an answer and submitting again creates a new historical session.
 
 ## Implemented learner-profile slice
 
@@ -56,6 +56,8 @@ An upgrade from the previous plan schema backfills one system decision for every
 
 Today, History and Progress all read these models through services. History combines plans and sessions by Sydney calendar date. Progress keeps estimated completed-plan minutes separate from `StudySession.actual_duration_seconds`, which is the only source of real elapsed time.
 
+Each Today module uses `source_type=study_plan_item`, the plan-item ID as `source_id`, and an increasing revision. Only the latest in-progress revision is editable. Duration saves are monotonic, so a stale browser request cannot reduce already recorded time. Completed revisions feed one normalized `SkillPerformance`; retries do not duplicate it.
+
 ## Implemented vocabulary and review slice
 
 - `VocabularyItem`: learner-owned complete expression, meaning, example, learned date, personal note, difficulty, source resource/context, tags and normalized duplicate key.
@@ -83,4 +85,4 @@ Built-in resources have no owner; personal resources belong to one learner. Arch
 
 ## Dashboard and Weekly Review read models
 
-Dashboard and Weekly Review add no database tables. They aggregate the existing dated plan items, immutable study sessions, learned dates, saved sentences and immutable review attempts through repository interfaces. This avoids a second stored total that could drift from the source records. If weekly reports later need immutable publication or AI commentary, that output can be stored as a versioned report while keeping the measured inputs unchanged.
+Dashboard and Weekly Review add no database tables. They aggregate the existing dated plan items, completed study sessions, learned dates, saved sentences and immutable review attempts through repository interfaces. In-progress timers are deliberately excluded from completed-resource/history counts. This avoids a second stored total that could drift from the source records. If weekly reports later need immutable publication or AI commentary, that output can be stored as a versioned report while keeping the measured inputs unchanged.

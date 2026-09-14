@@ -44,6 +44,7 @@ def test_today_page_and_typed_plan_actions_use_the_same_services() -> None:
             assert "跟读与复述 Speaking" in page.text
             assert "阅读 Reading" in page.text
             assert "词块与复习 Vocabulary" in page.text
+            assert "ACTIVE STUDY TIME" in page.text
 
             plan_date = datetime.now(ZoneInfo("Australia/Sydney")).date()
             plan = services.study_plan.get_daily_plan("local-user", plan_date)
@@ -67,13 +68,41 @@ def test_today_page_and_typed_plan_actions_use_the_same_services() -> None:
             assert override.json()["total_minutes"] == 115
             assert override.json()["items"][0]["manual_override"] is True
 
-            completed = client.patch(
-                f"/api/study-plans/{plan_date}/items/{listening.id}/status",
-                json={"status": "completed"},
+            started = client.post(
+                f"/api/study-plans/{plan_date}/items/{listening.id}/sessions"
+            )
+            assert started.status_code == 200
+            assert started.json()["status"] == "in_progress"
+
+            saved = client.patch(
+                f"/api/study-plans/{plan_date}/items/{listening.id}/sessions/"
+                f"{started.json()['id']}",
+                json={
+                    "active_duration_seconds": 75,
+                    "notes": "Route test note",
+                    "perceived_difficulty": 4,
+                    "confidence": 3,
+                },
+            )
+            assert saved.status_code == 200
+            assert saved.json()["active_duration_seconds"] == 75
+
+            completed = client.post(
+                f"/api/study-plans/{plan_date}/items/{listening.id}/sessions/"
+                f"{started.json()['id']}/complete",
+                json={
+                    "active_duration_seconds": 90,
+                    "notes": "Finished",
+                    "perceived_difficulty": 4,
+                    "confidence": 3,
+                },
             )
 
             assert completed.status_code == 200
-            assert completed.json()["items"][0]["status"] == "completed"
+            assert completed.json()["status"] == "completed"
+            finished_plan = services.study_plan.get_daily_plan("local-user", plan_date)
+            assert finished_plan is not None
+            assert finished_plan.items[0].status.value == "completed"
 
 
 def _add_resources(session: Session) -> None:

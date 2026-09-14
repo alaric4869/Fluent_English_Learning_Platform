@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ resource.title }} · 精听{% endblock %}
+{% block topbar_label %}Intensive Listening{% endblock %}
+{% block content %}
+<div class="page-wrap listening-workspace" data-resource-id="{{ resource.id }}">
+  <header class="listening-hero">
+    <a class="back-link" href="/today">← 返回今日计划</a>
+    <div class="listening-heading">
+      <div>
+        <p class="eyebrow">INTENSIVE LISTENING · {{ resource.difficulty or 'LEVEL NOT SET' }}</p>
+        <h1>{{ resource.title }}</h1>
+        <p>{{ resource.description or resource.topic }} · 预计 {{ resource.estimated_duration_minutes }} 分钟</p>
+      </div>
+      {% if practice_href %}<a class="button button-secondary" href="{{ practice_href }}">进入 IELTS 答题页</a>{% endif %}
+    </div>
+  </header>
+
+  <section class="listening-workflow" aria-label="精听流程">
+    <div><b>01</b><span>裸听一遍<small>不看字幕</small></span></div>
+    <div><b>02</b><span>对照文本<small>确认内容</small></span></div>
+    <div><b>03</b><span>标记难句<small>找出听不清处</small></span></div>
+    <div><b>04</b><span>逐句精听<small>暂停与重复</small></span></div>
+    <div><b>05</b><span>再次裸听<small>检查是否听懂</small></span></div>
+  </section>
+
+  <section class="listening-media-panel">
+    <div class="listening-panel-head"><div><p class="eyebrow">REAL AUDIO / VIDEO</p><h2>先播放真实材料</h2></div><span>{{ resource.resource_type|replace('_', ' ')|upper }}</span></div>
+    {% if youtube_embed_url %}
+    <div class="video-frame"><iframe src="{{ youtube_embed_url }}" title="{{ resource.title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+    {% elif direct_audio_url %}
+    <audio class="listening-audio" controls preload="metadata" src="{{ direct_audio_url }}"></audio>
+    {% elif local_audio_parts %}
+    <div class="audio-part-list">
+      {% for part in local_audio_parts %}<div><span>{{ part.label }}</span><audio controls preload="metadata" src="{{ part.url }}"></audio></div>{% endfor %}
+    </div>
+    {% elif external_url %}
+    <div class="listening-media-fallback"><p>这个来源需要在原网站播放。</p><a class="button button-primary" href="{{ external_url }}" target="_blank" rel="noopener noreferrer">打开真实材料 ↗</a></div>
+    {% else %}
+    <div class="listening-media-fallback"><p>这份资源还没有音频或视频 URL。可以在资源详情中添加 YouTube 或直链音频。</p><a class="button button-secondary" href="/library/{{ resource.id }}">查看资源详情</a></div>
+    {% endif %}
+  </section>
+
+  <section class="transcript-panel">
+    <div class="listening-panel-head">
+      <div><p class="eyebrow">SENTENCE WORKSPACE</p><h2>Transcript 逐句精听</h2><p>将每句标为“没听清 / 困难 / 听懂 / 掌握”。前两项会自动进入 Review。</p></div>
+      {% if sentences %}<button type="button" class="button button-secondary" id="toggleTranscript">隐藏 Transcript</button>{% endif %}
+    </div>
+    {% if sentences %}
+    <div class="transcript-sentences" id="transcriptSentences">
+      {% for sentence in sentences %}
+      <article class="transcript-sentence{% if sentence.status %} has-status{% endif %}" data-sentence-id="{{ sentence.saved.id if sentence.saved else '' }}" data-current-status="{{ sentence.status }}">
+        <span class="sentence-position">{{ "%02d"|format(sentence.position) }}</span>
+        <div class="sentence-main">
+          <p class="sentence-text">{{ sentence.text }}</p>
+          <div class="sentence-status-buttons" role="group" aria-label="第 {{ sentence.position }} 句状态">
+            <button type="button" data-sentence-status="could_not_hear"{% if sentence.status == 'could_not_hear' %} class="is-active"{% endif %}>没听清</button>
+            <button type="button" data-sentence-status="difficult"{% if sentence.status == 'difficult' %} class="is-active"{% endif %}>困难 + 复习</button>
+            <button type="button" data-sentence-status="understood"{% if sentence.status == 'understood' %} class="is-active"{% endif %}>听懂</button>
+            <button type="button" data-sentence-status="mastered"{% if sentence.status == 'mastered' %} class="is-active"{% endif %}>掌握</button>
+          </div>
+          <small class="sentence-save-state">{% if sentence.saved %}{% if sentence.saved.review_item_id %}已保存到 Notebook 与 Review{% else %}已保存到 Notebook{% endif %}{% else %}尚未标记{% endif %}</small>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state listening-empty-transcript">
+      <h3>音频已经可以直接播放，但这份材料还没有 Transcript。</h3>
+      <p>{% if resource.is_user_owned %}在资源详情的 Transcript 字段粘贴英文文本后，这里会自动拆成可标记的句子。{% else %}当前内置 IELTS 真题保留音频和交互答题；Transcript 尚未导入，因此不会伪造文本。{% endif %}</p>
+      {% if resource.is_user_owned %}<a class="button button-primary" href="/library/{{ resource.id }}">添加 Transcript</a>{% elif practice_href %}<a class="button button-primary" href="{{ practice_href }}">边听边做 IELTS 题</a>{% endif %}
+    </div>
+    {% endif %}
+  </section>
+  <p id="listeningActionStatus" class="today-action-status" aria-live="polite"></p>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/listening.js') }}" defer></script>{% endblock %}

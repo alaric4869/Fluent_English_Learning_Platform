@@ -84,6 +84,9 @@ def present_resource_detail(resource: LearningResourceDetails) -> dict:
         "skill_label": SKILL_LABELS[resource.skill],
         "type_label": _display_type(resource.resource_type),
         "start_href": _start_href(resource),
+        "listening_href": f"/listening/{resource.id}"
+        if resource.skill is Skill.LISTENING
+        else None,
         "skill_options": tuple((value.value, label) for value, label in SKILL_LABELS.items()),
     }
 
@@ -131,6 +134,8 @@ def _display_type(value: str) -> str:
 
 
 def _start_href(resource: LearningResourceDetails) -> str | None:
+    if resource.skill is Skill.LISTENING:
+        return f"/listening/{resource.id}"
     practice_slug = resource.content.get("practice_set_slug")
     if isinstance(practice_slug, str) and practice_slug:
         return f"/ielts/{practice_slug}"

@@ -29,6 +29,46 @@ def test_one_accuracy_sample_is_a_provisional_score() -> None:
     assert "至少需要 2 次数据" in result.explanation
 
 
+def test_subjective_session_is_scored_without_inventing_accuracy() -> None:
+    result = RuleBasedSkillEvaluator().evaluate(
+        Skill.LISTENING,
+        [
+            _performance(
+                1,
+                accuracy=None,
+                confidence=3,
+                perceived_difficulty=4,
+                skill=Skill.LISTENING,
+            )
+        ],
+    )
+
+    assert result.score == 52.0
+    assert result.average_accuracy is None
+    assert result.average_confidence == 3
+    assert result.average_difficulty == 4
+    assert result.calculation_weights == {
+        "self_confidence": 0.6,
+        "perceived_ease": 0.4,
+    }
+    assert "不等同于客观正确率" in result.explanation
+
+
+def test_unrated_sessions_remain_unscored_and_provisional() -> None:
+    result = RuleBasedSkillEvaluator().evaluate(
+        Skill.SPEAKING,
+        [
+            _performance(1, accuracy=None, skill=Skill.SPEAKING),
+            _performance(2, accuracy=None, skill=Skill.SPEAKING),
+        ],
+    )
+
+    assert result.score is None
+    assert result.evidence_status is EvidenceStatus.PROVISIONAL
+    assert result.sample_count == 2
+    assert result.calculation_weights == {}
+
+
 def test_established_score_uses_available_signals_and_calculates_trend() -> None:
     history = [
         _performance(1, accuracy=0.50, confidence=4, hard_item_count=2),
@@ -69,9 +109,10 @@ def test_only_the_configured_recent_window_affects_the_score() -> None:
 def _performance(
     identifier: int,
     *,
-    accuracy: float,
+    accuracy: float | None,
     confidence: int | None = None,
     hard_item_count: int | None = None,
+    perceived_difficulty: int | None = None,
     skill: Skill = Skill.READING,
 ) -> HistoricalSkillPerformance:
     return HistoricalSkillPerformance(
@@ -80,12 +121,12 @@ def _performance(
         user_key="learner",
         skill=skill,
         accuracy=accuracy,
-        item_count=10,
-        correct_item_count=round(accuracy * 10),
-        incorrect_item_count=10 - round(accuracy * 10),
+        item_count=10 if accuracy is not None else 0,
+        correct_item_count=round(accuracy * 10) if accuracy is not None else 0,
+        incorrect_item_count=(10 - round(accuracy * 10)) if accuracy is not None else 0,
         hard_item_count=hard_item_count,
         confidence=confidence,
-        perceived_difficulty=None,
+        perceived_difficulty=perceived_difficulty,
         occurred_at=NOW + timedelta(days=identifier),
         metrics={},
     )

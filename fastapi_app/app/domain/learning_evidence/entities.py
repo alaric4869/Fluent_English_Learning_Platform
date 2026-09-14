@@ -16,7 +16,7 @@ class HistoricalSkillPerformance:
     study_session_id: int
     user_key: str
     skill: Skill
-    accuracy: float
+    accuracy: float | None
     item_count: int
     correct_item_count: int
     incorrect_item_count: int
@@ -37,7 +37,7 @@ class CompletedStudySession:
     source_revision: int
     started_at: datetime
     completed_at: datetime
-    accuracy: float
+    accuracy: float | None
     attempt_count: int
     incorrect_item_count: int
     actual_duration_seconds: int | None = None
@@ -66,7 +66,7 @@ class ExerciseAttemptEvidence:
 class SkillPerformanceEvidence:
     user_key: str
     skill: Skill
-    accuracy: float
+    accuracy: float | None
     item_count: int
     correct_item_count: int
     incorrect_item_count: int

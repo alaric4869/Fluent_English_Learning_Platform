@@ -19,6 +19,19 @@ class ListeningSentenceRepository(Protocol):
 
     def get(self, user_key: str, sentence_id: int) -> SavedListeningSentence | None: ...
 
+    def find_for_resource_sentence(
+        self,
+        user_key: str,
+        resource_id: int,
+        sentence: str,
+    ) -> SavedListeningSentence | None: ...
+
+    def list_for_resource(
+        self,
+        user_key: str,
+        resource_id: int,
+    ) -> tuple[SavedListeningSentence, ...]: ...
+
     def list_items(
         self,
         user_key: str,
@@ -32,6 +45,7 @@ class ListeningSentenceRepository(Protocol):
         user_key: str,
         sentence_id: int,
         status: ListeningSentenceStatus,
+        initial_schedule: ReviewScheduleState | None = None,
     ) -> SavedListeningSentence | None: ...
 
     def count_learned_between(

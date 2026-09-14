@@ -8,7 +8,7 @@
     <div class="resource-detail-heading">
       <div><p class="eyebrow">{{ type_label }} · {{ skill_label }}</p><h1>{{ resource.title }}</h1><p>{{ resource.description or resource.topic }}</p></div>
       <div class="resource-detail-actions">
-        {% if start_href %}<a class="button button-primary" href="{{ start_href }}"{% if start_href.startswith('http') %} target="_blank" rel="noopener noreferrer"{% endif %}>打开学习材料</a>{% endif %}
+        {% if start_href %}<a class="button button-primary" href="{{ start_href }}"{% if start_href.startswith('http') %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ '进入精听模式' if listening_href else '打开学习材料' }}</a>{% endif %}
         <button type="button" class="button button-secondary{% if resource.favorite %} is-active{% endif %}" data-resource-state="favorite" data-state-value="{{ 'false' if resource.favorite else 'true' }}">{{ '★ 已收藏' if resource.favorite else '☆ 收藏' }}</button>
         <button type="button" class="button button-secondary{% if resource.saved_for_later %} is-active{% endif %}" data-resource-state="saved_for_later" data-state-value="{{ 'false' if resource.saved_for_later else 'true' }}">{{ '✓ 已保存' if resource.saved_for_later else '＋ 稍后学习' }}</button>
       </div>

@@ -21,6 +21,7 @@ SQLAlchemy / external integration adapters
 - `search_learning_resources(filters)` → `ResourceService`
 - `get_resource(resource_id)` / `recommend_resources(...)` → `ResourceService`; write access remains limited to validated service commands
 - `get_today_plan()` / `create_daily_plan()` / `update_daily_plan()` → `StudyPlanService` and `AdaptationDecisionService`
+- `start_study_session()` / `save_study_progress()` / `complete_study_session()` → `StudySessionService`
 - `get_recent_study_history(days)` → `HistoryService`
 - `get_due_reviews()` → `ReviewService`
 - `get_recent_mistakes()` → `NotebookService`, `ListeningPracticeService` and `SpeakingPracticeService` through a future read-only tool adapter

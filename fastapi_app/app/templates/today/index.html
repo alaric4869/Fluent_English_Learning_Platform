@@ -33,7 +33,13 @@
 
     <div class="today-module-grid">
       {% for module in modules %}
-      <article class="today-module-card{% if module.is_completed %} is-completed{% endif %}" data-plan-item-id="{{ module.item.id }}">
+      <article
+        class="today-module-card{% if module.is_completed %} is-completed{% endif %}"
+        data-plan-item-id="{{ module.item.id }}"
+        data-session-id="{{ module.session.id }}"
+        data-session-status="{{ module.session.status }}"
+        data-active-seconds="{{ module.session.active_duration_seconds }}"
+      >
         <header class="today-module-head">
           <span class="skill-icon skill-{{ module.item.skill.value }}">{{ module.code }}</span>
           <div>
@@ -57,6 +63,26 @@
         <details class="plan-reasons">
           <summary>为什么这样安排？</summary>
           <ul>{% for reason in module.item.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+        </details>
+
+        <details class="study-session-panel"{% if module.session.status == 'in_progress' %} open{% endif %}>
+          <summary>
+            <span>学习记录</span>
+            <strong class="session-summary-time">{{ "%02d:%02d"|format(module.session.active_duration_seconds // 60, module.session.active_duration_seconds % 60) }}</strong>
+          </summary>
+          <div class="session-timer-row">
+            <div><small>ACTIVE STUDY TIME</small><strong class="session-timer">{{ "%02d:%02d"|format(module.session.active_duration_seconds // 60, module.session.active_duration_seconds % 60) }}</strong></div>
+            {% if not module.session.is_completed %}<button class="button button-secondary session-timer-button" type="button">开始计时</button>{% else %}<span class="session-complete-label">✓ 已保存</span>{% endif %}
+          </div>
+          <label class="session-notes-field">
+            <span>个人笔记</span>
+            <textarea class="session-notes" rows="3" maxlength="12000" placeholder="记下没听清的地方、想复用的表达或今天的困难…"{% if module.session.is_completed %} disabled{% endif %}>{{ module.session.notes }}</textarea>
+          </label>
+          <div class="session-rating-grid">
+            <label><span>难度</span><select class="session-difficulty"{% if module.session.is_completed %} disabled{% endif %}><option value="">未评分</option>{% for value in range(1, 6) %}<option value="{{ value }}"{% if module.session.perceived_difficulty == value %} selected{% endif %}>{{ value }} / 5{% if value == 1 %} · 很容易{% elif value == 5 %} · 很难{% endif %}</option>{% endfor %}</select></label>
+            <label><span>信心</span><select class="session-confidence"{% if module.session.is_completed %} disabled{% endif %}><option value="">未评分</option>{% for value in range(1, 6) %}<option value="{{ value }}"{% if module.session.confidence == value %} selected{% endif %}>{{ value }} / 5{% if value == 1 %} · 很低{% elif value == 5 %} · 很高{% endif %}</option>{% endfor %}</select></label>
+          </div>
+          <p class="session-save-state">{% if module.session.is_completed %}本次学习已进入 History 和能力分析。{% elif module.session.id %}已恢复上次计时与笔记。{% else %}开始计时后，刷新页面也不会丢失记录。{% endif %}</p>
         </details>
 
         <details class="plan-adjustment">
@@ -85,7 +111,7 @@
 
         <footer class="today-module-actions">
           {% if module.start_href %}
-          <a class="button button-primary" href="{{ module.start_href }}"{% if module.start_href.startswith('http') %} target="_blank" rel="noopener noreferrer"{% endif %}>开始学习</a>
+          <a class="button button-primary module-start-link" href="{{ module.start_href }}" target="_blank" rel="noopener noreferrer">打开材料并计时</a>
           {% else %}
           <span class="button button-disabled" aria-disabled="true">等待材料</span>
           {% endif %}
@@ -93,7 +119,7 @@
             class="button module-status-button{% if module.is_completed %} is-done{% endif %}"
             type="button"
             data-next-status="{{ 'pending' if module.is_completed else 'completed' }}"
-          >{{ "✓ 已完成" if module.is_completed else "标记完成" }}</button>
+          >{{ "✓ 已完成" if module.is_completed else "完成并保存" }}</button>
         </footer>
       </article>
       {% endfor %}

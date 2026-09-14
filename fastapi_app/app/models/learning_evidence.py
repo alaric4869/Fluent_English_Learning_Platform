@@ -84,16 +84,21 @@ class StudySession(Base):
     source_revision: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(30))
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
     actual_duration_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
     perceived_difficulty: Mapped[int | None] = mapped_column(Integer, nullable=True)
     confidence: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    accuracy: Mapped[float] = mapped_column(Float)
+    accuracy: Mapped[float | None] = mapped_column(Float, nullable=True)
     attempt_count: Mapped[int] = mapped_column(Integer)
     hard_item_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     incorrect_item_count: Mapped[int] = mapped_column(Integer)
     notes: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
     resource: Mapped[LearningResource] = relationship(back_populates="study_sessions")
     exercise_attempts: Mapped[list["ExerciseAttempt"]] = relationship(
         back_populates="study_session",
@@ -134,7 +139,7 @@ class SkillPerformance(Base):
     study_session_id: Mapped[int] = mapped_column(ForeignKey("study_sessions.id"), index=True)
     user_key: Mapped[str] = mapped_column(String(120), index=True)
     skill: Mapped[str] = mapped_column(String(30), index=True)
-    accuracy: Mapped[float] = mapped_column(Float)
+    accuracy: Mapped[float | None] = mapped_column(Float, nullable=True)
     item_count: Mapped[int] = mapped_column(Integer)
     correct_item_count: Mapped[int] = mapped_column(Integer)
     incorrect_item_count: Mapped[int] = mapped_column(Integer)

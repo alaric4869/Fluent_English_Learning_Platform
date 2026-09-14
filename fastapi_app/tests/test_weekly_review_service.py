@@ -81,6 +81,14 @@ def test_weekly_review_aggregates_persisted_learning_facts() -> None:
                     1,
                     900,
                 ),
+                _session(
+                    resources[Skill.SPEAKING].id,
+                    Skill.SPEAKING,
+                    "speaking-self-assessment",
+                    None,
+                    0,
+                    300,
+                ),
             ]
         )
         session.commit()
@@ -154,8 +162,8 @@ def test_weekly_review_aggregates_persisted_learning_facts() -> None:
         assert review.completed_modules == 2
         assert review.completion_rate == 50.0
         assert review.completed_planned_minutes == 60
-        assert review.completed_sessions == 2
-        assert review.tracked_seconds == 1500
+        assert review.completed_sessions == 3
+        assert review.tracked_seconds == 1800
         assert review.vocabulary_learned == 2
         assert review.difficult_sentences_collected == 1
         assert review.review_attempts.total_count == 1
@@ -163,6 +171,11 @@ def test_weekly_review_aggregates_persisted_learning_facts() -> None:
         assert review.next_week_review_count == 2
         assert review.strongest_skill is Skill.READING
         assert review.weakest_skill is Skill.LISTENING
+        speaking = next(
+            item for item in review.skill_summaries if item.skill is Skill.SPEAKING
+        )
+        assert speaking.completed_sessions == 1
+        assert speaking.average_accuracy is None
         assert any("Listening" in item.title for item in review.recommendations)
         assert any("重做" in item.title for item in review.recommendations)
 
@@ -204,7 +217,7 @@ def _session(
     resource_id: int,
     skill: Skill,
     source_id: str,
-    accuracy: float,
+    accuracy: float | None,
     incorrect_count: int,
     duration_seconds: int,
 ) -> StudySession:

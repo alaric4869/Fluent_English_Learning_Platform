@@ -5,6 +5,7 @@ from app.domain.learning_evidence.entities import Skill
 from app.domain.resources.entities import LearningResourceDetails, ResourceCandidate
 from app.domain.study_plan.config import SKILL_TIME_CONFIG
 from app.domain.study_plan.entities import DailyStudyPlan, StudyPlanItemStatus
+from app.domain.study_session.entities import ModuleStudySession, StudySessionStatus
 
 
 MODULE_PRESENTATION = {
@@ -41,7 +42,9 @@ def present_today_plan(
     resources: dict[int, LearningResourceDetails],
     resource_options: dict[Skill, tuple[ResourceCandidate, ...]],
     due_review_count: int = 0,
+    sessions: dict[int, ModuleStudySession] | None = None,
 ) -> dict:
+    sessions = sessions or {}
     completed_count = sum(
         item.status is StudyPlanItemStatus.COMPLETED for item in plan.items
     )
@@ -56,7 +59,12 @@ def present_today_plan(
         else 0,
         "due_review_count": due_review_count,
         "modules": [
-            _present_module(item, resources, resource_options.get(item.skill, ()))
+            _present_module(
+                item,
+                resources,
+                resource_options.get(item.skill, ()),
+                sessions.get(item.id),
+            )
             for item in plan.items
         ],
     }
@@ -90,6 +98,7 @@ def _present_module(
     item,
     resources: dict[int, LearningResourceDetails],
     options: tuple[ResourceCandidate, ...],
+    session: ModuleStudySession | None,
 ) -> dict:
     resource = resources.get(item.resource_id) if item.resource_id else None
     presentation = MODULE_PRESENTATION[item.skill]
@@ -104,6 +113,7 @@ def _present_module(
         "minimum_minutes": time_config.minimum_minutes,
         "maximum_minutes": time_config.maximum_minutes,
         "is_completed": item.status is StudyPlanItemStatus.COMPLETED,
+        "session": _present_session(session),
     }
 
 
@@ -117,6 +127,8 @@ def _resource_meta(resource: LearningResourceDetails | None) -> str:
 def _resource_href(resource: LearningResourceDetails | None) -> str | None:
     if resource is None:
         return None
+    if resource.skill is Skill.LISTENING:
+        return f"/listening/{resource.id}"
     practice_slug = resource.content.get("practice_set_slug")
     if isinstance(practice_slug, str) and practice_slug:
         return f"/ielts/{practice_slug}"
@@ -125,6 +137,28 @@ def _resource_href(resource: LearningResourceDetails | None) -> str | None:
         if parsed.scheme in {"http", "https"}:
             return resource.source_url
     return None
+
+
+def _present_session(session: ModuleStudySession | None) -> dict:
+    if session is None:
+        return {
+            "id": "",
+            "status": "not_started",
+            "active_duration_seconds": 0,
+            "notes": "",
+            "perceived_difficulty": None,
+            "confidence": None,
+            "is_completed": False,
+        }
+    return {
+        "id": session.id,
+        "status": session.status.value,
+        "active_duration_seconds": session.active_duration_seconds,
+        "notes": session.notes,
+        "perceived_difficulty": session.perceived_difficulty,
+        "confidence": session.confidence,
+        "is_completed": session.status is StudySessionStatus.COMPLETED,
+    }
 
 
 def _greeting(hour: int) -> str:

@@ -37,7 +37,7 @@ EXPECTED_TABLES = {
     "weakness_assessment_runs",
     "weakness_skill_assessments",
 }
-HEAD_REVISION = "0010_resource_library"
+HEAD_REVISION = "0011_module_sessions"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -52,6 +52,18 @@ def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
     assert {"started_at", "completed_at"} <= {
         column["name"] for column in inspect(engine).get_columns("study_plan_items")
     }
+    study_session_columns = {
+        column["name"]: column
+        for column in inspect(engine).get_columns("study_sessions")
+    }
+    assert "updated_at" in study_session_columns
+    assert study_session_columns["completed_at"]["nullable"] is True
+    assert study_session_columns["accuracy"]["nullable"] is True
+    skill_performance_columns = {
+        column["name"]: column
+        for column in inspect(engine).get_columns("skill_performances")
+    }
+    assert skill_performance_columns["accuracy"]["nullable"] is True
     with engine.connect() as connection:
         assert connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one() == (
             HEAD_REVISION

@@ -64,6 +64,43 @@ class SqlAlchemyListeningSentenceRepository:
         item = self.session.scalar(statement)
         return to_saved_sentence(item) if item else None
 
+    def find_for_resource_sentence(
+        self,
+        user_key: str,
+        resource_id: int,
+        sentence: str,
+    ) -> SavedListeningSentence | None:
+        item = self.session.scalar(
+            select(SavedSentenceModel)
+            .where(
+                SavedSentenceModel.user_key == user_key,
+                SavedSentenceModel.source_resource_id == resource_id,
+                SavedSentenceModel.sentence == sentence,
+            )
+            .options(selectinload(SavedSentenceModel.review_item))
+            .order_by(SavedSentenceModel.id.desc())
+            .limit(1)
+        )
+        return to_saved_sentence(item) if item else None
+
+    def list_for_resource(
+        self,
+        user_key: str,
+        resource_id: int,
+    ) -> tuple[SavedListeningSentence, ...]:
+        statement = (
+            select(SavedSentenceModel)
+            .where(
+                SavedSentenceModel.user_key == user_key,
+                SavedSentenceModel.source_resource_id == resource_id,
+            )
+            .options(selectinload(SavedSentenceModel.review_item))
+            .order_by(SavedSentenceModel.id)
+        )
+        return tuple(
+            to_saved_sentence(item) for item in self.session.scalars(statement)
+        )
+
     def list_items(
         self,
         user_key: str,
@@ -100,16 +137,30 @@ class SqlAlchemyListeningSentenceRepository:
         user_key: str,
         sentence_id: int,
         status: ListeningSentenceStatus,
+        initial_schedule: ReviewScheduleState | None = None,
     ) -> SavedListeningSentence | None:
         item = self.session.scalar(
-            select(SavedSentenceModel).where(
+            select(SavedSentenceModel)
+            .where(
                 SavedSentenceModel.id == sentence_id,
                 SavedSentenceModel.user_key == user_key,
             )
+            .options(selectinload(SavedSentenceModel.review_item))
         )
         if item is None:
             return None
         item.practice_status = status.value
+        if initial_schedule is not None and item.review_item is None:
+            item.review_item = ReviewItemModel(
+                user_key=user_key,
+                item_type="saved_sentence",
+                scheduler_version=self.scheduler_version,
+                schedule_step=initial_schedule.step,
+                next_review_date=initial_schedule.next_review_date,
+                mastery_status=initial_schedule.mastery_status.value,
+                review_count=0,
+                active=True,
+            )
         self.session.commit()
         return self._get(item.id)
 

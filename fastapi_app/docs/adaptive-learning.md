@@ -13,11 +13,11 @@ Submitted activity
 → date-persisted study plan
 ```
 
-IELTS currently produces the evidence, but every stage after the IELTS adapter uses generic skills, resources, sessions and repository contracts.
+IELTS produces objective evidence. Completed Today modules additionally produce duration, perceived-difficulty and confidence evidence with no fabricated accuracy. Every stage after either producer uses generic skills, resources, sessions and repository contracts.
 
 ## Skill evaluation and classification
 
-The first profile evaluator uses the latest five performance records per skill. Missing optional signals are removed and the remaining configured weights are normalized. No evidence produces no score, one sample is provisional, and two samples establish a baseline.
+The profile evaluator uses the latest five performance records per skill. Objective accuracy takes priority when present. Without objective questions, the rule-based baseline can use confidence and the inverse of perceived difficulty, and its explanation identifies the result as subjective. Missing optional signals are removed and the remaining configured weights are normalized. No evidence produces no score, one sample is provisional, and two samples establish a baseline.
 
 The weakness detector smooths up to four recent profile snapshots. It needs at least two scored snapshots and requires two consecutive threshold-confirming snapshots before calling a skill weak or strong. This prevents missing data and one unusual result from causing large plan changes.
 
@@ -35,5 +35,5 @@ Profile snapshots, weakness assessments and daily plans store their algorithm ve
 
 - Only Listening and Reading currently have curated real resources; missing Speaking or Vocabulary resources stay explicit rather than being fabricated.
 - Today currently has real Listening and Reading resources only; Speaking and Vocabulary remain explicit empty assignments until those content modules exist.
-- Weekly aggregation, review retention and topic balancing are later inputs.
+- Topic balancing and richer comprehension/listening measurements remain later inputs.
 - Rule thresholds require tuning after enough real usage data exists.

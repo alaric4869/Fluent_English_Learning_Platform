@@ -94,7 +94,11 @@ def _present_day(
             {
                 "session": session,
                 "skill_label": SKILL_PRESENTATION[session.skill][1],
-                "accuracy_percent": round(session.accuracy * 100),
+                "accuracy_percent": (
+                    round(session.accuracy * 100)
+                    if session.accuracy is not None
+                    else None
+                ),
                 "tracked_minutes": (
                     round(session.actual_duration_seconds / 60)
                     if session.actual_duration_seconds is not None

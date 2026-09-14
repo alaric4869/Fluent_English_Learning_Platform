@@ -59,7 +59,10 @@ class SqlAlchemyStudyHistoryRepository:
         return (
             select(StudySession, LearningResource.title)
             .join(LearningResource, LearningResource.id == StudySession.resource_id)
-            .where(StudySession.user_key == user_key)
+            .where(
+                StudySession.user_key == user_key,
+                StudySession.status == "completed",
+            )
         )
 
     def _execute(self, statement) -> tuple[HistoricalStudySession, ...]:

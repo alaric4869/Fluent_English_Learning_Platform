@@ -122,17 +122,24 @@ class WeeklyReviewService:
         sessions: tuple[HistoricalStudySession, ...],
     ) -> WeeklySkillSummary:
         matching_sessions = tuple(item for item in sessions if item.skill is skill)
+        measured_sessions = tuple(
+            item for item in matching_sessions if item.accuracy is not None
+        )
         return WeeklySkillSummary(
             skill=skill,
             completed_modules=sum(item.skill is skill for item in completed_items),
             completed_sessions=len(matching_sessions),
             average_accuracy=(
                 round(
-                    sum(item.accuracy for item in matching_sessions)
-                    / len(matching_sessions),
+                    sum(
+                        item.accuracy
+                        for item in measured_sessions
+                        if item.accuracy is not None
+                    )
+                    / len(measured_sessions),
                     4,
                 )
-                if matching_sessions
+                if measured_sessions
                 else None
             ),
             incorrect_item_count=sum(
@@ -175,9 +182,15 @@ class WeeklyReviewService:
                 )
             )
         seen_resources: set[int] = set()
+        measured_sessions = tuple(
+            item for item in sessions if item.accuracy is not None
+        )
         for session in sorted(
-            sessions,
-            key=lambda item: (item.accuracy, -item.incorrect_item_count),
+            measured_sessions,
+            key=lambda item: (
+                item.accuracy if item.accuracy is not None else 1.0,
+                -item.incorrect_item_count,
+            ),
         ):
             if session.incorrect_item_count == 0 or session.resource_id in seen_resources:
                 continue
@@ -185,7 +198,7 @@ class WeeklyReviewService:
                 WeeklyReviewRecommendation(
                     title=f"重做：{session.resource_title}",
                     reason=(
-                        f"上次正确率 {round(session.accuracy * 100)}%，"
+                        f"上次正确率 {round((session.accuracy or 0) * 100)}%，"
                         f"共 {session.incorrect_item_count} 处错误。"
                     ),
                     href=f"/library/{session.resource_id}",

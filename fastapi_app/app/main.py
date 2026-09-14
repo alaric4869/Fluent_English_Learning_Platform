@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes.practice import router as practice_router
 from app.api.routes.dashboard import router as dashboard_router
 from app.api.routes.insights import router as insights_router
+from app.api.routes.listening import router as listening_router
 from app.api.routes.review import router as review_router
 from app.api.routes.notebook import router as notebook_router
 from app.api.routes.resources import router as resources_router
@@ -31,6 +32,7 @@ app.include_router(practice_router)
 app.include_router(dashboard_router)
 app.include_router(today_router)
 app.include_router(insights_router)
+app.include_router(listening_router)
 app.include_router(review_router)
 app.include_router(notebook_router)
 app.include_router(resources_router)

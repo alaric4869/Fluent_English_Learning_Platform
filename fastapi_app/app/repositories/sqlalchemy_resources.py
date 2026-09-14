@@ -40,6 +40,7 @@ class SqlAlchemyResourceRepository:
             )
             .where(
                 StudySession.user_key == user_key,
+                StudySession.status == "completed",
                 func.date(StudySession.completed_at) < target_date,
             )
             .group_by(StudySession.resource_id)
@@ -387,7 +388,10 @@ class SqlAlchemyResourceRepository:
                 func.max(StudySession.completed_at).label("last_studied_at"),
                 func.count(StudySession.id).label("completed_session_count"),
             )
-            .where(StudySession.user_key == user_key)
+            .where(
+                StudySession.user_key == user_key,
+                StudySession.status == "completed",
+            )
             .group_by(StudySession.resource_id)
             .subquery()
         )

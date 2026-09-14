@@ -16,7 +16,7 @@ The current G20 practice workspace is a content adapter and evidence producer. B
 ```text
 Jinja pages / small browser interactions
         ↓
-Application services (currently IeltsPracticeService)
+Focused application services
         ↓
 Domain rules + repository protocols
         ↓
@@ -31,6 +31,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 
 - `api/routes/practice.py`: translates HTTP requests into use-case calls and safely streams approved local audio files.
 - `api/routes/today.py`: renders today's persisted plan and exposes typed override/completion actions.
+- `api/routes/listening.py`: renders the focused real-media/transcript workspace and exposes sentence-marking actions.
 - `api/routes/insights.py`: renders History and Progress from reporting services without querying tables.
 - `api/routes/review.py`: renders the due queue/chunk library and validates typed create/rating requests.
 - `api/routes/notebook.py`: renders notes, difficult sentences and retellings and exposes their typed write actions.
@@ -38,12 +39,14 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/dashboard.py`: renders composed Dashboard and current Weekly Review read models.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
+- `presenters/listening.py`: derives safe media presentation and stable transcript sentences without persistence.
 - `domain/ielts/`: question types, grading result types, answer normalization and repository contract.
 - `domain/learning_evidence/`: the four initial skills and typed, provider-neutral evidence records.
 - `domain/learner_profile/`: `SkillEvaluator` interface, centralized configuration and deterministic baseline implementation.
 - `domain/weakness_detection/`: `WeaknessDetector` interface, centralized thresholds and deterministic confirmation rules.
 - `domain/resources/`: resource selection inputs and the replaceable `ResourceRecommender` contract.
 - `domain/study_plan/`: date-based plan entities, time-allocation configuration and `StudyPlanGenerator` contract.
+- `domain/study_session/`: timed module-session lifecycle and repository contract.
 - `domain/adaptive_learning/`: explicit recommendation/override decision types and repository boundary.
 - `domain/history/`: persisted-session history read contracts.
 - `domain/analytics/`: progress summaries and deterministic streak calculation.
@@ -54,14 +57,16 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
+- `services/study_session.py`: starts, resumes, saves and completes Today sessions, then refreshes adaptive evidence.
 - `repositories/sqlalchemy_ielts.py`: the only place that reads and writes IELTS database tables.
 - `repositories/sqlalchemy_learning_evidence.py`: idempotently persists sessions, exercise attempts and skill performance.
 - `repositories/sqlalchemy_learner_profile.py`: writes immutable profile snapshots and reads the latest profile.
 - `repositories/sqlalchemy_weakness_detection.py`: writes idempotent assessment runs and reads the current classification.
 - `repositories/sqlalchemy_resources.py`: reads active resources together with study and assignment history.
 - `repositories/sqlalchemy_study_plan.py`: persists one plan per learner/date and its four independent items.
+- `repositories/sqlalchemy_study_session.py`: persists revisioned active/completed module sessions and subjective performance evidence.
 - `repositories/sqlalchemy_adaptive_learning.py`: atomically applies validated overrides and appends decision history.
-- `repositories/sqlalchemy_history.py`: reads submitted study sessions for timelines and analytics.
+- `repositories/sqlalchemy_history.py`: reads completed study sessions for timelines and analytics.
 - `repositories/sqlalchemy_vocabulary.py`: persists normalized chunks together with their initial review item.
 - `repositories/sqlalchemy_review.py`: reads the due queue and atomically appends idempotent review attempts.
 - `repositories/sqlalchemy_listening.py`, `sqlalchemy_speaking.py` and `sqlalchemy_notebook.py`: persistence adapters for personal practice records.
@@ -147,7 +152,13 @@ The original system duration/resource never changes. Returning to those values c
 
 `GET /today` asks `StudyPlanService` for the Sydney calendar date, then passes its result and resource options to a presenter. The presenter contains labels and instructional copy but no persistence or adaptation rules. Jinja renders the established green/cream shell and four module cards.
 
-Small browser interactions call typed endpoints for an override or status change. The override endpoint delegates to `AdaptationDecisionService`; the status endpoint delegates to `StudyPlanService`. A plan becomes complete only when all four items are complete, and reopening any item makes the plan active again. IELTS grading and Today state remain independent use cases connected through the generic evidence pipeline.
+Small browser interactions call typed endpoints for overrides and study sessions. The timer restores saved seconds, writes monotonically increasing duration, autosaves notes/ratings and completes explicitly. The completed session changes the plan item state, appends subjective performance evidence with `NULL` accuracy, and refreshes the profile/weakness services. A plan becomes complete only when all four items are complete, and reopening an item permits a new session revision. IELTS grading and Today state remain independent evidence producers.
+
+## Implemented intensive-listening workspace
+
+Listening resources resolve through `ResourceService`, then `ListeningPracticeService` validates learner visibility and skill before any sentence write. The presenter supports YouTube embeds, direct audio URLs and the existing private G20 section-audio route. Transcript text is split deterministically for display; marking a sentence creates or updates one learner/resource sentence record. `could_not_hear` and `difficult` ensure a review item exists, while hearing status and review mastery remain separate.
+
+The workspace states when a resource has audio but no transcript instead of fabricating content. Personal resources can add a source URL and transcript through the existing Library editor. Provider fetching, automatic transcription and AI sentence analysis remain outside this milestone.
 
 ## Implemented History and Progress read models
 

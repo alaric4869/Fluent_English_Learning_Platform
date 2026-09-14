@@ -36,7 +36,7 @@
       <article class="session-card">
         <div><span>{{ entry.skill_label }}</span><h3>{{ entry.session.resource_title }}</h3><p>{{ entry.session.source_type }} · {{ entry.session.source_id }}</p></div>
         <dl>
-          <div><dt>正确率</dt><dd>{{ entry.accuracy_percent }}%</dd></div>
+          <div><dt>学习证据</dt><dd>{% if entry.accuracy_percent is not none %}正确率 {{ entry.accuracy_percent }}%{% else %}难度 / 信心自评{% endif %}</dd></div>
           <div><dt>错题</dt><dd>{{ entry.session.incorrect_item_count }}</dd></div>
           <div><dt>真实计时</dt><dd>{{ entry.tracked_minutes ~ ' min' if entry.tracked_minutes is not none else '未记录' }}</dd></div>
         </dl>

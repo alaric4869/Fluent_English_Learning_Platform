@@ -1,0 +1,1 @@
+"""Timed study-session domain."""

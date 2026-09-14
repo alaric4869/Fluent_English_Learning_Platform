@@ -17,7 +17,7 @@ class HistoricalStudySession:
     started_at: datetime
     completed_at: datetime
     actual_duration_seconds: int | None
-    accuracy: float
+    accuracy: float | None
     attempt_count: int
     incorrect_item_count: int
     notes: str

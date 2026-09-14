@@ -6,6 +6,8 @@ from app.domain.listening.entities import (
     SavedListeningSentence,
 )
 from app.domain.listening.repository import ListeningSentenceRepository
+from app.domain.listening.transcript import split_transcript
+from app.domain.learning_evidence.entities import Skill
 from app.domain.resources.repository import ResourceRepository
 from app.domain.review.scheduler import ReviewScheduler
 
@@ -69,9 +71,73 @@ class ListeningPracticeService:
             raise LookupError("Saved sentence not found")
         return item
 
+    def list_for_resource(
+        self,
+        user_key: str,
+        resource_id: int,
+    ) -> tuple[SavedListeningSentence, ...]:
+        self._get_listening_resource(user_key, resource_id)
+        return self.repository.list_for_resource(user_key, resource_id)
+
+    def mark_transcript_sentence(
+        self,
+        user_key: str,
+        resource_id: int,
+        sentence: str,
+        status: ListeningSentenceStatus,
+        today: date,
+    ) -> SavedListeningSentence:
+        resource = self._get_listening_resource(user_key, resource_id)
+        normalized_sentence = " ".join(sentence.split())
+        if not normalized_sentence:
+            raise InvalidListeningSentenceError("Sentence is required")
+        if normalized_sentence not in split_transcript(resource.transcript):
+            raise InvalidListeningSentenceError(
+                "Sentence does not belong to this resource transcript"
+            )
+        existing = self.repository.find_for_resource_sentence(
+            user_key, resource_id, normalized_sentence
+        )
+        should_review = status in {
+            ListeningSentenceStatus.COULD_NOT_HEAR,
+            ListeningSentenceStatus.DIFFICULT,
+        }
+        schedule = self.review_scheduler.initial_state(today) if should_review else None
+        if existing is not None:
+            updated = self.repository.update_status(
+                user_key,
+                existing.id,
+                status,
+                schedule,
+            )
+            if updated is None:
+                raise LookupError("Saved sentence not found")
+            return updated
+        return self.repository.create(
+            user_key,
+            ListeningSentenceDraft(
+                sentence=normalized_sentence,
+                meaning="",
+                learned_on=today,
+                practice_status=status,
+                source_resource_id=resource_id,
+                source_context=resource.title,
+                add_to_review=should_review,
+            ),
+            schedule,
+        )
+
     def _validate_resource(self, resource_id: int | None) -> None:
         if resource_id is not None and self.resource_repository.get(resource_id) is None:
             raise InvalidListeningSentenceError("Source resource not found")
+
+    def _get_listening_resource(self, user_key: str, resource_id: int):
+        resource = self.resource_repository.get_for_user(user_key, resource_id)
+        if resource is None:
+            raise LookupError("Listening resource not found")
+        if resource.skill is not Skill.LISTENING:
+            raise InvalidListeningSentenceError("Resource is not a listening resource")
+        return resource
 
 
 def _normalize_draft(draft: ListeningSentenceDraft) -> ListeningSentenceDraft:

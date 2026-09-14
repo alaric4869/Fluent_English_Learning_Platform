@@ -9,13 +9,19 @@ from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
 from app.domain.learning_evidence.entities import Skill
+from app.domain.study_session.entities import StudySessionProgress
 from app.presenters.today import present_plan_response, present_today_plan
 from app.schemas.study_plan import (
     PlanItemOverrideRequest,
     PlanItemStatusRequest,
     StudyPlanResponse,
 )
+from app.schemas.study_session import (
+    ModuleStudySessionResponse,
+    StudySessionProgressRequest,
+)
 from app.services.adaptive_learning import InvalidPlanOverrideError
+from app.services.study_session import InvalidStudySessionError
 
 
 router = APIRouter()
@@ -57,8 +63,80 @@ def today_page(
             resources,
             resource_options,
             services.review.get_due_count(LOCAL_USER_KEY, now.date()),
+            services.study_sessions.get_latest_for_plan(
+                LOCAL_USER_KEY, plan.plan_date
+            ),
         ),
     )
+
+
+@router.post(
+    "/api/study-plans/{plan_date}/items/{study_plan_item_id}/sessions",
+    response_model=ModuleStudySessionResponse,
+)
+def start_study_session(
+    plan_date: date,
+    study_plan_item_id: int,
+    services: ApplicationServices = Depends(get_services),
+):
+    try:
+        return services.study_sessions.start(
+            LOCAL_USER_KEY, plan_date, study_plan_item_id
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except InvalidStudySessionError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.patch(
+    "/api/study-plans/{plan_date}/items/{study_plan_item_id}/sessions/{study_session_id}",
+    response_model=ModuleStudySessionResponse,
+)
+def save_study_session(
+    plan_date: date,
+    study_plan_item_id: int,
+    study_session_id: int,
+    payload: StudySessionProgressRequest,
+    services: ApplicationServices = Depends(get_services),
+):
+    try:
+        return services.study_sessions.save_progress(
+            LOCAL_USER_KEY,
+            plan_date,
+            study_plan_item_id,
+            study_session_id,
+            _session_progress(payload),
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except (InvalidStudySessionError, ValueError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+@router.post(
+    "/api/study-plans/{plan_date}/items/{study_plan_item_id}/sessions/{study_session_id}/complete",
+    response_model=ModuleStudySessionResponse,
+)
+def complete_study_session(
+    plan_date: date,
+    study_plan_item_id: int,
+    study_session_id: int,
+    payload: StudySessionProgressRequest,
+    services: ApplicationServices = Depends(get_services),
+):
+    try:
+        return services.study_sessions.complete(
+            LOCAL_USER_KEY,
+            plan_date,
+            study_plan_item_id,
+            study_session_id,
+            _session_progress(payload),
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except (InvalidStudySessionError, ValueError) as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 @router.put(
@@ -72,6 +150,12 @@ def override_plan_item(
     services: ApplicationServices = Depends(get_services),
 ):
     try:
+        services.study_sessions.validate_resource_override(
+            LOCAL_USER_KEY,
+            plan_date,
+            study_plan_item_id,
+            payload.resource_id,
+        )
         plan = services.adaptation_decisions.override_plan_item(
             LOCAL_USER_KEY,
             plan_date,
@@ -82,7 +166,7 @@ def override_plan_item(
         )
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
-    except InvalidPlanOverrideError as error:
+    except (InvalidPlanOverrideError, InvalidStudySessionError) as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     return present_plan_response(plan)
 
@@ -107,3 +191,12 @@ def update_plan_item_status(
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     return present_plan_response(plan)
+
+
+def _session_progress(payload: StudySessionProgressRequest) -> StudySessionProgress:
+    return StudySessionProgress(
+        active_duration_seconds=payload.active_duration_seconds,
+        notes=payload.notes,
+        perceived_difficulty=payload.perceived_difficulty,
+        confidence=payload.confidence,
+    )

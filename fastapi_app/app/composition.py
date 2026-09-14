@@ -21,6 +21,7 @@ from app.repositories.sqlalchemy_resources import SqlAlchemyResourceRepository
 from app.repositories.sqlalchemy_review import SqlAlchemyReviewRepository
 from app.repositories.sqlalchemy_speaking import SqlAlchemySpeakingPracticeRepository
 from app.repositories.sqlalchemy_study_plan import SqlAlchemyStudyPlanRepository
+from app.repositories.sqlalchemy_study_session import SqlAlchemyStudySessionRepository
 from app.repositories.sqlalchemy_vocabulary import SqlAlchemyVocabularyRepository
 from app.repositories.sqlalchemy_weakness_detection import (
     SqlAlchemyWeaknessAssessmentRepository,
@@ -39,6 +40,7 @@ from app.services.resources import ResourceService
 from app.services.review import ReviewService
 from app.services.speaking import SpeakingPracticeService
 from app.services.study_plan import StudyPlanService
+from app.services.study_session import StudySessionService
 from app.services.weakness_detection import WeaknessDetectionService
 from app.services.vocabulary import VocabularyService
 from app.services.weekly_review import WeeklyReviewService
@@ -51,6 +53,7 @@ class ApplicationServices:
     weakness_detection: WeaknessDetectionService
     resources: ResourceService
     study_plan: StudyPlanService
+    study_sessions: StudySessionService
     adaptation_decisions: AdaptationDecisionService
     history: HistoryService
     progress_analytics: ProgressAnalyticsService
@@ -115,6 +118,12 @@ def build_application_services(session: Session) -> ApplicationServices:
         resource_service,
         RuleBasedStudyPlanGenerator(),
     )
+    study_session_service = StudySessionService(
+        SqlAlchemyStudySessionRepository(session),
+        study_plan_service,
+        profile_service,
+        weakness_service,
+    )
     adaptation_service = AdaptationDecisionService(
         plan_repository,
         SqlAlchemyAdaptationDecisionRepository(session),
@@ -163,6 +172,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         weakness_detection=weakness_service,
         resources=resource_service,
         study_plan=study_plan_service,
+        study_sessions=study_session_service,
         adaptation_decisions=adaptation_service,
         history=history_service,
         progress_analytics=progress_analytics_service,
