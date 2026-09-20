@@ -44,6 +44,24 @@ def test_figure_answer_metadata_is_normalized_for_the_renderer() -> None:
     assert presented["practice_set"]["sections"][0]["embedded_question_numbers"] == [1]
 
 
+def test_reading_passages_and_answer_layouts_are_split_for_the_workspace() -> None:
+    reading = _practice_set("reading")
+    reading["sections"][0]["content_blocks"] = [
+        {"kind": "passage", "title": "Source", "paragraphs": ["Read this."]},
+        {
+            "kind": "flowchart",
+            "title": "Questions",
+            "nodes": [{"parts": [{"text": "Answer "}, {"answer": 1}]}],
+        },
+    ]
+
+    presented = present_practice_workspace(_workspace(reading))
+    section = presented["practice_set"]["sections"][0]
+
+    assert [block["kind"] for block in section["source_blocks"]] == ["passage"]
+    assert [block["kind"] for block in section["question_blocks"]] == ["flowchart"]
+
+
 def _practice_set(skill: str) -> dict:
     payload = json.loads(SEED_PATH.read_text(encoding="utf-8"))
     return next(item for item in payload["practice_sets"] if item["skill"] == skill)

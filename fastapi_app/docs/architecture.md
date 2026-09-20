@@ -50,6 +50,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/notebook.py`: renders notes, difficult sentences and retellings and exposes their typed write actions.
 - `api/routes/resources.py`: owns Library reads and typed create/edit/user-state actions.
 - `api/routes/dashboard.py`: renders composed Dashboard and current Weekly Review read models.
+- `api/learner_context.py`: supplies learner identity at the HTTP boundary; the local adapter is replaceable through FastAPI dependency injection.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `content_import/`: validates ordered manifests, complete 40-question IELTS sets, native tables/flowcharts/figures and grouped-answer invariants before a database write starts.
 - `ai_agent/contracts.py`: strict provider, tool-input and tool-output Pydantic contracts.
@@ -80,6 +81,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/review/`: scheduler contract, centralized intervals and deterministic fixed-interval implementation.
 - `domain/listening/`, `domain/speaking/` and `domain/notebook/`: feature-specific records and repository contracts; none imports FastAPI or SQLAlchemy.
 - `domain/writing/`: revisioned draft/submission contracts; it deliberately does not define a fake objective grader.
+- `domain/sync/`: a minimal provider-neutral change-feed port for a future cloud adapter; domain features do not import it or emit hidden sync side effects.
 - `services/ielts_practice.py`: load practice, save an answer, require completion, grade and submit.
 - `services/ielts_learning_evidence.py`: maps an IELTS result into generic learning evidence.
 - `services/learning_evidence.py`: stable write use case for evidence producers.
@@ -119,9 +121,8 @@ tool input; `AgentExecutionContext` supplies it after authorization.
 `LearningAgentService` gives a provider only the authorized catalogue, executes
 validated tool calls, and returns their serialized contracts for the next provider
 turn. Calls are bounded to prevent an unending model/tool loop. `MockAIProvider`
-makes the whole path deterministic in tests. There is no browser chatbot or external
-network call in this milestone; M17 can add an OpenAI Responses adapter without
-changing any learning service or repository.
+makes the whole path deterministic in tests. The optional OpenAI Responses adapter
+implements the same boundary without changing any learning service or repository.
 
 Read tools remain the default. `save_ai_recommendation` requires a separate permission
 and appends a proposal without mutating the plan. Applying a proposal still requires
@@ -149,9 +150,17 @@ assessment.
 
 Structured content contains semantic blocks such as `table`, `figure`, and question groups. The presenter turns those blocks into a rendering model. Jinja templates preserve the source layout using native HTML tables or approved source images, while answer inputs remain normal accessible form controls. Grading still works from question IDs and is independent of layout.
 
+Reading presentation classifies answer-bearing tables, flowcharts and figures as question blocks while keeping ordinary passages/notices as source blocks. The page places those read models in independently scrollable desktop panes and uses the same controls, autosave queue and Python grader as Listening. No content is duplicated into a second scoring path.
+
+## Deployment and synchronization seams
+
+- `create_database_engine()` accepts a SQLAlchemy URL. SQLite is the local default; the optional `postgresql` package extra supplies psycopg for hosted deployments. Alembic remains the only schema-change mechanism.
+- Every learner-scoped route receives `LearnerContext` from `get_learner_context()`. The browser cannot submit a learner key. A later session/JWT adapter replaces this dependency and leaves services unchanged.
+- `LearningSyncPort` describes paginated, versioned change discovery only. No background synchronization is enabled in the MVP; a future adapter must define conflict policy, authorization and transport before it is wired into composition.
+
 ## Current limits
 
-- A single local learner key is used until authentication is added.
+- The default identity adapter uses one configured local learner key; authentication is not yet enabled.
 - One working attempt is stored per learner and practice set. Attempt history and retakes will change this to multiple immutable submissions.
 - G20 Test 1–4 Listening and Reading contain 40 web-interactive questions each, and all eight Writing tasks are web-native resources.
 - Test 3's archaeological map is a verified crop from the learner-owned source. It is displayed as the original figure while its four answers remain ordinary autosaved form inputs.

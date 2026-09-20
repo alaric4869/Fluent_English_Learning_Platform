@@ -7,6 +7,7 @@
   const questionButtons = [...document.querySelectorAll("[data-jump-question]")];
   const progressText = document.querySelector("#progressText");
   const progressBar = document.querySelector("#progressBar");
+  const progressTrack = progressBar?.closest("[role='progressbar']");
   const saveStatus = document.querySelector("#saveStatus");
   const submitButton = document.querySelector("#submitAttempt");
   const scoreCard = document.querySelector("#scoreCard");
@@ -53,6 +54,8 @@
     const total = questionButtons.length;
     progressText.textContent = `${answered}/${total}`;
     progressBar.style.width = `${total ? (answered / total) * 100 : 0}%`;
+    progressTrack?.setAttribute("aria-valuemax", String(total));
+    progressTrack?.setAttribute("aria-valuenow", String(answered));
     questionButtons.forEach((button) => {
       button.classList.toggle("is-answered", Boolean(answers.get(Number(button.dataset.jumpQuestion))));
     });
@@ -67,12 +70,20 @@
 
   const showSection = (sectionNumber, scroll = true) => {
     document.querySelectorAll(".practice-section").forEach((section) => {
-      section.classList.toggle("is-hidden", section.dataset.section !== String(sectionNumber));
+      const active = section.dataset.section === String(sectionNumber);
+      section.classList.toggle("is-hidden", !active);
+      section.hidden = !active;
+      if (active) {
+        section.querySelectorAll(".reading-pane").forEach((pane) => {
+          pane.scrollTop = 0;
+        });
+      }
     });
     document.querySelectorAll(".section-tab").forEach((tab) => {
       const active = tab.dataset.sectionTarget === `section-${sectionNumber}`;
       tab.classList.toggle("is-active", active);
       tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
     });
     if (scroll) {
       document.querySelector(".section-picker")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -159,8 +170,22 @@
     });
   };
 
-  document.querySelectorAll(".section-tab").forEach((tab) => {
+  const sectionTabs = [...document.querySelectorAll(".section-tab")];
+  sectionTabs.forEach((tab, index) => {
     tab.addEventListener("click", () => showSection(tab.dataset.sectionTarget.split("-")[1]));
+    tab.addEventListener("keydown", (event) => {
+      const keyTargets = {
+        ArrowLeft: Math.max(0, index - 1),
+        ArrowRight: Math.min(sectionTabs.length - 1, index + 1),
+        Home: 0,
+        End: sectionTabs.length - 1,
+      };
+      if (!(event.key in keyTargets)) return;
+      event.preventDefault();
+      const nextTab = sectionTabs[keyTargets[event.key]];
+      nextTab.focus();
+      showSection(nextTab.dataset.sectionTarget.split("-")[1], false);
+    });
   });
   document.querySelectorAll(".section-change").forEach((button) => {
     button.addEventListener("click", () => showSection(button.dataset.goSection));
@@ -172,7 +197,10 @@
       showSection(button.dataset.questionSection, false);
       questionButtons.forEach((item) => item.classList.toggle("is-current", item === button));
       requestAnimationFrame(() => {
-        containerForNumber(number)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const container = containerForNumber(number);
+        container?.scrollIntoView({ behavior: "smooth", block: "center" });
+        const control = container?.querySelector("input:not([disabled]), textarea:not([disabled]), select:not([disabled])");
+        (control ?? container)?.focus({ preventScroll: true });
       });
     });
   });
@@ -233,7 +261,10 @@
         if (missing.length) {
           const first = containerForNumber(missing[0]);
           showSection(first.closest(".practice-section").dataset.section, false);
-          requestAnimationFrame(() => first.scrollIntoView({ behavior: "smooth", block: "center" }));
+          requestAnimationFrame(() => {
+            first.scrollIntoView({ behavior: "smooth", block: "center" });
+            (first.querySelector("input") ?? first).focus({ preventScroll: true });
+          });
           saveStatus.textContent = `还有 ${missing.length} 题未完成`;
         }
         return;
@@ -247,7 +278,10 @@
       if (firstWrong) {
         const container = containerForNumber(firstWrong.number);
         showSection(container.closest(".practice-section").dataset.section, false);
-        requestAnimationFrame(() => container.scrollIntoView({ behavior: "smooth", block: "center" }));
+        requestAnimationFrame(() => {
+          container.scrollIntoView({ behavior: "smooth", block: "center" });
+          container.focus({ preventScroll: true });
+        });
       }
     } catch {
       saveStatus.textContent = "提交失败，请稍后重试";

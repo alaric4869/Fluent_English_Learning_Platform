@@ -14,6 +14,8 @@ python3.12 -m venv .venv
 
 Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open at `/listening/{resource_id}`, Speaking practices at `/speaking/{resource_id}`, and Writing tasks at `/writing/{resource_id}`.
 
+Reading practice uses a responsive two-pane workspace: the source stays on the left and questions stay on the right with independent scrolling on desktop, then collapse into a readable single column on small screens. Native tables, flowcharts and verified figures remain semantic web content rather than flattened PDF screenshots.
+
 AI is disabled by default. The full learning app works without a model or API key. To enable explicit Writing/Retelling feedback and the OpenAI Agent adapter, install the optional dependency, copy `environment.example` to `.env`, set `ENGLISH_TOOL_AI_PROVIDER=openai`, and provide `OPENAI_API_KEY` plus an available `OPENAI_MODEL`:
 
 ```bash
@@ -23,6 +25,8 @@ AI is disabled by default. The full learning app works without a model or API ke
 The key remains server-side. A submitted learner response is sent only after the learner clicks “生成反馈”; automatic submission-time model calls are intentionally disabled.
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
+
+SQLite remains the zero-configuration default. For an optional PostgreSQL deployment, install `.[postgresql]` and set `ENGLISH_TOOL_DATABASE_URL` to a `postgresql+psycopg://...` URL before running Alembic. HTTP routes receive learner identity through one replaceable dependency; the local adapter still uses `ENGLISH_TOOL_LOCAL_USER_KEY=local-user`. A cloud identity provider can replace that dependency without changing learning services.
 
 IELTS audio is streamed from the repository's private, git-ignored `resources/listening` directory. Verified question figures are stored in `assets/ielts` and served through a path-safe media route; source PDFs themselves are never exposed to the browser.
 
@@ -47,12 +51,14 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `repositories/`: SQLAlchemy persistence adapter.
 - `models/`: database tables only.
 - `api/routes/`: HTTP transport and validation.
+- `api/learner_context.py`: local identity adapter and the replaceable authentication seam used by every learner-scoped route.
 - `presenters/`: converts structured exercise content into a page-specific read model; it does not grade or persist.
 - `templates/` and `static/`: light server-rendered UI and browser interactions.
 - `composition.py`: the explicit application-service composition root shared by routes.
 - `ai_agent/`: provider-neutral model loop, strict tool contracts, authorization policy and offline mock adapters; it has no database session.
 - `integrations/openai/`: optional Responses API and structured-evaluation adapters; provider SDK types stop at this boundary.
 - `domain/ai_evaluation/`: provider-neutral rubric evidence and evaluator/repository contracts.
+- `domain/sync/`: provider-neutral change-feed contract for a future authenticated device-sync adapter; no sync side effects run in the local MVP.
 - `content_import/`: strict Pydantic validation for seed manifests, semantic source blocks and complete IELTS question sets.
 - `seed/`: versioned structured practice content imported into SQLite through the manifest.
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.

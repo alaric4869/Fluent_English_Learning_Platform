@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     seed_path: Path = FASTAPI_ROOT / "seed" / "manifest.json"
     resources_root: Path = REPOSITORY_ROOT / "resources"
     ielts_assets_root: Path = FASTAPI_ROOT / "assets" / "ielts"
+    local_user_key: str = "local-user"
     ai_provider: Literal["disabled", "openai"] = "disabled"
     openai_api_key: SecretStr | None = Field(
         default=None,

@@ -13,6 +13,9 @@ def present_practice_workspace(workspace: dict) -> dict:
         embedded_numbers = _embedded_question_numbers(section["content_blocks"])
         section["embedded_question_numbers"] = embedded_numbers
         section["display_items"] = _display_items(section["questions"], embedded_numbers)
+        section["source_blocks"], section["question_blocks"] = _split_reading_blocks(
+            section["content_blocks"]
+        )
 
     presented["question_map"] = question_map
     return presented
@@ -45,6 +48,16 @@ def _embedded_question_numbers(blocks: list[dict]) -> list[int]:
                     if "answer" in part:
                         numbers.add(int(part["answer"]))
     return sorted(numbers)
+
+
+def _split_reading_blocks(blocks: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Keep passages on the reading side and answer-bearing layouts on the question side."""
+    source_blocks: list[dict] = []
+    question_blocks: list[dict] = []
+    for block in blocks:
+        target = question_blocks if _embedded_question_numbers([block]) else source_blocks
+        target.append(block)
+    return source_blocks, question_blocks
 
 
 def _display_items(questions: list[dict], embedded_numbers: list[int]) -> list[dict]:

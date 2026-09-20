@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.api.learner_context import Learner
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
@@ -14,7 +15,6 @@ from app.presenters.progress import present_progress
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 SYDNEY = ZoneInfo("Australia/Sydney")
 
 
@@ -25,6 +25,7 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 @router.get("/history")
 def history_page(
     request: Request,
+    learner: Learner,
     view: str = "timeline",
     month: str | None = None,
     services: ApplicationServices = Depends(get_services),
@@ -32,9 +33,9 @@ def history_page(
     today = datetime.now(SYDNEY).date()
     selected_month = _parse_month(month, today)
     history = (
-        services.history.list_month(LOCAL_USER_KEY, selected_month)
+        services.history.list_month(learner.user_key, selected_month)
         if view == "calendar"
-        else services.history.list_recent_days(LOCAL_USER_KEY, today)
+        else services.history.list_recent_days(learner.user_key, today)
     )
     resources = _load_plan_resources(history, services)
     return templates.TemplateResponse(
@@ -54,9 +55,10 @@ def history_page(
 def history_detail_page(
     study_date: date,
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
-    history_day = services.history.get_day(LOCAL_USER_KEY, study_date)
+    history_day = services.history.get_day(learner.user_key, study_date)
     if history_day is None:
         raise HTTPException(status_code=404, detail="Study history not found")
     resources = _load_plan_resources((history_day,), services)
@@ -70,10 +72,11 @@ def history_detail_page(
 @router.get("/progress")
 def progress_page(
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     today = datetime.now(SYDNEY).date()
-    summary = services.progress_analytics.get_summary(LOCAL_USER_KEY, today)
+    summary = services.progress_analytics.get_summary(learner.user_key, today)
     return templates.TemplateResponse(
         request=request,
         name="progress/index.html",

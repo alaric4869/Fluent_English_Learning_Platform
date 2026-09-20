@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.api.learner_context import Learner
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
@@ -16,7 +17,6 @@ from app.services.listening import InvalidListeningSentenceError
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 SYDNEY = ZoneInfo("Australia/Sydney")
 
 
@@ -28,13 +28,14 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 def listening_workspace(
     resource_id: int,
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
-    resource = services.resources.get_user_resource(LOCAL_USER_KEY, resource_id)
+    resource = services.resources.get_user_resource(learner.user_key, resource_id)
     if resource is None:
         raise HTTPException(status_code=404, detail="Listening resource not found")
     try:
-        saved = services.listening.list_for_resource(LOCAL_USER_KEY, resource_id)
+        saved = services.listening.list_for_resource(learner.user_key, resource_id)
     except InvalidListeningSentenceError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     return templates.TemplateResponse(
@@ -51,11 +52,12 @@ def listening_workspace(
 def mark_transcript_sentence(
     resource_id: int,
     payload: TranscriptSentenceMarkRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         item = services.listening.mark_transcript_sentence(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
             payload.sentence,
             payload.practice_status,

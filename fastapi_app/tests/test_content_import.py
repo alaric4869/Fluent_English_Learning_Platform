@@ -81,11 +81,18 @@ def test_test_4_grouped_questions_render_as_two_choice_checkboxes() -> None:
 
         with TestClient(app) as client:
             page = client.get("/ielts/g20-test-4-listening")
+            reading_page = client.get("/ielts/g20-test-4-reading")
             map_asset = client.get(
                 "/media/ielts-assets/g20/test3/bidcaster-archaeological-dig.png"
             )
 
         assert page.status_code == 200
+        assert reading_page.status_code == 200
+        assert 'class="reading-split-layout"' in reading_page.text
+        assert 'class="reading-pane reading-source-pane"' in reading_page.text
+        assert 'class="reading-pane reading-question-pane"' in reading_page.text
+        assert 'data-practice-skill="reading"' in reading_page.text
+        assert 'class="reading-split-layout"' not in page.text
         assert 'data-question-numbers="11 12"' in page.text
         assert 'data-max-selections="2"' in page.text
         assert page.text.count('class="group-choice" type="checkbox"') >= 20

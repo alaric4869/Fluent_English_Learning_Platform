@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.api.learner_context import Learner
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
@@ -26,7 +27,6 @@ from app.services.study_session import InvalidStudySessionError
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 SYDNEY = ZoneInfo("Australia/Sydney")
 
 
@@ -37,10 +37,11 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 @router.get("/today")
 def today_page(
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     now = datetime.now(SYDNEY)
-    plan = services.study_plan.get_or_create_daily_plan(LOCAL_USER_KEY, now.date())
+    plan = services.study_plan.get_or_create_daily_plan(learner.user_key, now.date())
     resources = {
         item.resource_id: services.resources.get_resource(item.resource_id)
         for item in plan.items
@@ -48,7 +49,7 @@ def today_page(
     }
     resource_options = {
         skill: services.resources.list_available_for_skill(
-            LOCAL_USER_KEY,
+            learner.user_key,
             skill,
             plan.plan_date,
         )
@@ -62,9 +63,9 @@ def today_page(
             now,
             resources,
             resource_options,
-            services.review.get_due_count(LOCAL_USER_KEY, now.date()),
+            services.review.get_due_count(learner.user_key, now.date()),
             services.study_sessions.get_latest_for_plan(
-                LOCAL_USER_KEY, plan.plan_date
+                learner.user_key, plan.plan_date
             ),
         ),
     )
@@ -77,11 +78,12 @@ def today_page(
 def start_study_session(
     plan_date: date,
     study_plan_item_id: int,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         return services.study_sessions.start(
-            LOCAL_USER_KEY, plan_date, study_plan_item_id
+            learner.user_key, plan_date, study_plan_item_id
         )
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
@@ -98,11 +100,12 @@ def save_study_session(
     study_plan_item_id: int,
     study_session_id: int,
     payload: StudySessionProgressRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         return services.study_sessions.save_progress(
-            LOCAL_USER_KEY,
+            learner.user_key,
             plan_date,
             study_plan_item_id,
             study_session_id,
@@ -123,11 +126,12 @@ def complete_study_session(
     study_plan_item_id: int,
     study_session_id: int,
     payload: StudySessionProgressRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         return services.study_sessions.complete(
-            LOCAL_USER_KEY,
+            learner.user_key,
             plan_date,
             study_plan_item_id,
             study_session_id,
@@ -147,17 +151,18 @@ def override_plan_item(
     plan_date: date,
     study_plan_item_id: int,
     payload: PlanItemOverrideRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         services.study_sessions.validate_resource_override(
-            LOCAL_USER_KEY,
+            learner.user_key,
             plan_date,
             study_plan_item_id,
             payload.resource_id,
         )
         plan = services.adaptation_decisions.override_plan_item(
-            LOCAL_USER_KEY,
+            learner.user_key,
             plan_date,
             study_plan_item_id,
             planned_minutes=payload.planned_minutes,
@@ -179,11 +184,12 @@ def update_plan_item_status(
     plan_date: date,
     study_plan_item_id: int,
     payload: PlanItemStatusRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         plan = services.study_plan.update_item_status(
-            LOCAL_USER_KEY,
+            learner.user_key,
             plan_date,
             study_plan_item_id,
             payload.status,

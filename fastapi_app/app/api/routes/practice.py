@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT, settings
 from app.database import get_db
+from app.api.learner_context import Learner
 from app.domain.learning_evidence.entities import Skill
 from app.domain.resources.entities import ResourceLibraryFilters, ResourceSort
 from app.presenters.ielts import present_practice_workspace
@@ -21,7 +22,6 @@ from app.services.ielts_practice import (
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 
 
 def get_service(session: Session = Depends(get_db)) -> IeltsPracticeService:
@@ -40,6 +40,7 @@ def home() -> RedirectResponse:
 @router.get("/ielts")
 def ielts_index(
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     return templates.TemplateResponse(
@@ -48,7 +49,7 @@ def ielts_index(
         context={
             "practice_sets": services.ielts_practice.list_practice_sets(),
             "speaking_resources": services.resources.get_library(
-                LOCAL_USER_KEY,
+                learner.user_key,
                 ResourceLibraryFilters(
                     skill=Skill.SPEAKING,
                     resource_type="shadowing_retelling",
@@ -56,7 +57,7 @@ def ielts_index(
                 ),
             ).items,
             "writing_resources": services.resources.get_library(
-                LOCAL_USER_KEY,
+                learner.user_key,
                 ResourceLibraryFilters(
                     skill=Skill.WRITING,
                     resource_type="ielts_writing",
@@ -71,10 +72,11 @@ def ielts_index(
 def practice_workspace(
     slug: str,
     request: Request,
+    learner: Learner,
     service: IeltsPracticeService = Depends(get_service),
 ):
     try:
-        workspace = service.get_practice_workspace(slug, LOCAL_USER_KEY)
+        workspace = service.get_practice_workspace(slug, learner.user_key)
     except PracticeSetNotFoundError as error:
         raise HTTPException(status_code=404, detail="Practice set not found") from error
     return templates.TemplateResponse(
@@ -89,18 +91,23 @@ def save_answer(
     slug: str,
     question_number: int,
     payload: SaveAnswerRequest,
+    learner: Learner,
     service: IeltsPracticeService = Depends(get_service),
 ):
     try:
-        return service.save_answer(slug, LOCAL_USER_KEY, question_number, payload.answer)
+        return service.save_answer(slug, learner.user_key, question_number, payload.answer)
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.post("/api/ielts/{slug}/submit", response_model=SubmitAttemptResponse)
-def submit_attempt(slug: str, service: IeltsPracticeService = Depends(get_service)):
+def submit_attempt(
+    slug: str,
+    learner: Learner,
+    service: IeltsPracticeService = Depends(get_service),
+):
     try:
-        return service.submit(slug, LOCAL_USER_KEY)
+        return service.submit(slug, learner.user_key)
     except IncompleteAttemptError as error:
         raise HTTPException(
             status_code=422,

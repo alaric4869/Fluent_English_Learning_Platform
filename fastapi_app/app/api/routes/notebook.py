@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.api.learner_context import Learner
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
@@ -28,7 +29,6 @@ from app.services.speaking import InvalidRetellingError
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 SYDNEY = ZoneInfo("Australia/Sydney")
 
 
@@ -39,6 +39,7 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 @router.get("/notebook")
 def notebook_page(
     request: Request,
+    learner: Learner,
     view: str = "notes",
     search: str = "",
     note_type: str = "",
@@ -55,12 +56,12 @@ def notebook_page(
     except ValueError as error:
         raise HTTPException(status_code=422, detail="Invalid notebook filter") from error
     notes = services.notebook.get_notes(
-        LOCAL_USER_KEY, search=search, note_type=selected_note_type
+        learner.user_key, search=search, note_type=selected_note_type
     )
     sentences = services.listening.list_sentences(
-        LOCAL_USER_KEY, search=search, status=selected_sentence_status
+        learner.user_key, search=search, status=selected_sentence_status
     )
-    retellings = services.speaking.list_retellings(LOCAL_USER_KEY, search=search)
+    retellings = services.speaking.list_retellings(learner.user_key, search=search)
     return templates.TemplateResponse(
         request=request,
         name="notebook/index.html",
@@ -83,11 +84,12 @@ def notebook_page(
 )
 def create_note(
     payload: NotebookNoteCreateRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         note = services.notebook.add_note(
-            LOCAL_USER_KEY,
+            learner.user_key,
             NoteDraft(
                 note_type=payload.note_type,
                 title=payload.title,
@@ -109,12 +111,13 @@ def create_note(
 )
 def create_listening_sentence(
     payload: ListeningSentenceCreateRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     today = datetime.now(SYDNEY).date()
     try:
         item = services.listening.save_sentence(
-            LOCAL_USER_KEY,
+            learner.user_key,
             ListeningSentenceDraft(
                 sentence=payload.sentence,
                 meaning=payload.meaning,
@@ -139,11 +142,12 @@ def create_listening_sentence(
 def update_listening_sentence_status(
     sentence_id: int,
     payload: ListeningSentenceStatusRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         item = services.listening.update_status(
-            LOCAL_USER_KEY, sentence_id, payload.practice_status
+            learner.user_key, sentence_id, payload.practice_status
         )
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
@@ -157,11 +161,12 @@ def update_listening_sentence_status(
 )
 def create_retelling(
     payload: RetellingCreateRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         item = services.speaking.save_retelling(
-            LOCAL_USER_KEY,
+            learner.user_key,
             RetellingDraft(
                 prompt=payload.prompt,
                 written_outline=payload.written_outline,

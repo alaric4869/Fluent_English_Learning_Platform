@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.api.learner_context import Learner
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
@@ -27,7 +28,6 @@ from app.services.speaking import IncompleteRetellingError, InvalidRetellingErro
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 
 
 def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
@@ -38,10 +38,11 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 def speaking_workspace(
     resource_id: int,
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
-        workspace = services.speaking.get_workspace(LOCAL_USER_KEY, resource_id)
+        workspace = services.speaking.get_workspace(learner.user_key, resource_id)
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except InvalidRetellingError as error:
@@ -52,7 +53,7 @@ def speaking_workspace(
         context=present_speaking_workspace(
             workspace,
             evaluation=services.ai_evaluation.get_latest_retelling_evaluation(
-                LOCAL_USER_KEY,
+                learner.user_key,
                 resource_id,
             ),
             evaluation_available=services.ai_evaluation.available,
@@ -67,11 +68,12 @@ def speaking_workspace(
 def save_speaking_draft(
     resource_id: int,
     payload: SpeakingDraftRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         record = services.speaking.save_workspace_draft(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
             RetellingWorkspaceInput(
                 written_outline=payload.written_outline,
@@ -100,11 +102,12 @@ def mark_speaking_sentence(
     resource_id: int,
     sentence_key: str,
     payload: SpeakingSentenceStatusRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         progress = services.speaking.mark_sentence(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
             sentence_key,
             payload.practice_status,
@@ -122,11 +125,12 @@ def mark_speaking_sentence(
 )
 def submit_speaking(
     resource_id: int,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         record, submission, study_session_id = services.speaking.submit(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
         )
     except LookupError as error:
@@ -151,11 +155,12 @@ def submit_speaking(
 )
 def evaluate_speaking(
     resource_id: int,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         evaluation = services.ai_evaluation.evaluate_retelling(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
         )
     except LookupError as error:

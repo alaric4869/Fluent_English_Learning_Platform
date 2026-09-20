@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.api.learner_context import Learner
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
@@ -24,7 +25,6 @@ from app.services.ai_evaluation import InvalidEvaluationSourceError
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 
 
 def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
@@ -35,10 +35,11 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 def writing_workspace(
     resource_id: int,
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
-        workspace = services.writing.get_workspace(LOCAL_USER_KEY, resource_id)
+        workspace = services.writing.get_workspace(learner.user_key, resource_id)
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     except InvalidWritingDraftError as error:
@@ -49,7 +50,7 @@ def writing_workspace(
         context=present_writing_workspace(
             workspace,
             evaluation=services.ai_evaluation.get_latest_writing_evaluation(
-                LOCAL_USER_KEY,
+                learner.user_key,
                 resource_id,
             ),
             evaluation_available=services.ai_evaluation.available,
@@ -64,11 +65,12 @@ def writing_workspace(
 def save_writing_draft(
     resource_id: int,
     payload: WritingDraftRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         draft = services.writing.save_draft(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
             WritingDraftInput(**payload.model_dump()),
         )
@@ -85,11 +87,12 @@ def save_writing_draft(
 )
 def submit_writing(
     resource_id: int,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         draft, submission, study_session_id = services.writing.submit(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
         )
     except LookupError as error:
@@ -122,11 +125,12 @@ def submit_writing(
 )
 def evaluate_writing(
     resource_id: int,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         evaluation = services.ai_evaluation.evaluate_writing(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
         )
     except LookupError as error:

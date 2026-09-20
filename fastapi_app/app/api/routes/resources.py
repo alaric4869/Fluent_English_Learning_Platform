@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
+from app.api.learner_context import Learner
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
@@ -31,7 +32,6 @@ from app.services.resources import (
 
 router = APIRouter()
 templates = Jinja2Templates(directory=FASTAPI_ROOT / "app" / "templates")
-LOCAL_USER_KEY = "local-user"
 
 
 def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
@@ -41,6 +41,7 @@ def get_services(session: Session = Depends(get_db)) -> ApplicationServices:
 @router.get("/library")
 def library_page(
     request: Request,
+    learner: Learner,
     add: bool = False,
     view: str = "all",
     search: str = "",
@@ -72,17 +73,17 @@ def library_page(
         archived_only=view == "archived",
         sort=selected_sort,
     )
-    library = services.resources.get_library(LOCAL_USER_KEY, filters)
+    library = services.resources.get_library(learner.user_key, filters)
     counts = {
-        "all": services.resources.get_library(LOCAL_USER_KEY).total_count,
+        "all": services.resources.get_library(learner.user_key).total_count,
         "favorites": services.resources.get_library(
-            LOCAL_USER_KEY, ResourceLibraryFilters(favorite_only=True)
+            learner.user_key, ResourceLibraryFilters(favorite_only=True)
         ).total_count,
         "saved": services.resources.get_library(
-            LOCAL_USER_KEY, ResourceLibraryFilters(saved_for_later_only=True)
+            learner.user_key, ResourceLibraryFilters(saved_for_later_only=True)
         ).total_count,
         "archived": services.resources.get_library(
-            LOCAL_USER_KEY, ResourceLibraryFilters(archived_only=True)
+            learner.user_key, ResourceLibraryFilters(archived_only=True)
         ).total_count,
     }
     return templates.TemplateResponse(
@@ -90,7 +91,7 @@ def library_page(
         name="resources/index.html",
         context=present_library_page(
             library=library,
-            facets=services.resources.get_library_facets(LOCAL_USER_KEY),
+            facets=services.resources.get_library_facets(learner.user_key),
             filters=filters,
             view=view,
             counts=counts,
@@ -103,9 +104,10 @@ def library_page(
 def resource_detail_page(
     resource_id: int,
     request: Request,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
-    resource = services.resources.get_user_resource(LOCAL_USER_KEY, resource_id)
+    resource = services.resources.get_user_resource(learner.user_key, resource_id)
     if resource is None:
         raise HTTPException(status_code=404, detail="Resource not found")
     return templates.TemplateResponse(
@@ -122,11 +124,12 @@ def resource_detail_page(
 )
 def create_resource(
     payload: ResourceUpsertRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         resource = services.resources.add_resource(
-            LOCAL_USER_KEY, _draft(payload)
+            learner.user_key, _draft(payload)
         )
     except InvalidResourceError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
@@ -137,11 +140,12 @@ def create_resource(
 def update_resource(
     resource_id: int,
     payload: ResourceUpsertRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         resource = services.resources.update_resource(
-            LOCAL_USER_KEY, resource_id, _draft(payload)
+            learner.user_key, resource_id, _draft(payload)
         )
     except LookupError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
@@ -156,11 +160,12 @@ def update_resource(
 def update_resource_state(
     resource_id: int,
     payload: ResourceStateRequest,
+    learner: Learner,
     services: ApplicationServices = Depends(get_services),
 ):
     try:
         resource = services.resources.update_user_state(
-            LOCAL_USER_KEY,
+            learner.user_key,
             resource_id,
             ResourceStateChanges(
                 favorite=payload.favorite,

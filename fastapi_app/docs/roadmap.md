@@ -129,8 +129,8 @@
 
 ## M18 · Reading split layout and product polish
 
-- Refine Reading into a responsive source-left/questions-right workspace.
-- Finish keyboard, accessibility, empty-state and cross-page consistency passes.
-- Prepare optional authentication, PostgreSQL and synchronization adapters without rewriting domain logic.
+- **Completed.** Reading now uses a responsive source-left/questions-right workspace with independent desktop scrolling and a small-screen single-column fallback.
+- Added keyboard-operable section tabs and question jumps, visible focus, progress/status semantics, skip navigation, reduced-motion support and honest empty states.
+- Added one replaceable learner-context dependency, an optional PostgreSQL driver/engine seam and a provider-neutral synchronization port without changing domain services or the local-first default.
 
 Additional IELTS books should use the same manifest, source verification and validation tests rather than adding hard-coded page data.

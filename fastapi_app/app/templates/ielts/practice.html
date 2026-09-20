@@ -7,6 +7,187 @@
 </span>
 {%- endmacro %}
 
+{% macro content_block(block, attempt) -%}
+  {% if block.kind == "table" %}
+  <section class="source-block source-table-block">
+    {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+    <div class="source-table-scroll" tabindex="0" aria-label="可横向滚动的题目表格">
+      <table class="source-question-table">
+        <thead>
+          <tr>{% for header in block.headers %}<th scope="col">{{ header }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          {% for row in block.rows %}
+          <tr>
+            {% for cell in row.cells %}
+            <td>
+              {% for part in cell %}
+                {% if part.answer is defined %}
+                <span
+                  class="answer-container inline-answer"
+                  id="question-{{ part.answer }}"
+                  data-question-numbers="{{ part.answer }}"
+                  tabindex="-1"
+                >
+                  <span class="inline-answer-number">{{ part.answer }}</span>
+                  <label>
+                    <span class="sr-only">Question {{ part.answer }} answer</span>
+                    <input
+                      type="text"
+                      data-answer-number="{{ part.answer }}"
+                      value="{{ attempt.answers.get(part.answer|string, '') }}"
+                      autocomplete="off"
+                    >
+                  </label>
+                  {{ feedback() }}
+                </span>
+                {% else %}
+                <span class="cell-copy">{{ part.text }}</span>
+                {% endif %}
+              {% endfor %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% elif block.kind == "flowchart" %}
+  <section class="source-block source-flowchart-block">
+    {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+    <div class="source-flowchart">
+      {% for node in block.nodes %}
+      <div class="flowchart-node">
+        {% for part in node.parts %}
+          {% if part.answer is defined %}
+          <span
+            class="answer-container inline-answer"
+            id="question-{{ part.answer }}"
+            data-question-numbers="{{ part.answer }}"
+            tabindex="-1"
+          >
+            <span class="inline-answer-number">{{ part.answer }}</span>
+            <label>
+              <span class="sr-only">Question {{ part.answer }} answer</span>
+              <input
+                type="text"
+                data-answer-number="{{ part.answer }}"
+                value="{{ attempt.answers.get(part.answer|string, '') }}"
+                autocomplete="off"
+              >
+            </label>
+            {{ feedback() }}
+          </span>
+          {% else %}
+          <span class="flowchart-copy">{{ part.text }}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% if not loop.last %}<span class="flowchart-arrow" aria-hidden="true">↓</span>{% endif %}
+      {% endfor %}
+    </div>
+  </section>
+  {% elif block.kind == "figure" %}
+  <section class="source-block source-figure-block">
+    {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+    <figure>
+      <img src="/media/ielts-assets/{{ block.asset_path }}" alt="{{ block.alt or block.title or 'IELTS question diagram' }}">
+      {% if block.caption %}<figcaption>{{ block.caption }}</figcaption>{% endif %}
+    </figure>
+    <div class="figure-answer-grid">
+      {% for number in block.answer_numbers %}
+      <label
+        class="answer-container figure-answer"
+        id="question-{{ number }}"
+        data-question-numbers="{{ number }}"
+        tabindex="-1"
+      >
+        <span>{{ number }}</span>
+        <input type="text" data-answer-number="{{ number }}" value="{{ attempt.answers.get(number|string, '') }}" autocomplete="off">
+        {{ feedback() }}
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+  {% else %}
+  <section class="source-block{% if block.kind == 'notice' %} source-notice{% endif %}">
+    {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+    {% for paragraph in block.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
+  </section>
+  {% endif %}
+{%- endmacro %}
+
+{% macro question_list(section, attempt) -%}
+<div class="question-list">
+  {% for item in section.display_items %}
+    {% if item.kind == "multiple_choice_group" %}
+    <section
+      class="answer-container question-card multi-choice-card"
+      id="question-{{ item.numbers[0] }}"
+      data-question-numbers="{{ item.numbers|join(' ') }}"
+      data-max-selections="{{ item.max_selections }}"
+      tabindex="-1"
+    >
+      <div class="question-heading">
+        <span class="question-number question-number-wide">{{ item.numbers[0] }}–{{ item.numbers[-1] }}</span>
+        <div>
+          <p>{{ item.prompt }}</p>
+          <small>Choose {{ item.max_selections }} answers.</small>
+        </div>
+      </div>
+      <div class="choice-list">
+        {% for option in item.options %}
+        {% set selected = namespace(value=false) %}
+        {% for number in item.numbers %}
+          {% if attempt.answers.get(number|string, '') == option.key %}{% set selected.value = true %}{% endif %}
+        {% endfor %}
+        <label class="choice-option">
+          <input class="group-choice" type="checkbox" value="{{ option.key }}"{% if selected.value %} checked{% endif %}>
+          <span class="choice-key">{{ option.key }}</span>
+          <span>{{ option.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <p class="selection-hint">最多选择 {{ item.max_selections }} 项。</p>
+      {{ feedback() }}
+    </section>
+    {% else %}
+    {% set question = item.question %}
+    {% set saved_answer = attempt.answers.get(question.number|string, '') %}
+    <section
+      class="answer-container question-card"
+      id="question-{{ question.number }}"
+      data-question-numbers="{{ question.number }}"
+      tabindex="-1"
+    >
+      <div class="question-heading">
+        <span class="question-number">{{ question.number }}</span>
+        <p>{{ question.prompt }}</p>
+      </div>
+      {% if question.question_type == "text" %}
+      <label class="text-answer">
+        <span class="sr-only">Question {{ question.number }} answer</span>
+        <input type="text" data-answer-number="{{ question.number }}" maxlength="500" value="{{ saved_answer }}" placeholder="输入答案" autocomplete="off">
+      </label>
+      {% else %}
+      <div class="choice-list">
+        {% for option in question.options %}
+        <label class="choice-option">
+          <input type="radio" data-answer-number="{{ question.number }}" name="question-{{ question.number }}" value="{{ option.key }}"{% if saved_answer == option.key %} checked{% endif %}>
+          <span class="choice-key">{{ option.key }}</span>
+          <span>{{ option.text }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {{ feedback() }}
+    </section>
+    {% endif %}
+  {% endfor %}
+</div>
+{%- endmacro %}
+
 {% block title %}{{ practice_set.title }} · Fluent{% endblock %}
 {% block topbar_label %}{{ practice_set.duration_minutes }} min planned{% endblock %}
 {% block content %}
@@ -16,6 +197,7 @@
     data-practice-slug="{{ practice_set.slug }}"
     data-attempt-status="{{ attempt.status }}"
     data-duration-minutes="{{ practice_set.duration_minutes }}"
+    data-practice-skill="{{ practice_set.skill }}"
   >
     <header class="workspace-head">
       <div>
@@ -37,8 +219,11 @@
         class="section-tab{% if loop.first %} is-active{% endif %}"
         type="button"
         data-section-target="section-{{ section.order_index }}"
+        id="section-tab-{{ section.order_index }}"
         role="tab"
         aria-selected="{{ 'true' if loop.first else 'false' }}"
+        aria-controls="section-{{ section.order_index }}"
+        tabindex="{{ '0' if loop.first else '-1' }}"
       >
         <span>{{ "Part" if practice_set.skill == "listening" else "Section" }} {{ section.order_index }}</span>
         <small>{{ section.questions[0].number }}–{{ section.questions[-1].number }}</small>
@@ -54,6 +239,8 @@
           class="practice-section{% if not loop.first %} is-hidden{% endif %}"
           data-section="{{ section.order_index }}"
           role="tabpanel"
+          aria-labelledby="section-tab-{{ section.order_index }}"
+          {% if not loop.first %}hidden{% endif %}
         >
           {% if section.has_audio %}
           <div class="audio-player">
@@ -65,189 +252,48 @@
           </div>
           {% endif %}
 
+          {% if practice_set.skill == "reading" %}
+          <div class="reading-split-layout">
+            <article class="reading-pane reading-source-pane" aria-label="阅读原文">
+              <header class="reading-pane-heading">
+                <span>READING PASSAGE</span>
+                <h2>{{ section.title }}</h2>
+                <p>原文区域可独立滚动。</p>
+              </header>
+              {% if section.source_blocks %}
+                {% for block in section.source_blocks %}{{ content_block(block, attempt) }}{% endfor %}
+              {% else %}
+              <div class="workspace-empty-state"><strong>此 Section 暂无独立原文</strong><p>请使用右侧保留原格式的题目材料作答。</p></div>
+              {% endif %}
+            </article>
+
+            <article class="reading-pane reading-question-pane" aria-label="阅读题目与答案">
+              <header class="reading-pane-heading">
+                <span>QUESTIONS {{ section.questions[0].number }}–{{ section.questions[-1].number }}</span>
+                <h2>题目与答题区</h2>
+                <p>{{ section.instructions }}</p>
+              </header>
+              {% for block in section.question_blocks %}{{ content_block(block, attempt) }}{% endfor %}
+              {% if section.question_blocks or section.display_items %}
+                {{ question_list(section, attempt) }}
+              {% else %}
+              <div class="workspace-empty-state"><strong>此 Section 暂无可作答题目</strong><p>材料尚未导入完整，请返回 IELTS G 选择其他练习。</p></div>
+              {% endif %}
+            </article>
+          </div>
+          {% else %}
           <article class="exam-paper">
             <header class="paper-heading">
               <span>Test {{ practice_set.test_number }}</span>
-              <strong>{{ "LISTENING" if practice_set.skill == "listening" else "GENERAL TRAINING READING" }}</strong>
+              <strong>LISTENING</strong>
               <h2>{{ section.title }}</h2>
               <p><b>Questions {{ section.questions[0].number }}–{{ section.questions[-1].number }}</b></p>
               <p>{{ section.instructions }}</p>
             </header>
-
-            {% for block in section.content_blocks %}
-              {% if block.kind == "table" %}
-              <section class="source-block source-table-block">
-                {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
-                <div class="source-table-scroll">
-                  <table class="source-question-table">
-                    <thead>
-                      <tr>{% for header in block.headers %}<th scope="col">{{ header }}</th>{% endfor %}</tr>
-                    </thead>
-                    <tbody>
-                      {% for row in block.rows %}
-                      <tr>
-                        {% for cell in row.cells %}
-                        <td>
-                          {% for part in cell %}
-                            {% if part.answer is defined %}
-                            <span
-                              class="answer-container inline-answer"
-                              id="question-{{ part.answer }}"
-                              data-question-numbers="{{ part.answer }}"
-                            >
-                              <span class="inline-answer-number">{{ part.answer }}</span>
-                              <label>
-                                <span class="sr-only">Question {{ part.answer }} answer</span>
-                                <input
-                                  type="text"
-                                  data-answer-number="{{ part.answer }}"
-                                  value="{{ attempt.answers.get(part.answer|string, '') }}"
-                                  autocomplete="off"
-                                >
-                              </label>
-                              {{ feedback() }}
-                            </span>
-                            {% else %}
-                            <span class="cell-copy">{{ part.text }}</span>
-                            {% endif %}
-                          {% endfor %}
-                        </td>
-                        {% endfor %}
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-              {% elif block.kind == "flowchart" %}
-              <section class="source-block source-flowchart-block">
-                {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
-                <div class="source-flowchart">
-                  {% for node in block.nodes %}
-                  <div class="flowchart-node">
-                    {% for part in node.parts %}
-                      {% if part.answer is defined %}
-                      <span
-                        class="answer-container inline-answer"
-                        id="question-{{ part.answer }}"
-                        data-question-numbers="{{ part.answer }}"
-                      >
-                        <span class="inline-answer-number">{{ part.answer }}</span>
-                        <label>
-                          <span class="sr-only">Question {{ part.answer }} answer</span>
-                          <input
-                            type="text"
-                            data-answer-number="{{ part.answer }}"
-                            value="{{ attempt.answers.get(part.answer|string, '') }}"
-                            autocomplete="off"
-                          >
-                        </label>
-                        {{ feedback() }}
-                      </span>
-                      {% else %}
-                      <span class="flowchart-copy">{{ part.text }}</span>
-                      {% endif %}
-                    {% endfor %}
-                  </div>
-                  {% if not loop.last %}<span class="flowchart-arrow" aria-hidden="true">↓</span>{% endif %}
-                  {% endfor %}
-                </div>
-              </section>
-              {% elif block.kind == "figure" %}
-              <section class="source-block source-figure-block">
-                {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
-                <figure>
-                  <img src="/media/ielts-assets/{{ block.asset_path }}" alt="{{ block.alt or block.title or 'IELTS question diagram' }}">
-                  {% if block.caption %}<figcaption>{{ block.caption }}</figcaption>{% endif %}
-                </figure>
-                <div class="figure-answer-grid">
-                  {% for number in block.answer_numbers %}
-                  <label
-                    class="answer-container figure-answer"
-                    id="question-{{ number }}"
-                    data-question-numbers="{{ number }}"
-                  >
-                    <span>{{ number }}</span>
-                    <input type="text" data-answer-number="{{ number }}" value="{{ attempt.answers.get(number|string, '') }}" autocomplete="off">
-                    {{ feedback() }}
-                  </label>
-                  {% endfor %}
-                </div>
-              </section>
-              {% else %}
-              <section class="source-block{% if block.kind == 'notice' %} source-notice{% endif %}">
-                {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
-                {% for paragraph in block.paragraphs %}<p>{{ paragraph }}</p>{% endfor %}
-              </section>
-              {% endif %}
-            {% endfor %}
-
-            <div class="question-list">
-              {% for item in section.display_items %}
-                {% if item.kind == "multiple_choice_group" %}
-                <section
-                  class="answer-container question-card multi-choice-card"
-                  id="question-{{ item.numbers[0] }}"
-                  data-question-numbers="{{ item.numbers|join(' ') }}"
-                  data-max-selections="{{ item.max_selections }}"
-                >
-                  <div class="question-heading">
-                    <span class="question-number question-number-wide">{{ item.numbers[0] }}–{{ item.numbers[-1] }}</span>
-                    <div>
-                      <p>{{ item.prompt }}</p>
-                      <small>Choose {{ item.max_selections }} answers.</small>
-                    </div>
-                  </div>
-                  <div class="choice-list">
-                    {% for option in item.options %}
-                    {% set selected = namespace(value=false) %}
-                    {% for number in item.numbers %}
-                      {% if attempt.answers.get(number|string, '') == option.key %}{% set selected.value = true %}{% endif %}
-                    {% endfor %}
-                    <label class="choice-option">
-                      <input class="group-choice" type="checkbox" value="{{ option.key }}"{% if selected.value %} checked{% endif %}>
-                      <span class="choice-key">{{ option.key }}</span>
-                      <span>{{ option.text }}</span>
-                    </label>
-                    {% endfor %}
-                  </div>
-                  <p class="selection-hint">最多选择 {{ item.max_selections }} 项。</p>
-                  {{ feedback() }}
-                </section>
-                {% else %}
-                {% set question = item.question %}
-                {% set saved_answer = attempt.answers.get(question.number|string, '') %}
-                <section
-                  class="answer-container question-card"
-                  id="question-{{ question.number }}"
-                  data-question-numbers="{{ question.number }}"
-                >
-                  <div class="question-heading">
-                    <span class="question-number">{{ question.number }}</span>
-                    <p>{{ question.prompt }}</p>
-                  </div>
-                  {% if question.question_type == "text" %}
-                  <label class="text-answer">
-                    <span class="sr-only">Question {{ question.number }} answer</span>
-                    <input type="text" data-answer-number="{{ question.number }}" maxlength="500" value="{{ saved_answer }}" placeholder="输入答案" autocomplete="off">
-                  </label>
-                  {% else %}
-                  <div class="choice-list">
-                    {% for option in question.options %}
-                    <label class="choice-option">
-                      <input type="radio" data-answer-number="{{ question.number }}" name="question-{{ question.number }}" value="{{ option.key }}"{% if saved_answer == option.key %} checked{% endif %}>
-                      <span class="choice-key">{{ option.key }}</span>
-                      <span>{{ option.text }}</span>
-                    </label>
-                    {% endfor %}
-                  </div>
-                  {% endif %}
-                  {{ feedback() }}
-                </section>
-                {% endif %}
-              {% endfor %}
-            </div>
+            {% for block in section.content_blocks %}{{ content_block(block, attempt) }}{% endfor %}
+            {{ question_list(section, attempt) }}
           </article>
+          {% endif %}
 
           <footer class="section-footer">
             {% if not loop.first %}<button class="button button-secondary section-change" type="button" data-go-section="{{ section.order_index - 1 }}">← 上一部分</button>{% endif %}
@@ -262,9 +308,9 @@
           <div><span>INTERACTIVE ANSWER SHEET</span><strong>{{ "Listening" if practice_set.skill == "listening" else "Reading" }} Test {{ practice_set.test_number }}</strong></div>
           <b id="progressText">0/40</b>
         </div>
-        <div class="progress-track"><span id="progressBar"></span></div>
-        <p id="saveStatus" aria-live="polite">答案会自动保存</p>
-        <div class="question-index">
+        <div class="progress-track" role="progressbar" aria-label="答题进度" aria-valuemin="0" aria-valuemax="40" aria-valuenow="0"><span id="progressBar"></span></div>
+        <p id="saveStatus" role="status" aria-live="polite">答案会自动保存</p>
+        <div class="question-index" aria-label="跳转到题目">
           {% for section in practice_set.sections %}
             {% for question in section.questions %}
             <button
@@ -272,6 +318,7 @@
               data-jump-question="{{ question.number }}"
               data-question-section="{{ section.order_index }}"
               class="{% if attempt.answers.get(question.number|string, '') %}is-answered{% endif %}"
+              aria-label="跳转到第 {{ question.number }} 题"
             >{{ question.number }}</button>
             {% endfor %}
           {% endfor %}
