@@ -42,6 +42,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `presenters/`: converts structured exercise content into a page-specific read model; it does not grade or persist.
 - `templates/` and `static/`: light server-rendered UI and browser interactions.
 - `composition.py`: the explicit application-service composition root shared by routes.
+- `ai_agent/`: provider-neutral model loop, strict tool contracts, authorization policy and offline mock adapters; it has no database session.
 - `content_import/`: strict Pydantic validation for seed manifests, semantic source blocks and complete IELTS question sets.
 - `seed/`: versioned structured practice content imported into SQLite through the manifest.
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
@@ -67,3 +68,5 @@ Library treats resource content and learner-specific state separately. Built-in 
 Dashboard composes existing service results; it does not query tables or own a second copy of plan/progress state. Weekly Review is calculated from persisted plans, submitted sessions, vocabulary, difficult sentences and immutable review attempts. Its retention percentage is explicitly `Good + Easy` divided by this week's review ratings. Historical due-queue completion cannot be reconstructed from the current schema and is therefore not invented.
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.
+
+The first Agent boundary is also Python-only and offline-testable. It exposes nine allow-listed read tools for plans, history, profile, weaknesses, reviews, resources and weekly evidence. Tool arguments cannot carry a learner identity: the authenticated execution context owns `user_key`. `MockAIProvider` tests the complete model → tool → result → model loop without a network key. A production provider will implement the same `AIProvider` protocol; it will not receive SQLAlchemy models or a database session.

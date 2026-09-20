@@ -38,15 +38,42 @@ class ResourceService:
         classification: SkillClassification,
         target_date: date,
     ) -> ResourceRecommendation | None:
-        candidates = self.repository.list_candidates(user_key, skill, target_date)
-        recommendations = self.recommender.recommend(
+        recommendations = self.recommend_resources(
+            user_key,
             skill,
             classification,
-            candidates,
             target_date,
             count=1,
         )
         return recommendations[0] if recommendations else None
+
+    def recommend_resources(
+        self,
+        user_key: str,
+        skill: Skill,
+        classification: SkillClassification,
+        target_date: date,
+        *,
+        count: int = 3,
+        difficulty: str | None = None,
+    ) -> tuple[ResourceRecommendation, ...]:
+        if count < 1 or count > 20:
+            raise ValueError("count must be between 1 and 20")
+        candidates = self.repository.list_candidates(user_key, skill, target_date)
+        if difficulty:
+            normalized_difficulty = difficulty.casefold().strip()
+            candidates = tuple(
+                candidate
+                for candidate in candidates
+                if (candidate.difficulty or "").casefold() == normalized_difficulty
+            )
+        return self.recommender.recommend(
+            skill,
+            classification,
+            candidates,
+            target_date,
+            count=count,
+        )
 
     def get_resource(self, resource_id: int) -> LearningResourceDetails | None:
         return self.repository.get(resource_id)

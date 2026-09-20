@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
 
+from app.ai_agent.tools import AgentToolRegistry, build_learning_agent_tool_registry
 from app.domain.learner_profile.rule_based_evaluator import RuleBasedSkillEvaluator
 from app.domain.resources.rule_based_recommender import RuleBasedResourceRecommender
 from app.domain.review.fixed_interval_scheduler import FixedIntervalReviewScheduler
@@ -197,4 +198,17 @@ def build_application_services(session: Session) -> ApplicationServices:
         notebook=notebook_service,
         weekly_review=weekly_review_service,
         dashboard=dashboard_service,
+    )
+
+
+def build_agent_tool_registry(services: ApplicationServices) -> AgentToolRegistry:
+    """Expose application services to an agent without exposing persistence."""
+    return build_learning_agent_tool_registry(
+        learner_profile=services.learner_profile,
+        weakness_detection=services.weakness_detection,
+        resources=services.resources,
+        study_plan=services.study_plan,
+        history=services.history,
+        review=services.review,
+        weekly_review=services.weekly_review,
     )

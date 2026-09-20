@@ -117,8 +117,9 @@
 
 ## M16 · Provider-neutral AI Agent tool layer
 
-- Expose stable application services as typed agent tools; never expose raw tables.
-- Add provider, tool authorization, recommendation and report interfaces with a mock implementation.
+- **Completed.** Exposed nine strict read tools over stable application services; raw tables, repositories and database sessions remain inaccessible.
+- Added per-tool permission/allow-list authorization, a bounded provider loop, recommendation/report protocols and deterministic mock implementations.
+- Kept learner identity outside model-generated arguments and added security tests for injected identity and unauthorized calls.
 
 ## M17 · AI evaluation and adaptive planning
 

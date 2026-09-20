@@ -25,6 +25,17 @@ SQLAlchemy repository
 SQLite (local) / PostgreSQL (later)
 ```
 
+The optional AI path follows the same direction:
+
+```text
+AIProvider → authorized typed Agent tools → application services
+                                            ↓
+                                  domain + repositories
+```
+
+The provider never receives a SQLAlchemy session, repository or learner identity from
+model-generated arguments.
+
 Templates never query the database and JavaScript never contains answer keys. Both HTML routes and API routes use the same application service. Domain rules have no FastAPI or SQLAlchemy dependency, so they can be tested independently.
 
 ## Current modules
@@ -41,6 +52,11 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/dashboard.py`: renders composed Dashboard and current Weekly Review read models.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
 - `content_import/`: validates ordered manifests, complete 40-question IELTS sets, native tables/flowcharts/figures and grouped-answer invariants before a database write starts.
+- `ai_agent/contracts.py`: strict provider, tool-input and tool-output Pydantic contracts.
+- `ai_agent/tools.py`: allow-listed read tools that delegate only to application services.
+- `ai_agent/authorization.py`: permission and per-tool allow-list enforcement.
+- `ai_agent/provider.py` and `service.py`: provider protocol, offline mock and bounded model/tool loop.
+- `ai_agent/capabilities.py`: replaceable recommendation/report interfaces with a deterministic mock seam.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `presenters/listening.py`: derives safe media presentation and stable transcript sentences without persistence.
 - `presenters/speaking.py`: combines structured speaking content with learner sentence/draft state for display only.
@@ -87,6 +103,25 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
 - `migrations/`: Alembic schema history and the adopted pre-Alembic baseline.
 - `composition.py`: one explicit composition root so IELTS and Today use the same service graph.
+
+## Implemented provider-neutral Agent boundary
+
+`build_agent_tool_registry()` exposes nine read-only operations over the existing
+service graph: plan, recent history, profile, weakness assessment, due reviews,
+resource search/detail/recommendation and weekly report. Each tool has a generated
+JSON Schema and rejects unknown fields. `user_key` is deliberately absent from every
+tool input; `AgentExecutionContext` supplies it after authorization.
+
+`LearningAgentService` gives a provider only the authorized catalogue, executes
+validated tool calls, and returns their serialized contracts for the next provider
+turn. Calls are bounded to prevent an unending model/tool loop. `MockAIProvider`
+makes the whole path deterministic in tests. There is no browser chatbot or external
+network call in this milestone; M17 can add an OpenAI Responses adapter without
+changing any learning service or repository.
+
+All current tools are read-only. Future plan/recommendation writes require separate
+permissions and explicit application commands; they must never be smuggled into a
+read tool or implemented as direct table mutations.
 
 ## Persistence safety
 
