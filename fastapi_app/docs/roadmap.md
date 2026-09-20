@@ -134,3 +134,9 @@
 - Added one replaceable learner-context dependency, an optional PostgreSQL driver/engine seam and a provider-neutral synchronization port without changing domain services or the local-first default.
 
 Additional IELTS books should use the same manifest, source verification and validation tests rather than adding hard-coded page data.
+
+## Post-roadmap · User-facing AI coach
+
+- **Completed.** Weekly Review now exposes an explicit, persisted AI coaching action backed by the existing provider-neutral Agent tools.
+- The Agent is restricted to four read-only evidence tools and the service rejects reports that omit any required evidence source.
+- Disabled or incomplete OpenAI configuration produces setup guidance; no learning page depends on network availability.

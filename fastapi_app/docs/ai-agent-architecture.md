@@ -57,6 +57,12 @@ Use the OpenAI Responses API (`POST /responses`) as the first production adapter
 
 Start M16 with `MockAIProvider`, typed tool contracts and deterministic authorization tests. Add the networked `OpenAIProvider` only after the tool boundary is stable. The API key remains a server-side environment variable and is never sent to templates or browser JavaScript. If another provider is added later, it implements the same `AIProvider` contract; learning-domain code and pages remain unchanged.
 
+The first user-facing Agent action lives on Weekly Review. It is not a free-form chat:
+the server supplies a fixed coaching objective and an allow-list containing only
+`generate_weekly_report`, `get_skill_profile`, `get_weak_skills` and
+`get_due_reviews`. All four calls are required before output can be persisted. Saved
+coaching text remains separate from measured evidence and cannot update a study plan.
+
 `OpenAIResponsesProvider` now implements the same protocol using custom function
 tools, `previous_response_id`, non-parallel calls and `store=False`. The OpenAI SDK is
 an optional dependency and is imported only when the provider is explicitly enabled.

@@ -59,6 +59,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `ai_agent/provider.py` and `service.py`: provider protocol, offline mock and bounded model/tool loop.
 - `ai_agent/capabilities.py`: replaceable recommendation/report interfaces with a deterministic mock seam.
 - `domain/ai_evaluation/`: immutable learner-work evaluation contracts and provider/repository protocols.
+- `domain/agent_coaching/`: append-only weekly coaching output; it is commentary over evidence, never evidence itself.
 - `services/ai_evaluation.py`: explicit Writing/Retelling evaluation use cases with input fingerprinting and idempotency.
 - `integrations/openai/`: optional Responses function-calling and structured-output adapters; no provider SDK types cross this boundary.
 - `repositories/sqlalchemy_ai_evaluation.py`: persists feedback separately from learner submissions and measured profile evidence.
@@ -137,6 +138,21 @@ result is saved as an immutable `WorkEvaluation` tied to the exact submission in
 It does not overwrite authored text, write objective accuracy or silently refresh the
 learner profile. Text-only feedback cannot claim pronunciation or audio-fluency
 assessment.
+
+## User-facing AI coaching
+
+Weekly Review is the first user-facing Agent surface. An explicit button invokes
+`AgentCoachingService`; no background model call occurs. Its principal is read-only and
+allow-listed to exactly four tools: weekly report, current skill profile, confirmed
+weakness assessment and due reviews. The service verifies that all four tools were
+actually used before it persists output. A missing tool or provider failure leaves no
+report behind.
+
+`WeeklyCoachingReport` is append-only and stores provider name, response ID, tools used
+and the final plain-text explanation. It is intentionally excluded from skill scoring,
+weakness detection and plan generation. Templates auto-escape saved output and browser
+updates use `textContent`, so model text is never interpreted as HTML. AI-disabled and
+partially configured environments render setup guidance instead of failing the page.
 
 ## Persistence safety
 

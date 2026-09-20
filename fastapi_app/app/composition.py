@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from importlib.util import find_spec
 from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
@@ -14,6 +15,9 @@ from app.domain.study_plan.rule_based_generator import RuleBasedStudyPlanGenerat
 from app.domain.weakness_detection.rule_based_detector import RuleBasedWeaknessDetector
 from app.repositories.sqlalchemy_adaptive_learning import (
     SqlAlchemyAdaptationDecisionRepository,
+)
+from app.repositories.sqlalchemy_agent_coaching import (
+    SqlAlchemyAgentCoachingRepository,
 )
 from app.repositories.sqlalchemy_ai_evaluation import (
     SqlAlchemyWorkEvaluationRepository,
@@ -35,6 +39,7 @@ from app.repositories.sqlalchemy_weakness_detection import (
 )
 from app.repositories.sqlalchemy_writing import SqlAlchemyWritingRepository
 from app.services.adaptive_learning import AdaptationDecisionService
+from app.services.agent_coaching import AgentCoachingService
 from app.services.ai_evaluation import LearningWorkEvaluationService
 from app.services.dashboard import DashboardService
 from app.services.history import HistoryService
@@ -76,6 +81,7 @@ class ApplicationServices:
     weekly_review: WeeklyReviewService
     dashboard: DashboardService
     ai_evaluation: LearningWorkEvaluationService
+    agent_coaching: AgentCoachingService
 
 
 def build_application_services(session: Session) -> ApplicationServices:
@@ -197,6 +203,23 @@ def build_application_services(session: Session) -> ApplicationServices:
         SqlAlchemyIeltsPracticeRepository(session),
         submission_observer=evidence_recorder,
     )
+    agent_registry = build_learning_agent_tool_registry(
+        learner_profile=profile_service,
+        weakness_detection=weakness_service,
+        resources=resource_service,
+        study_plan=study_plan_service,
+        history=history_service,
+        review=review_service,
+        weekly_review=weekly_review_service,
+        adaptation_decisions=adaptation_service,
+    )
+    agent_available, unavailable_reason = learning_agent_configuration()
+    agent_coaching_service = AgentCoachingService(
+        SqlAlchemyAgentCoachingRepository(session),
+        lambda: _build_learning_agent_service(agent_registry),
+        available=agent_available,
+        unavailable_reason=unavailable_reason,
+    )
     return ApplicationServices(
         ielts_practice=ielts_service,
         learner_profile=profile_service,
@@ -216,6 +239,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         weekly_review=weekly_review_service,
         dashboard=dashboard_service,
         ai_evaluation=ai_evaluation_service,
+        agent_coaching=agent_coaching_service,
     )
 
 
@@ -236,7 +260,8 @@ def build_agent_tool_registry(services: ApplicationServices) -> AgentToolRegistr
 def build_work_evaluator() -> WorkEvaluator:
     from app.config import settings
 
-    if settings.ai_provider == "disabled":
+    available, _ = learning_agent_configuration()
+    if not available:
         return UnavailableWorkEvaluator()
     from app.integrations.openai.work_evaluator import OpenAIWorkEvaluator
 
@@ -254,9 +279,16 @@ def build_work_evaluator() -> WorkEvaluator:
 def build_learning_agent_service(
     services: ApplicationServices,
 ) -> LearningAgentService | None:
+    return _build_learning_agent_service(build_agent_tool_registry(services))
+
+
+def _build_learning_agent_service(
+    registry: AgentToolRegistry,
+) -> LearningAgentService | None:
     from app.config import settings
 
-    if settings.ai_provider == "disabled":
+    available, _ = learning_agent_configuration()
+    if not available:
         return None
     from app.integrations.openai.responses_provider import OpenAIResponsesProvider
 
@@ -269,4 +301,21 @@ def build_learning_agent_service(
         model=settings.openai_model,
         api_key=api_key,
     )
-    return LearningAgentService(provider, build_agent_tool_registry(services))
+    return LearningAgentService(provider, registry)
+
+
+def learning_agent_configuration() -> tuple[bool, str]:
+    from app.config import settings
+
+    if settings.ai_provider == "disabled":
+        return False, "AI 尚未启用；请先配置服务器端 OpenAI API。"
+    if not settings.openai_model.strip():
+        return False, "缺少 OPENAI_MODEL 配置。"
+    if (
+        settings.openai_api_key is None
+        or not settings.openai_api_key.get_secret_value().strip()
+    ):
+        return False, "缺少服务器端 OPENAI_API_KEY。"
+    if find_spec("openai") is None:
+        return False, "尚未安装可选 AI 依赖，请运行 pip install -e '.[ai]'。"
+    return True, ""

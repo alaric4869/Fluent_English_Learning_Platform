@@ -24,6 +24,8 @@ AI is disabled by default. The full learning app works without a model or API ke
 
 The key remains server-side. A submitted learner response is sent only after the learner clicks “生成反馈”; automatic submission-time model calls are intentionally disabled.
 
+Weekly Review also contains an explicit AI Learning Coach action. It gives the model only four read-only tools—weekly evidence, skill profile, confirmed weakness state and due reviews—and refuses to save a report unless all four were actually used. The generated text is persisted as an append-only weekly coaching report. It never changes the deterministic plan; with AI disabled the page shows setup guidance and all non-AI features continue normally.
+
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
 SQLite remains the zero-configuration default. For an optional PostgreSQL deployment, install `.[postgresql]` and set `ENGLISH_TOOL_DATABASE_URL` to a `postgresql+psycopg://...` URL before running Alembic. HTTP routes receive learner identity through one replaceable dependency; the local adapter still uses `ENGLISH_TOOL_LOCAL_USER_KEY=local-user`. A cloud identity provider can replace that dependency without changing learning services.
@@ -58,6 +60,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `ai_agent/`: provider-neutral model loop, strict tool contracts, authorization policy and offline mock adapters; it has no database session.
 - `integrations/openai/`: optional Responses API and structured-evaluation adapters; provider SDK types stop at this boundary.
 - `domain/ai_evaluation/`: provider-neutral rubric evidence and evaluator/repository contracts.
+- `domain/agent_coaching/`: persisted weekly coaching report and repository contracts, separate from measured learning evidence.
 - `domain/sync/`: provider-neutral change-feed contract for a future authenticated device-sync adapter; no sync side effects run in the local MVP.
 - `content_import/`: strict Pydantic validation for seed manifests, semantic source blocks and complete IELTS question sets.
 - `seed/`: versioned structured practice content imported into SQLite through the manifest.

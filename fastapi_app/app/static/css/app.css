@@ -530,6 +530,24 @@ a { color: inherit; text-decoration: none; }
 .weekly-highlights span { color: var(--accent); font-size: .58rem; font-weight: 850; letter-spacing: .12em; }
 .weekly-highlights strong { margin-top: 12px; font: 600 1.18rem Georgia, serif; }
 .weekly-highlights p { margin: 8px 0 0; color: var(--muted); font-size: .65rem; line-height: 1.45; }
+.ai-coach-card { margin-top: 18px; padding: 25px; border: 1px solid #a8c7bb; border-radius: 14px; background: linear-gradient(135deg, #fbfefa, #eef5f1); box-shadow: var(--shadow); }
+.ai-coach-card > header { display: flex; align-items: start; justify-content: space-between; gap: 28px; }
+.ai-coach-card h2 { margin: 0; font: 600 1.45rem Georgia, serif; }
+.ai-coach-card header p:last-child { max-width: 690px; margin: 9px 0 0; color: var(--muted); font-size: .74rem; line-height: 1.55; }
+.ai-status-badge { flex: 0 0 auto; padding: 7px 9px; border: 1px solid #d8c69e; border-radius: 99px; color: #7f5c17; background: var(--warning-soft); font-size: .55rem; font-weight: 850; letter-spacing: .12em; }
+.ai-status-badge.is-ready { color: var(--accent-dark); border-color: #9bc0b2; background: var(--accent-soft); }
+.ai-coach-report { margin-top: 22px; padding: 21px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255, 255, 255, .82); }
+.ai-coach-report-meta { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: .6rem; font-weight: 750; letter-spacing: .08em; }
+.ai-coach-report-text { margin-top: 17px; white-space: pre-wrap; color: #2b3934; font: .9rem/1.72 Georgia, serif; }
+.ai-tool-list { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 18px; }
+.ai-tool-list span { padding: 5px 8px; border-radius: 99px; color: var(--accent-dark); background: var(--accent-soft); font-size: .58rem; font-weight: 750; }
+.ai-coach-actions { display: flex; align-items: center; gap: 15px; margin-top: 20px; }
+.ai-coach-actions p { margin: 0; color: var(--muted); font-size: .67rem; }
+.ai-coach-actions .button:disabled { cursor: wait; opacity: .58; transform: none; }
+.ai-setup-message { margin-top: 21px; padding: 16px 18px; border: 1px solid #dfd2b5; border-radius: 9px; background: var(--warning-soft); }
+.ai-setup-message strong { font-size: .78rem; }
+.ai-setup-message p { margin: 7px 0 10px; color: #6d614d; font-size: .68rem; line-height: 1.5; }
+.ai-setup-message code { color: #6b5530; font-size: .62rem; overflow-wrap: anywhere; }
 .weekly-recommendation-list { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); }
 .weekly-recommendation-list a { display: grid; grid-template-columns: 36px 1fr auto; gap: 15px; align-items: center; min-height: 84px; padding: 15px 20px; }
 .weekly-recommendation-list a + a { border-top: 1px solid var(--line); }
@@ -865,6 +883,7 @@ a { color: inherit; text-decoration: none; }
   .set-grid { grid-template-columns: 1fr; }
   .section-heading { align-items: start; }
   .workspace-head { align-items: stretch; flex-direction: column; padding: 18px; }
+  .ai-coach-card > header, .ai-coach-actions { align-items: stretch; flex-direction: column; }
   .exam-timer { width: 100%; }
   .section-picker { overflow-x: auto; grid-template-columns: repeat(4, minmax(106px, 1fr)); }
   .audio-player { grid-template-columns: 1fr; gap: 9px; }

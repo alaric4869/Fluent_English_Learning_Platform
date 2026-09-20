@@ -37,6 +37,7 @@ def test_dashboard_weekly_review_and_home_redirect_render() -> None:
         with TestClient(app) as client:
             dashboard = client.get("/dashboard")
             weekly = client.get("/weekly-review")
+            agent = client.post("/api/agent/weekly-coaching")
             home = client.get("/", follow_redirects=False)
 
         assert dashboard.status_code == 200
@@ -46,6 +47,9 @@ def test_dashboard_weekly_review_and_home_redirect_render() -> None:
         assert weekly.status_code == 200
         assert "这周的努力，留下了什么证据" in weekly.text
         assert "Good / Easy" in weekly.text
+        assert "AI LEARNING COACH" in weekly.text
+        assert "AI Agent 当前未启用" in weekly.text
+        assert agent.status_code == 503
         assert home.status_code == 307
         assert home.headers["location"] == "/dashboard"
 

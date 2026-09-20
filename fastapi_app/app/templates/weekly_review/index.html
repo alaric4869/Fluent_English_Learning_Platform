@@ -32,6 +32,43 @@
     <article><span>NEXT WEEK REVIEWS</span><strong>{{ review.next_week_review_count }}</strong><p>当前已排在下周日期内的活跃复习项目。</p></article>
   </section>
 
+  <section class="ai-coach-card" data-agent-available="{{ 'true' if agent_available else 'false' }}">
+    <header>
+      <div>
+        <p class="eyebrow">AI LEARNING COACH</p>
+        <h2>用真实学习数据生成本周建议</h2>
+        <p>Agent 只能读取本周统计、技能画像、弱项判断和到期复习；不会直接修改学习计划。</p>
+      </div>
+      <span class="ai-status-badge{% if agent_available %} is-ready{% endif %}">{{ "READY" if agent_available else "SETUP REQUIRED" }}</span>
+    </header>
+
+    <div id="agentReport" class="ai-coach-report{% if not agent_report %} is-hidden{% endif %}">
+      <div class="ai-coach-report-meta">
+        <span id="agentReportProvider">{{ agent_report.provider_name|upper if agent_report else "" }}</span>
+        <time id="agentReportTime">{{ agent_report.created_label if agent_report else "" }}</time>
+      </div>
+      <div id="agentReportText" class="ai-coach-report-text">{{ agent_report.output_text if agent_report else "" }}</div>
+      <div id="agentReportTools" class="ai-tool-list" aria-label="本报告使用的数据工具">
+        {% if agent_report %}
+          {% for tool in agent_report.tools_used %}<span>{{ tool }}</span>{% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if agent_available %}
+    <div class="ai-coach-actions">
+      <button id="generateWeeklyCoaching" class="button button-primary" type="button">{{ "重新生成建议" if agent_report else "生成本周 AI 建议" }}</button>
+      <p id="agentCoachStatus" role="status" aria-live="polite">只有点击按钮后才会调用 AI API。</p>
+    </div>
+    {% else %}
+    <div class="ai-setup-message">
+      <strong>AI Agent 当前未启用</strong>
+      <p>{{ agent_unavailable_reason }} 本地计划、评分和统计仍可完整使用。</p>
+      <code>ENGLISH_TOOL_AI_PROVIDER=openai · OPENAI_API_KEY · OPENAI_MODEL</code>
+    </div>
+    {% endif %}
+  </section>
+
   <section class="insight-section">
     <div class="section-heading"><div><p class="eyebrow">SKILL EVIDENCE</p><h2>本周四项技能</h2></div><p>准确率来自已提交练习，不来自自我猜测</p></div>
     <div class="skill-progress-grid weekly-skill-grid">
@@ -55,3 +92,4 @@
   </section>
 </div>
 {% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/weekly-coaching.js') }}" defer></script>{% endblock %}
