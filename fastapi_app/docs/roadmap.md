@@ -109,9 +109,11 @@
 
 ## M15 · Content import and expansion
 
-- Build repeatable, validated imports for G20 Test 2–4 Listening, Reading and Writing.
-- Preserve native tables, maps and figures while keeping all answers web-interactive.
-- Add curated real-world Australian audio/video, articles and speaking prompts.
+- **Completed.** Added a strict, ordered manifest importer for G20 Test 1–4 and curated external resources.
+- Test 2–4 Listening and Reading each contain all 40 answerable questions; all six new Writing tasks render as web-native workspaces.
+- Native tables and flowcharts render as HTML with inline inputs. Test 3's map remains a verified source image with four autosaved web answers.
+- Grouped multi-answer questions use bounded checkboxes, preserve order-independent grading and no longer behave like single-choice questions.
+- Added official ABC/SBS real-world audio/video, articles, chunks and speaking prompts to the normal resource catalogue.
 
 ## M16 · Provider-neutral AI Agent tool layer
 
@@ -130,4 +132,4 @@
 - Finish keyboard, accessibility, empty-state and cross-page consistency passes.
 - Prepare optional authentication, PostgreSQL and synchronization adapters without rewriting domain logic.
 
-Do not bulk-import more IELTS tests before M1–M6 establish the adaptive feedback loop.
+Additional IELTS books should use the same manifest, source verification and validation tests rather than adding hard-coded page data.

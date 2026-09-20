@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "imports": [
+    "g20_test1.json",
+    "g20_test2.json",
+    "g20_test3.json",
+    "g20_test4.json",
+    "australian_real_world.json"
+  ]
+}

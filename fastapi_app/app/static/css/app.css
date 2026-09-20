@@ -580,6 +580,12 @@ a { color: inherit; text-decoration: none; }
 .inline-answer label { min-width: 74px; flex: 1 1 88px; }
 .inline-answer input { width: 100%; min-width: 70px; padding: 1px 3px 2px; border: 0; border-bottom: 1.5px dotted #4a514e; border-radius: 0; outline: none; background: #fffdf4; font-weight: 700; }
 .inline-answer input:focus { border-bottom-color: var(--accent); background: var(--accent-soft); }
+.source-flowchart { display: grid; justify-items: center; gap: 8px; }
+.flowchart-node { width: min(100%, 650px); padding: 15px 18px; border: 1.5px solid #505854; background: #fff; text-align: center; font: 500 .87rem/1.55 Arial, Helvetica, sans-serif; }
+.flowchart-copy { white-space: pre-line; }
+.flowchart-arrow { color: #505854; font-size: 1.2rem; line-height: 1; }
+.flowchart-node .inline-answer { min-width: 125px; justify-content: center; }
+.flowchart-node .inline-answer .question-feedback { text-align: left; }
 .source-figure-block figure { margin: 0; text-align: center; }
 .source-figure-block img { display: block; max-width: 100%; height: auto; margin: 0 auto; border: 1px solid var(--line); background: white; }
 .source-figure-block figcaption { margin-top: 8px; color: var(--muted); font-size: .72rem; }

@@ -1,0 +1,282 @@
+{
+  "practice_sets": [
+    {
+      "slug": "g20-test-2-listening",
+      "book_number": 20,
+      "test_number": 2,
+      "skill": "listening",
+      "title": "Cambridge IELTS 20 General Training · Test 2 Listening",
+      "description": "4 个 Part、40 道题，使用 resources 中的 Test 2 真题音频；提交后逐题显示答案与中文定位解析。",
+      "duration_minutes": 30,
+      "content_version": "g20-t2-listening-v1",
+      "sections": [
+        {
+          "order_index": 1,
+          "title": "Part 1 · Help for carers",
+          "instructions": "Complete the notes below. Write ONE WORD AND/OR A NUMBER for each answer.",
+          "audio_path": "listening/20音频/20T2S1.mp3",
+          "content_blocks": [
+            {
+              "kind": "passage",
+              "title": "Help for carers",
+              "paragraphs": [
+                "Local councils can arrange practical support to help those caring for elderly people at home.",
+                "This can give the carer: time for other responsibilities; a 1 _____.",
+                "Assessment of mother's needs may include: how much 2 _____ the caring involves; help with dressing; helping her have a 3 _____; shopping; helping with meals; dealing with 4 _____.",
+                "Especially difficult aspects may include loss of 5 _____; 6 _____ her; preventing a 7 _____.",
+                "Support may include transport costs such as a 8 _____, car-related costs such as fuel and 9 _____, help with housework, and help to reduce 10 _____."
+              ]
+            }
+          ],
+          "questions": [
+            {"number": 1, "prompt": "This can give the carer time for other responsibilities and a _____.", "question_type": "text", "options": [], "accepted_answers": ["break"], "explanation": "原文在 time for all the other responsibilities 后用 and also 并列引出 break，意为让照护者获得一次休息。"},
+            {"number": 2, "prompt": "Assessment: how much _____ the caring involves.", "question_type": "text", "options": [], "accepted_answers": ["time"], "explanation": "原文说 the amount of time，对应题干 how much；空格需填不可数名词 time。"},
+            {"number": 3, "prompt": "Helping her have a _____.", "question_type": "text", "options": [], "accepted_answers": ["shower"], "explanation": "录音在 getting dressed 后用 and also 补充 help her have a shower，答案是 shower。"},
+            {"number": 4, "prompt": "Dealing with _____.", "question_type": "text", "options": [], "accepted_answers": ["money"], "explanation": "原文用 cope with money 表达题干 dealing with money，动词发生同义替换。"},
+            {"number": 5, "prompt": "An especially difficult aspect: loss of her _____.", "question_type": "text", "options": [], "accepted_answers": ["memory"], "explanation": "原文提到 she has started to have quite bad problems with her memory，与 loss of her memory 对应。"},
+            {"number": 6, "prompt": "An especially difficult task: _____ her.", "question_type": "text", "options": [], "accepted_answers": ["lifting"], "explanation": "在 physical difficulties 的讨论中，男士直接询问 lifting her；题干结构要求动名词。"},
+            {"number": 7, "prompt": "Preventing a _____.", "question_type": "text", "options": [], "accepted_answers": ["fall"], "explanation": "录音在 lifting 之后说 avoid a fall；avoid 对应 preventing，答案为 fall。"},
+            {"number": 8, "prompt": "Transport costs, e.g. cost of a _____.", "question_type": "text", "options": [], "accepted_answers": ["taxi"], "explanation": "原文在 transport costs 后举例 a taxi，直接对应题干。"},
+            {"number": 9, "prompt": "Car-related costs, e.g. fuel and _____.", "question_type": "text", "options": [], "accepted_answers": ["insurance"], "explanation": "录音用 petrol and insurance 并列；petrol 对应 fuel，因此空格为 insurance。"},
+            {"number": 10, "prompt": "Help to reduce _____.", "question_type": "text", "options": [], "accepted_answers": ["stress"], "explanation": "原文指出照护者 under quite a bit of stress，并说明支持可 minimise it；minimise 对应 reduce。"}
+          ]
+        },
+        {
+          "order_index": 2,
+          "title": "Part 2 · Volunteering in Elmleigh",
+          "instructions": "Questions 11–16: choose the correct role A–I. Questions 17–20: choose A, B or C.",
+          "audio_path": "listening/20音频/20T2S2.mp3",
+          "content_blocks": [
+            {"kind": "notice", "title": "Role of volunteers", "paragraphs": ["A providing entertainment\nB providing publicity about a council service\nC contacting local businesses\nD giving advice to visitors\nE collecting feedback on events\nF selling tickets\nG introducing guest speakers at an event\nH encouraging cooperation between local organisations\nI helping people find their seats"]}
+          ],
+          "questions": [
+            {"number": 11, "prompt": "Walking around the town centre", "question_type": "single_choice", "options": [{"key":"A","text":"providing entertainment"},{"key":"B","text":"providing publicity about a council service"},{"key":"C","text":"contacting local businesses"},{"key":"D","text":"giving advice to visitors"},{"key":"E","text":"collecting feedback on events"},{"key":"F","text":"selling tickets"},{"key":"G","text":"introducing guest speakers"},{"key":"H","text":"encouraging cooperation between local organisations"},{"key":"I","text":"helping people find their seats"}], "accepted_answers": ["D"], "explanation": "录音说游客会需要 recommendations about what to visit，对应 giving advice to visitors。"},
+            {"number": 12, "prompt": "Helping at concerts", "question_type": "single_choice", "options": [{"key":"A","text":"providing entertainment"},{"key":"B","text":"providing publicity about a council service"},{"key":"C","text":"contacting local businesses"},{"key":"D","text":"giving advice to visitors"},{"key":"E","text":"collecting feedback on events"},{"key":"F","text":"selling tickets"},{"key":"G","text":"introducing guest speakers"},{"key":"H","text":"encouraging cooperation between local organisations"},{"key":"I","text":"helping people find their seats"}], "accepted_answers": ["I"], "explanation": "志愿者要 get everyone in the audience to the right place，即帮助观众找到座位。"},
+            {"number": 13, "prompt": "Getting involved with community groups", "question_type": "single_choice", "options": [{"key":"A","text":"providing entertainment"},{"key":"B","text":"providing publicity about a council service"},{"key":"C","text":"contacting local businesses"},{"key":"D","text":"giving advice to visitors"},{"key":"E","text":"collecting feedback on events"},{"key":"F","text":"selling tickets"},{"key":"G","text":"introducing guest speakers"},{"key":"H","text":"encouraging cooperation between local organisations"},{"key":"I","text":"helping people find their seats"}], "accepted_answers": ["H"], "explanation": "录音中的 groups can help each other 对应 cooperation between local organisations。"},
+            {"number": 14, "prompt": "Helping with a magazine", "question_type": "single_choice", "options": [{"key":"A","text":"providing entertainment"},{"key":"B","text":"providing publicity about a council service"},{"key":"C","text":"contacting local businesses"},{"key":"D","text":"giving advice to visitors"},{"key":"E","text":"collecting feedback on events"},{"key":"F","text":"selling tickets"},{"key":"G","text":"introducing guest speakers"},{"key":"H","text":"encouraging cooperation between local organisations"},{"key":"I","text":"helping people find their seats"}], "accepted_answers": ["E"], "explanation": "志愿者负责 find out what people think of events and suggestions，正是收集活动反馈。"},
+            {"number": 15, "prompt": "Participating at lunches for retired people", "question_type": "single_choice", "options": [{"key":"A","text":"providing entertainment"},{"key":"B","text":"providing publicity about a council service"},{"key":"C","text":"contacting local businesses"},{"key":"D","text":"giving advice to visitors"},{"key":"E","text":"collecting feedback on events"},{"key":"F","text":"selling tickets"},{"key":"G","text":"introducing guest speakers"},{"key":"H","text":"encouraging cooperation between local organisations"},{"key":"I","text":"helping people find their seats"}], "accepted_answers": ["A"], "explanation": "午餐后志愿者 put on a show，包括歌曲和短剧，对应 providing entertainment。"},
+            {"number": 16, "prompt": "Helping with the website", "question_type": "single_choice", "options": [{"key":"A","text":"providing entertainment"},{"key":"B","text":"providing publicity about a council service"},{"key":"C","text":"contacting local businesses"},{"key":"D","text":"giving advice to visitors"},{"key":"E","text":"collecting feedback on events"},{"key":"F","text":"selling tickets"},{"key":"G","text":"introducing guest speakers"},{"key":"H","text":"encouraging cooperation between local organisations"},{"key":"I","text":"helping people find their seats"}], "accepted_answers": ["B"], "explanation": "志愿者要 make sure residents know about it，让居民了解市政网站服务，即进行宣传。"},
+            {"number": 17, "prompt": "Which event requires the largest number of volunteers?", "question_type": "single_choice", "options": [{"key":"A","text":"the music festival"},{"key":"B","text":"the science festival"},{"key":"C","text":"the book festival"}], "accepted_answers": ["B"], "explanation": "录音依次比较三个活动，说明 science festival needs even more help，因此人数最多。"},
+            {"number": 18, "prompt": "What is the most important requirement for volunteers at the festivals?", "question_type": "single_choice", "options": [{"key":"A","text":"interpersonal skills"},{"key":"B","text":"personal interest in the event"},{"key":"C","text":"flexibility"}], "accepted_answers": ["A"], "explanation": "What's essential 后的 get on well with other people 对应 interpersonal skills；interest 和 flexibility 都只是前置干扰。"},
+            {"number": 19, "prompt": "New volunteers will start working in the week beginning", "question_type": "single_choice", "options": [{"key":"A","text":"2 September"},{"key":"B","text":"9 September"},{"key":"C","text":"23 September"}], "accepted_answers": ["B"], "explanation": "2 日开始的是培训，正式 duties 从 the following week, from the 9th onward 开始。"},
+            {"number": 20, "prompt": "What is the next annual event for volunteers?", "question_type": "single_choice", "options": [{"key":"A","text":"a boat trip"},{"key":"B","text":"a barbecue"},{"key":"C","text":"a party"}], "accepted_answers": ["A"], "explanation": "party 和 barbecue 都是往年活动；forthcoming trip along the canal 对应下一次 boat trip。"}
+          ]
+        },
+        {
+          "order_index": 3,
+          "title": "Part 3 · Human geography assignment",
+          "instructions": "Questions 21–25: match the opinions A–G. Questions 26–30: choose A, B or C.",
+          "audio_path": "listening/20音频/20T2S3.mp3",
+          "content_blocks": [
+            {"kind": "notice", "title": "Opinions", "paragraphs": ["A The information given was too vague.\nB This may not be relevant to their course.\nC This will involve only a small number of statistics.\nD It will be easy to find facts about this.\nE The facts about this may not be reliable.\nF No useful research has been done on this.\nG The information provided was interesting."]}
+          ],
+          "questions": [
+            {"number": 21, "prompt": "Population", "question_type": "single_choice", "options": [{"key":"A","text":"information too vague"},{"key":"B","text":"may not be relevant"},{"key":"C","text":"few statistics"},{"key":"D","text":"easy to find facts"},{"key":"E","text":"facts may be unreliable"},{"key":"F","text":"no useful research"},{"key":"G","text":"information was interesting"}], "accepted_answers": ["D"], "explanation": "Colin 说 population 的资料 quite straightforward to find on the internet，对应 easy to find facts。"},
+            {"number": 22, "prompt": "Health", "question_type": "single_choice", "options": [{"key":"A","text":"information too vague"},{"key":"B","text":"may not be relevant"},{"key":"C","text":"few statistics"},{"key":"D","text":"easy to find facts"},{"key":"E","text":"facts may be unreliable"},{"key":"F","text":"no useful research"},{"key":"G","text":"information was interesting"}], "accepted_answers": ["G"], "explanation": "两人用 fascinating 评价健康与地理的案例，fascinating 对应 interesting。"},
+            {"number": 23, "prompt": "Economies", "question_type": "single_choice", "options": [{"key":"A","text":"information too vague"},{"key":"B","text":"may not be relevant"},{"key":"C","text":"few statistics"},{"key":"D","text":"easy to find facts"},{"key":"E","text":"facts may be unreliable"},{"key":"F","text":"no useful research"},{"key":"G","text":"information was interesting"}], "accepted_answers": ["B"], "explanation": "Rosie 认为 economies 可能已从 syllabus 中删除，最好避开，因此可能与课程无关。"},
+            {"number": 24, "prompt": "Culture", "question_type": "single_choice", "options": [{"key":"A","text":"information too vague"},{"key":"B","text":"may not be relevant"},{"key":"C","text":"few statistics"},{"key":"D","text":"easy to find facts"},{"key":"E","text":"facts may be unreliable"},{"key":"F","text":"no useful research"},{"key":"G","text":"information was interesting"}], "accepted_answers": ["A"], "explanation": "all so general 和 no useful examples 共同说明讲授内容太笼统，即 too vague。"},
+            {"number": 25, "prompt": "Poverty", "question_type": "single_choice", "options": [{"key":"A","text":"information too vague"},{"key":"B","text":"may not be relevant"},{"key":"C","text":"few statistics"},{"key":"D","text":"easy to find facts"},{"key":"E","text":"facts may be unreliable"},{"key":"F","text":"no useful research"},{"key":"G","text":"information was interesting"}], "accepted_answers": ["E"], "explanation": "录音说 poverty figures are sometimes deliberately manipulated，说明数据可能不可靠。"},
+            {"number": 26, "prompt": "Rosie says that in her own city the main problem is", "question_type": "single_choice", "options": [{"key":"A","text":"crime"},{"key":"B","text":"housing"},{"key":"C","text":"unemployment"}], "accepted_answers": ["C"], "explanation": "她先否定 crime，随后指出 a lot of people don't have jobs，对应 unemployment。"},
+            {"number": 27, "prompt": "What recent additions to the outskirts of their cities are both students happy about?", "question_type": "single_choice", "options": [{"key":"A","text":"conference centres"},{"key":"B","text":"sports centres"},{"key":"C","text":"retail centres"}], "accepted_answers": ["A"], "explanation": "两人都认可郊区新建的 conference centres；购物中心和体育中心分别受到否定或只存在于一方城市。"},
+            {"number": 28, "prompt": "The students agree that developing disused industrial sites may", "question_type": "single_choice", "options": [{"key":"A","text":"have unexpected costs"},{"key":"B","text":"damage the urban environment"},{"key":"C","text":"destroy valuable historical buildings"}], "accepted_answers": ["A"], "explanation": "清理 dangerous materials 会很贵且 often not budgeted for，对应 unexpected costs。"},
+            {"number": 29, "prompt": "The students will mention Masdar City as an example of an attempt to achieve", "question_type": "single_choice", "options": [{"key":"A","text":"daily waste recycling collections"},{"key":"B","text":"sustainable energy use"},{"key":"C","text":"free transport for everyone"}], "accepted_answers": ["B"], "explanation": "Masdar City 被描述为 entirely dependent on renewable energy，例证可持续能源使用。"},
+            {"number": 30, "prompt": "When discussing Greenhill Abbots, Colin is uncertain about", "question_type": "single_choice", "options": [{"key":"A","text":"what its objectives were"},{"key":"B","text":"why there was opposition"},{"key":"C","text":"how much has actually been built"}], "accepted_answers": ["C"], "explanation": "I'm not sure how far they've got with it 表示不清楚实际建设进展到什么程度。"}
+          ]
+        },
+        {
+          "order_index": 4,
+          "title": "Part 4 · Developing food trends",
+          "instructions": "Complete the notes below. Write ONE WORD ONLY for each answer.",
+          "audio_path": "listening/20音频/20T2S4.mp3",
+          "content_blocks": [
+            {"kind": "passage", "title": "Developing food trends", "paragraphs": ["The growth in interest in food fashions started with 31 _____ of food being shared on social media.", "Sales of 32 _____ food brands have grown rapidly; famous 33 _____ influence demand.", "Avocado: 34 _____ visited growers; advertising focused on 35 _____ benefits.", "Oat milk: promotion through 36 _____ shops appealed to consumers concerned about the 37 _____.", "Norwegian skrei strengthened the 38 _____ of Norwegian seafood.", "Quinoa's success increased its 39 _____; overuse of resources resulted in poor-quality 40 _____."]}
+          ],
+          "questions": [
+            {"number":31,"prompt":"_____ of food were shared on social media.","question_type":"text","options":[],"accepted_answers":["photos","photographs","pictures"],"explanation":"原文说趋势 first began with people taking photos of their food and sharing them；三种同义答案均可。"},
+            {"number":32,"prompt":"Sales of _____ food brands have grown rapidly.","question_type":"text","options":[],"accepted_answers":["vegan"],"explanation":"原文 Companies which sell vegan produce can increase sales really quickly，答案 vegan。"},
+            {"number":33,"prompt":"Famous _____ are influential.","question_type":"text","options":[],"accepted_answers":["chefs","cooks"],"explanation":"supermarkets 跟踪社交媒体需求时提到 well-known chefs；cooks 也在答案表接受。"},
+            {"number":34,"prompt":"The avocado: _____ were invited to visit growers in South Africa.","question_type":"text","options":[],"accepted_answers":["journalists","reporters"],"explanation":"原文说 journalists were invited to South Africa；reporters 为答案表接受的同义词。"},
+            {"number":35,"prompt":"Advertising focused on its _____ benefits.","question_type":"text","options":[],"accepted_answers":["health"],"explanation":"录音中的 beneficial for health 转换为名词短语 health benefits。"},
+            {"number":36,"prompt":"Promotion in the USA through _____ shops reduced the need for advertising.","question_type":"text","options":[],"accepted_answers":["coffee"],"explanation":"品牌选择 coffee chains 而非大规模零售投放，chains 对应 shops。"},
+            {"number":37,"prompt":"It appealed to consumers concerned about the _____.", "question_type":"text","options":[],"accepted_answers":["environment"],"explanation":"原文说明消费者选择燕麦奶是因为担忧 dairy farming 对 environment 的影响。"},
+            {"number":38,"prompt":"Skrei strengthened the _____ of Norwegian seafood.","question_type":"text","options":[],"accepted_answers":["reputation"],"explanation":"录音原句 build the reputation of Norway's fisheries，build 对应 strengthen。"},
+            {"number":39,"prompt":"Quinoa's success led to an increase in its _____.", "question_type":"text","options":[],"accepted_answers":["price","cost"],"explanation":"需求激增后 the price soared，造成当地人买不起；price/cost 均接受。"},
+            {"number":40,"prompt":"Overuse of resources resulted in poor-quality _____.", "question_type":"text","options":[],"accepted_answers":["soil"],"explanation":"全年过度耕作使 the fertility of the soil decreased，对应 poor-quality soil。"}
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "g20-test-2-reading",
+      "book_number": 20,
+      "test_number": 2,
+      "skill": "reading",
+      "title": "Cambridge IELTS 20 General Training · Test 2 Reading",
+      "description": "3 个 Section、40 道题。原文、表格和流程图均已转换为网页内容，可直接作答。",
+      "duration_minutes": 60,
+      "content_version": "g20-t2-reading-v1",
+      "sections": [
+        {
+          "order_index": 1,
+          "title": "Section 1 · Cycling trails & fashion careers",
+          "instructions": "Read the two texts and answer Questions 1–14.",
+          "content_blocks": [
+            {"kind":"passage","title":"Great cycling trails","paragraphs":[
+              "A · Bo'ness to Blackness Castle, Edinburgh\nIf you like cycling on flat ground and enjoy having interesting things to look at, this is one of the best trails in Scotland. Among its plus points, there are fantastic views of three of the bridges across the river Forth. Simply return by the same path or continue on to South Queensferry for a longer day out.",
+              "B · The Montgomery Canal cycle path, Wales\nDragonflies, swans, buzzards, fish and other creatures can be spotted as you cycle alongside the canal. The path is in good condition and broad enough for a family to ride safely. A day out cycling in the area can also include a visit to the nearby thirteenth-century Powis Castle and its beautiful gardens.",
+              "C · A walking and cycling path in Birmingham, West Midlands\nThe busy city of Birmingham has several well-known bike trails, including a quiet route along the Bourn Brook to Woodgate Valley country park. One hump-backed bridge is best walked across, but the rest of the route is flat and suitable for a range of bikes. It's then 2 km along the signposted path to Woodgate Valley, which is perfect for picnics, has a family-friendly visitor attraction especially known for its sheep, and offers a break from cycling.",
+              "D · The Cycle Trail in the Forest of Dean, Gloucestershire\nThe path is on a former railway route from the time when the area was involved in coal mining. Cyclists can visit sites from this period on the way, but those just along for the views won't be disappointed. Stop for lunch at one of the numerous picnic spots along the way. The route is circular, fully marked and suitable for the whole family, including the dog.",
+              "E · The Wirral Trail, Liverpool\nThe trail is safe, flat and with plenty of cafés on the way. Take in the views of North Wales, have a rest on the beach at Caldy or Thurstaston, then cross the border into Cheshire and on towards Chester. Both West Kirby and Chester have regular direct trains back to Liverpool."
+            ]},
+            {"kind":"passage","title":"What steps to take to become a fashion designer","paragraphs":[
+              "First, it's important to think about what types of fashion designers are in demand currently. There are so many womenswear designers, yet not as many menswear, sportswear or accessories designers. Opportunities might be greater in those categories.",
+              "When applying for internships, think about what you'll bring to the company as well as what they can offer you: Is the company going to teach you skills that are relevant to your future career? What mix of skills can you bring to the company that is relevant to their needs? Try to find the company that's the right fit for you, and you are much more likely to be what the company is looking for as well.",
+              "Knocking on doors can lead to fantastic opportunities: Designers are very busy and overwhelmed with people applying to work with them, but they're far more impressed by people that try that little bit harder. For example, some graduates go overseas to New York or Milan to deliver a self-directed design project and CV to the designer of their choice. Of course that can lead to considerable expense, but it often results in success.",
+              "Make use of online fashion and business networking sites. Create your profile on each one, as you never know who might be looking. Apply to as many fashion hiring agencies as you can – there are more than 20 in the UK alone. Not all of them take on new graduates, but try them all anyway.",
+              "Consider your training and fill in any gaps in it. Assistant designers and interns can make themselves more employable through investing time in obtaining, for example, computer-aided design (CAD) skills. Unfortunately, not all colleges and universities have CAD as an integral part of their courses. If this has affected you, you should study using online learning applications.",
+              "Finally, talent is not enough – you need to get out there and make sure everybody knows about your skills. Graduates should be aware that they need to be proactive and persistent. It's all down to developing new contacts and utilising the ones you already have."
+            ]},
+            {"kind":"flowchart","title":"Design graduates — how to get work in the fashion industry","nodes":[
+              {"parts":[{"text":"Consider a less popular area, such as "},{"answer":8},{"text":", rather than clothing."}]},
+              {"parts":[{"text":"Find an internship where you will be a good "},{"answer":9},{"text":"."}]},
+              {"parts":[{"text":"Deliver the application personally, even if this involves significant "},{"answer":10},{"text":"."}]},
+              {"parts":[{"text":"Produce a "},{"answer":11},{"text":" on digital platforms and approach specialist "},{"answer":12},{"text":"."}]},
+              {"parts":[{"text":"Review the "},{"answer":13},{"text":" you have done and gain further expertise."}]},
+              {"parts":[{"text":"Establish as many useful "},{"answer":14},{"text":" as possible."}]}
+            ]}
+          ],
+          "questions": [
+            {"number":1,"prompt":"Industrial history may make this trail interesting.","question_type":"single_choice","options":[{"key":"A","text":"Bo'ness to Blackness Castle"},{"key":"B","text":"Montgomery Canal"},{"key":"C","text":"Birmingham"},{"key":"D","text":"Forest of Dean"},{"key":"E","text":"Wirral"}],"accepted_answers":["D"],"explanation":"D 段提到 former railway 与 coal mining sites，直接对应工业历史。"},
+            {"number":2,"prompt":"Cyclists may need to get off their bikes and walk a short distance.","question_type":"single_choice","options":[{"key":"A","text":"Bo'ness to Blackness Castle"},{"key":"B","text":"Montgomery Canal"},{"key":"C","text":"Birmingham"},{"key":"D","text":"Forest of Dean"},{"key":"E","text":"Wirral"}],"accepted_answers":["C"],"explanation":"C 段明确说 one hump-backed bridge is best walked across。"},
+            {"number":3,"prompt":"It is possible to buy something to eat along this trail.","question_type":"single_choice","options":[{"key":"A","text":"Bo'ness to Blackness Castle"},{"key":"B","text":"Montgomery Canal"},{"key":"C","text":"Birmingham"},{"key":"D","text":"Forest of Dean"},{"key":"E","text":"Wirral"}],"accepted_answers":["E"],"explanation":"E 段的 plenty of cafés 表示沿途可以买到食物。"},
+            {"number":4,"prompt":"People can stop and see some farm animals.","question_type":"single_choice","options":[{"key":"A","text":"Bo'ness to Blackness Castle"},{"key":"B","text":"Montgomery Canal"},{"key":"C","text":"Birmingham"},{"key":"D","text":"Forest of Dean"},{"key":"E","text":"Wirral"}],"accepted_answers":["C"],"explanation":"C 段的 visitor attraction especially known for its sheep 对应 farm animals。"},
+            {"number":5,"prompt":"Cyclists can stop and sit by the sea.","question_type":"single_choice","options":[{"key":"A","text":"Bo'ness to Blackness Castle"},{"key":"B","text":"Montgomery Canal"},{"key":"C","text":"Birmingham"},{"key":"D","text":"Forest of Dean"},{"key":"E","text":"Wirral"}],"accepted_answers":["E"],"explanation":"E 段提到 have a rest on the beach，beach 对应 by the sea。"},
+            {"number":6,"prompt":"A very old building is close to this trail and open to the public.","question_type":"single_choice","options":[{"key":"A","text":"Bo'ness to Blackness Castle"},{"key":"B","text":"Montgomery Canal"},{"key":"C","text":"Birmingham"},{"key":"D","text":"Forest of Dean"},{"key":"E","text":"Wirral"}],"accepted_answers":["B"],"explanation":"B 段的 thirteenth-century Powis Castle and gardens 对应古老且可参观的建筑。"},
+            {"number":7,"prompt":"Riders can extend the distance if they take this trail.","question_type":"single_choice","options":[{"key":"A","text":"Bo'ness to Blackness Castle"},{"key":"B","text":"Montgomery Canal"},{"key":"C","text":"Birmingham"},{"key":"D","text":"Forest of Dean"},{"key":"E","text":"Wirral"}],"accepted_answers":["A"],"explanation":"A 段说可 continue on to South Queensferry for a longer day out，表示延长路线。"},
+            {"number":8,"prompt":"Less popular design area", "question_type":"text","options":[],"accepted_answers":["accessories"],"explanation":"第一段把 accessories 与较少设计师的类别并列；题干用 clothing 概括 menswear/sportswear，故填 accessories。"},
+            {"number":9,"prompt":"A business where you will be a good _____", "question_type":"text","options":[],"accepted_answers":["fit"],"explanation":"原文 find the company that's the right fit for you；fit 在此为名词“匹配”。"},
+            {"number":10,"prompt":"Personally delivering an application may involve significant _____", "question_type":"text","options":[],"accepted_answers":["expense"],"explanation":"第三段原词 considerable expense；significant 对应 considerable。"},
+            {"number":11,"prompt":"Produce a _____ on digital platforms", "question_type":"text","options":[],"accepted_answers":["profile"],"explanation":"原文 Create your profile on each one，each one 指各网络平台。"},
+            {"number":12,"prompt":"Approach specialist _____ involved in recruitment", "question_type":"text","options":[],"accepted_answers":["agencies"],"explanation":"原文 apply to fashion hiring agencies；specialist recruitment organisations 即 agencies。"},
+            {"number":13,"prompt":"Review the _____ you have done", "question_type":"text","options":[],"accepted_answers":["training"],"explanation":"原文 Consider your training and fill in any gaps，review 对应 consider。"},
+            {"number":14,"prompt":"Establish useful _____", "question_type":"text","options":[],"accepted_answers":["contacts"],"explanation":"末段要求 developing new contacts and utilising existing ones，答案 contacts。"}
+          ]
+        },
+        {
+          "order_index": 2,
+          "title": "Section 2 · Training & the business lifecycle",
+          "instructions": "Read the two texts and answer Questions 15–27. Use ONE WORD ONLY for each answer.",
+          "content_blocks": [
+            {"kind":"passage","title":"Types of training in business","paragraphs":[
+              "The type of training provided in a business will depend on the resources available for training, the type of company, and the priority the company places on training.",
+              "Technical training is a type of training meant to teach the new employee the technological aspects of the job. For example, in a consulting business, technical training might be used so the consultant knows how to operate the system to input the number of hours that should be charged to a client. In a restaurant, the server might need to be trained on how to process customers' orders using a tablet.",
+              "In production focussed businesses, quality training involves familiarizing employees with the means of preventing, detecting, and eliminating non-quality products. In a world where quality can set your business apart from competitors, this type of training provides employees with the knowledge to recognize products that are not up to quality standards and what action to take in this scenario. This type of training can result in cost savings in production as well as provide an edge in the marketing of the product.",
+              "Skills training includes proficiencies needed to actually perform the job. For example, an administrative assistant might be trained in how to answer the phone, while a salesperson might be trained in assessment of customer needs and on how to offer the customer the necessary information to make a buying decision. A cashier needs to know not only the technology to ring something up on the till, but what to do if something has been given the wrong price.",
+              "A fourth type of training is called 'soft skills' training. Soft skills refer to personality traits and personal habits that may influence relationships with other people. Executives say there is an increasing need for people who have not only the technical skills to do a job but also the necessary soft skills, such as being good at different types of communication, including listening to colleagues and customers. In a retail or restaurant environment, essential soft skills might include how to motivate others, establish rapport and keep a conversation going. Skills such as these are used in every interaction with customers and are a key component of the customer experience."
+            ]},
+            {"kind":"table","title":"Types of training in business","headers":["Type of training","Aim","Examples"],"rows":[
+              {"cells":[[{"text":"Technical"}],[{"text":"Teach technological aspects of the job"}],[{"text":"Consulting: record the "},{"answer":15},{"text":" worked\nRestaurants: computerised "},{"answer":16}]]},
+              {"cells":[[{"text":"Quality"}],[{"text":"Avoid non-quality items"}],[{"text":"Lower costs and more effective "},{"answer":17}]]},
+              {"cells":[[{"text":"Skills"}],[{"text":"Teach necessary proficiencies"}],[{"text":"Assistant: use the "},{"answer":18},{"text":"\nSales: evaluate client "},{"answer":19},{"text":"\nCashier: incorrect "},{"answer":20}]]},
+              {"cells":[[{"text":"Soft skills"}],[{"text":"Skills affecting human relationships"}],[{"text":"Communication, e.g. "},{"answer":21}]]}
+            ]},
+            {"kind":"passage","title":"The small business lifecycle","paragraphs":[
+              "From the moment you make the decision to set up a business, you're in the 'business lifecycle'. This will see you progress from idea to startup, and if successful, through to the growth and maturity phases.",
+              "Stage 1 is Initial Development. This is the very beginning of the business lifecycle. You've got your business idea and you're ready to take the plunge. But before you do this you should get as many opinions as possible from friends, family, colleagues, or any industry specialists you have access to. Ultimately, the success of your business will come down to your own abilities, the state of the market and, of course, the decisions you make about the source of finance for your startup.",
+              "Once you're satisfied that your idea is ready to go, you move on to Stage 2, which is Startup. Many believe this is the riskiest stage of the entire lifecycle, since mistakes made then can have an impact many years later. Based on the feedback from your first customers, you have to be ready to adapt your product or service. It can even get to the point where you are making so many changes to it that you start to feel a bit confused about what you're doing. Don't worry – this feeling will soon disappear as your company develops.",
+              "Stage 3 is Establishment. You should now be seeing your profits improve slowly and steadily, but you may struggle to divide the time available to you between the growing demands of your business. Employing the right people is essential, so you need to take a major part in recruitment. It is your job now to start establishing order and cohesion as you mobilize your team according to clearly defined and communicated goals.",
+              "By Stage 4, Expansion, you may see rapid growth in profits and wish to move forward. However, you need to be aware of the risks of expanding too carelessly, and should keep an eye on how far expansion might affect the quality of what you provide to your existing customers.",
+              "Stage 5 is Maturity. Here you may wish to further expand the business. Many companies in this situation bring in a new leader at this stage, to face the new challenges. Other entrepreneurs may decide that they should sell the company at this stage, and move on to a new project."
+            ]},
+            {"kind":"flowchart","title":"The small business lifecycle","nodes":[
+              {"parts":[{"text":"Stage 1 · Ask for different people's "},{"answer":22},{"text":" about the idea."}]},
+              {"parts":[{"text":"Stage 2 · Remember that "},{"answer":23},{"text":" can affect future success. Do not worry if you are "},{"answer":24},{"text":" by all the changes."}]},
+              {"parts":[{"text":"Stage 3 · Be personally involved with "},{"answer":25},{"text":" and build an effective team."}]},
+              {"parts":[{"text":"Stage 4 · Plan carefully so that "},{"answer":26},{"text":" is not affected."}]},
+              {"parts":[{"text":"Stage 5 · The company may need a different "},{"answer":27},{"text":"."}]}
+            ]}
+          ],
+          "questions": [
+            {"number":15,"prompt":"Consulting: record the _____ worked","question_type":"text","options":[],"accepted_answers":["hours"],"explanation":"原文 the number of hours that should be charged to a client，答案 hours。"},
+            {"number":16,"prompt":"Restaurants: dealing with computerised _____","question_type":"text","options":[],"accepted_answers":["orders"],"explanation":"餐厅服务员学习 process customers' orders using a tablet，答案 orders。"},
+            {"number":17,"prompt":"Lower production costs and more effective _____","question_type":"text","options":[],"accepted_answers":["marketing"],"explanation":"质量培训还能 provide an edge in the marketing of the product，答案 marketing。"},
+            {"number":18,"prompt":"Administrative assistant: using the _____","question_type":"text","options":[],"accepted_answers":["phone"],"explanation":"原文明确是 trained in how to answer the phone。"},
+            {"number":19,"prompt":"Sales: evaluating the _____ of clients","question_type":"text","options":[],"accepted_answers":["needs"],"explanation":"assessment of customer needs 对应 evaluating the needs of clients。"},
+            {"number":20,"prompt":"Cashier: dealing with an incorrect _____","question_type":"text","options":[],"accepted_answers":["price"],"explanation":"原文 what to do if something has been given the wrong price，wrong 对应 incorrect。"},
+            {"number":21,"prompt":"Communication skill example","question_type":"text","options":[],"accepted_answers":["listening"],"explanation":"软技能段落列举 different types of communication, including listening。"},
+            {"number":22,"prompt":"Ask for people's _____ about the idea","question_type":"text","options":[],"accepted_answers":["opinions"],"explanation":"Stage 1 原文 get as many opinions as possible；列举的人群对应 different people。"},
+            {"number":23,"prompt":"_____ at this stage can affect future success","question_type":"text","options":[],"accepted_answers":["mistakes"],"explanation":"Stage 2 原文 mistakes made then can have an impact many years later。"},
+            {"number":24,"prompt":"Do not worry if you are _____ by all the changes","question_type":"text","options":[],"accepted_answers":["confused"],"explanation":"原文 many changes 会让创业者 feel a bit confused，答案原词重现。"},
+            {"number":25,"prompt":"Be personally involved with _____","question_type":"text","options":[],"accepted_answers":["recruitment"],"explanation":"Stage 3 要 take a personal role in recruitment，答案 recruitment。"},
+            {"number":26,"prompt":"Ensure that _____ is not affected","question_type":"text","options":[],"accepted_answers":["quality"],"explanation":"扩张必须谨慎，以 maintain the quality offered to existing customers。"},
+            {"number":27,"prompt":"The company may need a different _____","question_type":"text","options":[],"accepted_answers":["leader"],"explanation":"Stage 5 原文 bring in a new leader；different 对应 new。"}
+          ]
+        },
+        {
+          "order_index": 3,
+          "title": "Section 3 · The nursery without toys",
+          "instructions": "Read the text and answer Questions 28–40.",
+          "content_blocks": [
+            {"kind":"passage","title":"The nursery that took all the children's toys away","paragraphs":[
+              "Children are ready consumers, particularly of toys. Their toy chests may be bursting but they are still desperate for the latest doll or train set. Depriving children of their toys seems unkind, yet a growing number of nurseries in Germany do just this. For three months of the year they put away their toys and all that is left to play with are the tables, chairs and a few blankets.",
+              "The project is called Der Spielzeugfreie Kindergarten (the nursery without toys) and was founded by Rainer Strick and Elke Schubert, public health officers who worked with adults suffering from various forms of addiction. They were concerned about the addictive habits that start early in childhood and wanted to show that children can play happily and creatively when they are not being 'suffocated' by their toys.",
+              "One of the nurseries that has been following this project for the past two years is the Friedrich-Engels-Bogen nursery in Munich. Gisela Marti, a teacher there, says: 'In these three months we offer the children space and time to get to know themselves.' The aim is to make the children 'self-confident, able to bear conflict and frustration, able to say yes as well as no and also aware of their weaknesses and strengths'. According to Gisela Marti, the children's day is deliberately unstructured as one of the basic beliefs of the project is that children spend too much time being rushed around from one activity to another and they end up with a 'reduced space for life'. The children are encouraged to do what they want, in their own way.",
+              "A video taken of the children during the three-month toy-free period shows them on the first day staring at each other hesitantly and looking apprehensively around the big, empty classroom. One of the nursery teachers, Gudrun Huber, says: 'We left them alone, even if they were bored, because sometimes things in life are boring and you have to learn to cope.' On the second day the children are filmed playing with the chairs and blankets. They make a den by draping the blankets over the tables and weighing them down with shoes, and then they start running around the room, chatting and laughing excitedly. Gudrun Huber explains how this put them in an entirely different mood: 'Once the children realised they could do what they liked and they were in control, they really went a bit mad – they got very boisterous and excited, climbing all over the furniture.' Initially it was difficult for the staff, not just because it was unbearably noisy, but because, as Gudrun Huber says: 'It was difficult to hold back and let the children be.'",
+              "Like Gudrun Huber, Gisela Marti found it hard to re-evaluate the rules she was used to: 'They weren't allowed to do anything really dangerous, but they were allowed to jump on the chairs and tables, and that is not something they would normally be allowed to do. As a teacher you do have to have confidence in the children.' But she adds: 'Everyone has to work within their own boundaries and some teachers will allow more dangerous and active play than others.'",
+              "Gisela Marti found that once the children settled down to the new regime, they invented games: 'They loved acting and putting on a show, or pretending to be in a circus or on a train, but most importantly, all the time they were playing, they were learning to socialise.'",
+              "Two weeks before the end of the project the teachers and children had a group discussion about which toys they would like brought back. The children were happy to get their toys back, but they were also aware that they had fun without them. As one little boy in Gudrun Huber's class said: 'I like having no toys because then you can use your imagination instead.'",
+              "At the end of the project, Elke Schubert thought there were definite benefits. 'We find that children on the project concentrate better when they work, integrate better into groups and communicate better than the children who didn't take part.'",
+              "The parents were also positive about how the 'time without toys' affected their children. Some parents have even copied the nursery's example. As one father said: 'Klaus used to get out all his toys and spread them all over the room and they got in such a mess that he wasn't playing properly with any of them. So we put all the toys away in the cellar and now we only get out what he actually wants to play with and he gets much less frustrated.'",
+              "Elsa Davies is Director of the National Playing Fields Association. She says: 'The most natural and durable learning happens through play and often play which is freely chosen by the child. Teachers often underestimate the power of that learning.'"
+            ]}
+          ],
+          "questions": [
+            {"number":28,"prompt":"What does Gisela Marti criticise about nurseries?","question_type":"single_choice","options":[{"key":"A","text":"the length of time children spend there"},{"key":"B","text":"the number of arguments"},{"key":"C","text":"the lack of physical space"},{"key":"D","text":"the amount of organisation children experience"}],"accepted_answers":["D"],"explanation":"Marti 批评孩子被 rushed from one activity to another，说明活动被安排得过多。"},
+            {"number":29,"prompt":"When talking about danger, Gisela Marti suggests teachers may have to","question_type":"single_choice","options":[{"key":"A","text":"learn how to reduce it"},{"key":"B","text":"adjust their response to it"},{"key":"C","text":"explore what causes it"},{"key":"D","text":"agree when to avoid it"}],"accepted_answers":["B"],"explanation":"她说教师需 re-evaluate rules，且每位教师允许的风险边界不同，即调整自己对危险的反应。"},
+            {"number":30,"prompt":"How did the children feel about getting their toys back?","question_type":"single_choice","options":[{"key":"A","text":"impatient"},{"key":"B","text":"surprised"},{"key":"C","text":"no longer interested"},{"key":"D","text":"mixed feelings"}],"accepted_answers":["D"],"explanation":"孩子既 happy to get toys back，也意识到无玩具同样有趣，表现为复杂、混合的感受。"},
+            {"number":31,"prompt":"Children outside the project have poorer social skills than participants.","question_type":"single_choice","options":[{"key":"A","text":"Gisela Marti"},{"key":"B","text":"Gudrun Huber"},{"key":"C","text":"Elke Schubert"},{"key":"D","text":"Klaus's father"},{"key":"E","text":"Elsa Davies"}],"accepted_answers":["C"],"explanation":"Elke Schubert 比较后发现参与者 better integrate and communicate，对应此陈述。"},
+            {"number":32,"prompt":"The project aims to let children express agreement and disagreement.","question_type":"single_choice","options":[{"key":"A","text":"Gisela Marti"},{"key":"B","text":"Gudrun Huber"},{"key":"C","text":"Elke Schubert"},{"key":"D","text":"Klaus's father"},{"key":"E","text":"Elsa Davies"}],"accepted_answers":["A"],"explanation":"Gisela Marti 说目标包括 able to say yes as well as no。"},
+            {"number":33,"prompt":"An excess of toys can lead to irritation in a child.","question_type":"single_choice","options":[{"key":"A","text":"Gisela Marti"},{"key":"B","text":"Gudrun Huber"},{"key":"C","text":"Elke Schubert"},{"key":"D","text":"Klaus's father"},{"key":"E","text":"Elsa Davies"}],"accepted_answers":["D"],"explanation":"Klaus 的父亲说玩具太多时孩子不专心且很 frustrated，减少玩具后挫败感下降。"},
+            {"number":34,"prompt":"Educators may underestimate the importance of children choosing how to use their time.","question_type":"single_choice","options":[{"key":"A","text":"Gisela Marti"},{"key":"B","text":"Gudrun Huber"},{"key":"C","text":"Elke Schubert"},{"key":"D","text":"Klaus's father"},{"key":"E","text":"Elsa Davies"}],"accepted_answers":["E"],"explanation":"Elsa Davies 强调 freely chosen play，并说 teachers often underestimate its power。"},
+            {"number":35,"prompt":"At first, nursery staff found it hard to let children do what they wanted.","question_type":"single_choice","options":[{"key":"A","text":"Gisela Marti"},{"key":"B","text":"Gudrun Huber"},{"key":"C","text":"Elke Schubert"},{"key":"D","text":"Klaus's father"},{"key":"E","text":"Elsa Davies"}],"accepted_answers":["B"],"explanation":"Gudrun Huber 说 initially it was difficult for the staff to stand back and let the children be。"},
+            {"number":36,"prompt":"On day one, children did not know what to do in the _____.","question_type":"text","options":[],"accepted_answers":["classroom"],"explanation":"视频显示孩子们环顾 the big, empty classroom；题干的 no toys 对应 toy-free。"},
+            {"number":37,"prompt":"They used tables, blankets and _____ to build a den.","question_type":"text","options":[],"accepted_answers":["shoes"],"explanation":"原文说 blankets over tables and weighing them down with shoes，答案 shoes。"},
+            {"number":38,"prompt":"They began to make up _____ and do shows.","question_type":"text","options":[],"accepted_answers":["games"],"explanation":"Marti 说 they invented games；invented 对应 make up。"},
+            {"number":39,"prompt":"They might imagine they were in the _____.", "question_type":"text","options":[],"accepted_answers":["circus"],"explanation":"原文 pretending to be in a circus or on a train，答案 circus。"},
+            {"number":40,"prompt":"These activities taught them how to _____.", "question_type":"text","options":[],"accepted_answers":["socialise","socialize"],"explanation":"原文 all the time they were playing, they were learning to socialise；英美拼写均接受。"}
+          ]
+        }
+      ]
+    }
+  ],
+  "learning_resources": [
+    {
+      "slug":"g20-test-2-writing-task-1",
+      "title":"G20 · Test 2 Writing Task 1",
+      "resource_type":"ielts_writing",
+      "skill":"writing",
+      "topic":"IELTS General Training · Letter",
+      "difficulty":"intermediate",
+      "estimated_duration_minutes":20,
+      "local_asset_reference":"ielts_paper/G20真题.pdf#page=50",
+      "description":"向朋友的妹妹介绍自己的海外学习经历，网页列提纲、限时写作并保留提交版本。",
+      "tags":["ielts","general-training","g20","test-2","writing","task-1","letter"],
+      "priority":83,
+      "content":{"book_number":20,"test_number":2,"source_pdf_page":50,"writing_task":{"task_type":"Writing Task 1 · Letter","instructions":"You should spend about 20 minutes on this task.","situation":"The younger sister of one of your friends is thinking about spending a year studying abroad as part of her university course. You did this recently, and she has asked you about your experience.","prompt":"Write a letter to your friend's sister. In your letter:","bullet_points":["tell her where you studied during your year abroad","describe what you learnt about the country you studied in","explain why your year abroad was helpful for your studies"],"closing_instruction":"You do not need to write any addresses. Begin your letter with: Dear …","minimum_words":150,"recommended_minutes":20}}
+    },
+    {
+      "slug":"g20-test-2-writing-task-2",
+      "title":"G20 · Test 2 Writing Task 2",
+      "resource_type":"ielts_writing",
+      "skill":"writing",
+      "topic":"IELTS General Training · Advantages Essay",
+      "difficulty":"intermediate",
+      "estimated_duration_minutes":40,
+      "local_asset_reference":"ielts_paper/G20真题.pdf#page=51",
+      "description":"讨论家族企业的利弊，网页列提纲、限时写作并保留提交版本。",
+      "tags":["ielts","general-training","g20","test-2","writing","task-2","advantages-disadvantages"],
+      "priority":82,
+      "content":{"book_number":20,"test_number":2,"source_pdf_page":51,"writing_task":{"task_type":"Writing Task 2 · Advantages Essay","instructions":"You should spend about 40 minutes on this task.","situation":"In many countries, family members work together in their family business.","prompt":"Do you think family businesses have more advantages than disadvantages?","bullet_points":[],"closing_instruction":"Give reasons for your answer and include any relevant examples from your own knowledge or experience.","minimum_words":250,"recommended_minutes":40}}
+    }
+  ]
+}

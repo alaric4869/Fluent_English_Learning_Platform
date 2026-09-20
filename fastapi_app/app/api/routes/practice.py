@@ -51,6 +51,7 @@ def ielts_index(
                 LOCAL_USER_KEY,
                 ResourceLibraryFilters(
                     skill=Skill.SPEAKING,
+                    resource_type="shadowing_retelling",
                     sort=ResourceSort.PRIORITY,
                 ),
             ).items,
@@ -58,6 +59,7 @@ def ielts_index(
                 LOCAL_USER_KEY,
                 ResourceLibraryFilters(
                     skill=Skill.WRITING,
+                    resource_type="ielts_writing",
                     sort=ResourceSort.PRIORITY,
                 ),
             ).items,

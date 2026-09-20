@@ -137,7 +137,8 @@ def test_writing_workspace_is_web_native_and_submit_validates_word_count() -> No
             submitted = client.post(f"/api/writing/{resource.id}/submit")
 
         assert index.status_code == 200
-        assert "5 modules available" in index.text
+        assert "17 modules available" in index.text
+        assert "TESTS 1–4" in index.text
         assert index.text.index("Writing Task 1") < index.text.index("Writing Task 2")
         assert page.status_code == 200
         assert "Write your answer here" in page.text

@@ -1,15 +1,21 @@
-import json
 from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.content_import import load_seed_payloads
 from app.models.ielts import PracticeQuestion, PracticeSection, PracticeSet
 from app.models.learning_evidence import LearningResource
 
 
 def import_seed_data(session: Session, seed_path: Path) -> None:
-    payload = json.loads(seed_path.read_text(encoding="utf-8"))
+    payloads = load_seed_payloads(seed_path)
+    for payload in payloads:
+        _import_payload(session, payload)
+    session.commit()
+
+
+def _import_payload(session: Session, payload: dict) -> None:
     for item in payload["practice_sets"]:
         learning_resource = _upsert_learning_resource(session, item)
         existing = session.scalar(select(PracticeSet).where(PracticeSet.slug == item["slug"]))
@@ -52,7 +58,6 @@ def import_seed_data(session: Session, seed_path: Path) -> None:
                 _update_question(question, section, question_payload)
     for item in payload.get("learning_resources", []):
         _upsert_standalone_learning_resource(session, item)
-    session.commit()
 
 
 def _upsert_learning_resource(session: Session, payload: dict) -> LearningResource:

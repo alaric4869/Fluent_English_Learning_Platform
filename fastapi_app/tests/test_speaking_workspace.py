@@ -171,7 +171,8 @@ def test_speaking_workspace_is_web_native_and_uses_real_audio() -> None:
             submitted = client.post(f"/api/speaking/{resource.id}/submit")
 
         assert index.status_code == 200
-        assert "5 modules available" in index.text
+        assert "17 modules available" in index.text
+        assert "TESTS 1–4" in index.text
         assert "跟读与复述 Speaking" in index.text
         assert page.status_code == 200
         assert "been meaning to ask you" in page.text

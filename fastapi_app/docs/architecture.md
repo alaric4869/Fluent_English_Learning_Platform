@@ -9,7 +9,7 @@ Study → Learning evidence → Learner profile → Weakness detection
       → Recommended plan + explanation → Study again
 ```
 
-The current G20 practice workspace is a content adapter and evidence producer. Bulk content import is intentionally paused until the loop can consume its results.
+The G20 practice workspace is a content adapter and evidence producer. The feedback loop now consumes its submitted results, so validated Test 1–4 content can be imported without putting learning rules in the page or seed loader.
 
 ## Dependency direction
 
@@ -40,6 +40,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/resources.py`: owns Library reads and typed create/edit/user-state actions.
 - `api/routes/dashboard.py`: renders composed Dashboard and current Weekly Review read models.
 - `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
+- `content_import/`: validates ordered manifests, complete 40-question IELTS sets, native tables/flowcharts/figures and grouped-answer invariants before a database write starts.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `presenters/listening.py`: derives safe media presentation and stable transcript sentences without persistence.
 - `presenters/speaking.py`: combines structured speaking content with learner sentence/draft state for display only.
@@ -80,7 +81,9 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `repositories/sqlalchemy_writing.py`: persists one autosaved draft and immutable submission revisions.
 - `repositories/sqlalchemy_resources.py`: combines stable resource content, learner-specific state and derived study history without leaking SQL into pages.
 - `models/ielts.py`: stable relational persistence concepts.
-- `seed/g20_test1.json`: versioned, structured web content imported into SQLite.
+- `seed/manifest.json`: ordered catalogue of versioned IELTS tests and curated real-world resources.
+- `seed/g20_test1.json` through `g20_test4.json`: proofread, structured web content imported into SQLite.
+- `seed/australian_real_world.json`: official ABC/SBS audio, video, article and speaking-practice resources for daily rotation.
 - `templates/` and `static/`: accessible server-rendered screens plus small progressive JavaScript interactions.
 - `migrations/`: Alembic schema history and the adopted pre-Alembic baseline.
 - `composition.py`: one explicit composition root so IELTS and Today use the same service graph.
@@ -101,8 +104,9 @@ Structured content contains semantic blocks such as `table`, `figure`, and quest
 
 - A single local learner key is used until authentication is added.
 - One working attempt is stored per learner and practice set. Attempt history and retakes will change this to multiple immutable submissions.
-- G20 Test 1 Listening, Reading, both Writing tasks and one real-audio Speaking practice have been curated and quality checked.
-- G20 Test 1 has no map question. The figure block preserves a verified crop and answer association; coordinate overlays should be added and visually checked when a real map resource is curated.
+- G20 Test 1–4 Listening and Reading contain 40 web-interactive questions each, and all eight Writing tasks are web-native resources.
+- Test 3's archaeological map is a verified crop from the learner-owned source. It is displayed as the original figure while its four answers remain ordinary autosaved form inputs.
+- Current imported figures use a separate answer row. Coordinate overlays remain an optional later enhancement and must be visually checked per figure.
 
 ## Implemented learning-data pipeline
 

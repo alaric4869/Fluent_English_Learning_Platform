@@ -100,3 +100,9 @@ Built-in resources have no owner; personal resources belong to one learner. Arch
 ## Dashboard and Weekly Review read models
 
 Dashboard and Weekly Review add no database tables. They aggregate the existing dated plan items, completed study sessions, learned dates, saved sentences and immutable review attempts through repository interfaces. In-progress timers are deliberately excluded from completed-resource/history counts. This avoids a second stored total that could drift from the source records. If weekly reports later need immutable publication or AI commentary, that output can be stored as a versioned report while keeping the measured inputs unchanged.
+
+## Validated content catalogue
+
+Content files are not database migrations and do not contain learner state. `seed/manifest.json` provides a deterministic import order, while strict Pydantic contracts reject unknown fields, unsafe paths, duplicate slugs, malformed semantic blocks, incomplete IELTS 40-question sets and inconsistent grouped answers before importing any payload.
+
+`PracticeSet.content_version` controls in-place content synchronization. Existing `PracticeSet`, `PracticeQuestion` and `LearningResource` IDs are retained when a version changes, so saved attempts and learning evidence keep stable references. Source-page layout is stored as semantic `table`, `flowchart`, `passage`, `notice` or `figure` blocks; answer identity remains in `PracticeQuestion`, which avoids embedding scoring rules inside HTML.

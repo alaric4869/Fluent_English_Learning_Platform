@@ -17,6 +17,11 @@ def test_normalize_answer_ignores_case_whitespace_and_light_punctuation() -> Non
     assert normalize_answer("  Not   Given. ") == "not given"
 
 
+def test_normalize_answer_accepts_common_ielts_number_formatting() -> None:
+    assert normalize_answer("£125") == normalize_answer("125")
+    assert normalize_answer("seventy-five") == normalize_answer("seventy five")
+
+
 def test_grade_answers_accepts_alternative_spellings() -> None:
     item = PracticeQuestion(
         number=1,
@@ -47,4 +52,3 @@ def test_grouped_answers_reject_duplicates() -> None:
     result = grade_answers(questions, {17: "A", 18: "A"})
 
     assert result.score == 0
-

@@ -39,6 +39,11 @@ def _embedded_question_numbers(blocks: list[dict]) -> list[int]:
         if block.get("kind") == "figure":
             numbers.update(int(number) for number in block.get("answer_numbers", []))
             numbers.update(int(answer["number"]) for answer in block.get("answers", []))
+        if block.get("kind") == "flowchart":
+            for node in block.get("nodes", []):
+                for part in node.get("parts", []):
+                    if "answer" in part:
+                        numbers.add(int(part["answer"]))
     return sorted(numbers)
 
 

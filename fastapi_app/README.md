@@ -1,6 +1,6 @@
 # Adaptive English Learning Agent · FastAPI edition
 
-This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan with timed study records, an intensive-listening workspace for real audio/video and sentence marking, a real-audio Speaking/Shadowing/Retelling workspace, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus G20 Test 1 Listening, Reading and web-native Writing. Objective IELTS submissions produce question-level evidence; Speaking, Writing and completed daily modules produce duration/difficulty/confidence evidence without inventing an accuracy. All refresh the provider-neutral Learner Profile and explainable skill assessment.
+This directory is the target Python-first application. Its usable UI contains a focused Dashboard, a date-persisted Today plan with timed study records, an intensive-listening workspace for real audio/video and sentence marking, a real-audio Speaking/Shadowing/Retelling workspace, a generated Weekly Review, a permanent user-managed Resource Library, a mixed chunk/listening-sentence review loop, a searchable Notebook and mistake book, persistent History and evidence-based Progress, plus Cambridge IELTS 20 General Training Test 1–4 Listening, Reading and web-native Writing. Objective IELTS submissions produce question-level evidence; Speaking, Writing and completed daily modules produce duration/difficulty/confidence evidence without inventing an accuracy. All refresh the provider-neutral Learner Profile and explainable skill assessment.
 
 ## Run locally
 
@@ -16,9 +16,9 @@ Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today
 
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
-IELTS audio is streamed from the repository's private, git-ignored `resources/listening` directory. Curated figures can be served from `data/imported/assets`; source PDFs themselves are never exposed to the browser.
+IELTS audio is streamed from the repository's private, git-ignored `resources/listening` directory. Verified question figures are stored in `assets/ielts` and served through a path-safe media route; source PDFs themselves are never exposed to the browser.
 
-`scripts/extract_pdf_text.py` is the repeatable OCR helper for future book imports. Its output stays in ignored local working directories and must be proofread before becoming practice content.
+`seed/manifest.json` is the validated, ordered content catalogue. It imports one versioned file per Cambridge test plus curated Australian real-world resources. `scripts/extract_pdf_text.py` is the repeatable OCR helper for future private-book imports. Its output stays in ignored local working directories and must be proofread against the source before becoming practice content.
 
 ## Boundaries
 
@@ -42,7 +42,8 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `presenters/`: converts structured exercise content into a page-specific read model; it does not grade or persist.
 - `templates/` and `static/`: light server-rendered UI and browser interactions.
 - `composition.py`: the explicit application-service composition root shared by routes.
-- `seed/`: structured practice content imported into SQLite.
+- `content_import/`: strict Pydantic validation for seed manifests, semantic source blocks and complete IELTS question sets.
+- `seed/`: versioned structured practice content imported into SQLite through the manifest.
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
 
 The profile algorithm uses the latest five sessions per skill. Objective evidence keeps the accuracy/confidence/hard-item weighting. A daily module without questions has `NULL` accuracy and is scored only from explicitly provided confidence and perceived difficulty; its explanation says that this is subjective evidence. Missing signals are excluded and weights are normalized. With no evidence, a skill has no score; one sample is provisional; two or more samples establish the current baseline.

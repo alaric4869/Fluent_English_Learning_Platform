@@ -6,11 +6,13 @@ from app.domain.ielts.entities import GradeResult, PracticeQuestion, QuestionRes
 
 
 _WHITESPACE = re.compile(r"\s+")
-_IGNORED_PUNCTUATION = re.compile(r"[.,;:!?‘’'\"]")
+_WORD_SEPARATORS = re.compile(r"[-–—]")
+_IGNORED_PUNCTUATION = re.compile(r"[.,;:!?‘’'\"$£()]")
 
 
 def normalize_answer(value: str) -> str:
     normalized = value.strip().casefold()
+    normalized = _WORD_SEPARATORS.sub(" ", normalized)
     normalized = _IGNORED_PUNCTUATION.sub("", normalized)
     return _WHITESPACE.sub(" ", normalized)
 
@@ -54,4 +56,3 @@ def grade_answers(
         total=len(results),
         questions=tuple(results),
     )
-
