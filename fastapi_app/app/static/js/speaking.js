@@ -19,6 +19,8 @@
   const actionStatus = document.querySelector("#speakingActionStatus");
   const submissionNote = document.querySelector("#speakingSubmissionNote");
   const submitButton = document.querySelector("#submitSpeaking");
+  const evaluationButton = document.querySelector("#evaluateSpeaking");
+  const evaluationAvailable = workspace.dataset.aiEvaluationAvailable === "true";
   let accumulatedSeconds = Number(workspace.dataset.savedSeconds || 0);
   let timerStartedAt = null;
   let timerInterval = null;
@@ -175,12 +177,27 @@
       workspace.dataset.draftStatus = "submitted";
       saveState.textContent = `第 ${body.submission_revision} 版已提交`;
       submissionNote.classList.remove("is-hidden");
+      if (evaluationButton && evaluationAvailable) evaluationButton.disabled = false;
       setAction("口语练习已提交，History 与 Progress 已更新。");
     } catch (error) {
       saveState.textContent = "提交失败，请检查后重试";
       setAction(error.message, true);
     } finally {
       submitButton.disabled = false;
+    }
+  });
+
+  evaluationButton?.addEventListener("click", async () => {
+    evaluationButton.disabled = true;
+    setAction("正在分析当前文字复述…");
+    try {
+      const response = await fetch(`/api/speaking/${resourceId}/evaluation`, { method: "POST" });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(typeof body.detail === "string" ? body.detail : "AI 反馈生成失败。");
+      window.location.reload();
+    } catch (error) {
+      setAction(error.message, true);
+      evaluationButton.disabled = !evaluationAvailable;
     }
   });
 

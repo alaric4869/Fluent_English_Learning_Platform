@@ -7,6 +7,7 @@
   data-resource-id="{{ workspace.resource.id }}"
   data-saved-seconds="{{ record.active_duration_seconds }}"
   data-draft-status="{{ record.status.value if record.status.value is defined else record.status }}"
+  data-ai-evaluation-available="{{ 'true' if evaluation_available else 'false' }}"
 >
   <header class="speaking-heading">
     <div>
@@ -134,11 +135,43 @@
       </footer>
       <div class="writing-submission-note{% if record.status != 'submitted' %} is-hidden{% endif %}" id="speakingSubmissionNote">
         <strong>口语练习已记录</strong>
-        <p>本次练习已进入 History 与 Progress。当前只保存真实练习信号，不伪造 AI 口语分数。</p>
+        <p>本次练习已进入 History 与 Progress。文字复述反馈不会冒充发音、口音或真实录音评分。</p>
       </div>
+      <section class="ai-feedback-card" id="speakingEvaluationCard">
+        <header>
+          <div><p class="eyebrow">AI COACHING · TEXT ONLY</p><h3>复述反馈</h3></div>
+          <button
+            class="button button-secondary"
+            id="evaluateSpeaking"
+            type="button"
+            {% if record.status != 'submitted' or not evaluation_available %}disabled{% endif %}
+          >生成反馈</button>
+        </header>
+        {% if evaluation %}
+        <div class="ai-feedback-summary">
+          <strong>{{ evaluation.overall_score|round|int }} / 100</strong>
+          <p>{{ evaluation.summary }}</p>
+          <small>第 {{ evaluation.source_revision }} 版 · {{ evaluation.provider_name }} / {{ evaluation.model_name }}</small>
+        </div>
+        <div class="ai-criteria-grid">
+          {% for item in evaluation.criteria %}
+          <article><b>{{ item.label }}</b><span>{{ item.score }} / {{ item.maximum_score }}</span><p>{{ item.explanation }}</p></article>
+          {% endfor %}
+        </div>
+        <div class="ai-feedback-lists">
+          <div><b>做得好的地方</b><ul>{% for item in evaluation.strengths %}<li>{{ item }}</li>{% endfor %}</ul></div>
+          <div><b>下一步优先改进</b><ul>{% for item in evaluation.improvement_priorities %}<li>{{ item }}</li>{% endfor %}</ul></div>
+        </div>
+        {% if evaluation.suggested_revision %}<details><summary>查看建议改写</summary><p>{{ evaluation.suggested_revision }}</p></details>{% endif %}
+        {% else %}
+        <p class="ai-feedback-empty">
+          {% if not evaluation_available %}尚未配置 AI Provider；当前练习功能不受影响。{% elif record.status == 'submitted' %}可分析当前文字复述；不会评价未提供的语音。{% else %}提交文字复述后才能请求 AI 反馈。{% endif %}
+        </p>
+        {% endif %}
+      </section>
     </section>
   </div>
   <p class="today-action-status" id="speakingActionStatus" role="status" aria-live="polite"></p>
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='/js/speaking.js') }}?v=1" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/speaking.js') }}?v=2" defer></script>{% endblock %}

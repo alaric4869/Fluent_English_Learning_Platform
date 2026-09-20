@@ -142,6 +142,7 @@ def test_writing_workspace_is_web_native_and_submit_validates_word_count() -> No
         assert index.text.index("Writing Task 1") < index.text.index("Writing Task 2")
         assert page.status_code == 200
         assert "Write your answer here" in page.text
+        assert "尚未配置 AI Provider" in page.text
         assert "iframe" not in page.text
         assert "PDF" not in page.text
         assert saved.status_code == 200

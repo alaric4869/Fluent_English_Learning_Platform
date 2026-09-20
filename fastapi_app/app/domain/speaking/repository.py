@@ -44,6 +44,13 @@ class SpeakingPracticeRepository(Protocol):
         occurred_at: datetime,
     ) -> tuple[RetellingRecord, RetellingSubmission]: ...
 
+    def get_workspace_submission(
+        self,
+        user_key: str,
+        resource_id: int,
+        revision: int | None = None,
+    ) -> RetellingSubmission | None: ...
+
     def list_sentence_progress(
         self,
         user_key: str,

@@ -40,8 +40,9 @@ EXPECTED_TABLES = {
     "weakness_skill_assessments",
     "writing_drafts",
     "writing_submissions",
+    "work_evaluations",
 }
-HEAD_REVISION = "0013_speaking_workspace"
+HEAD_REVISION = "0014_work_evaluations"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -134,6 +135,25 @@ def test_vocabulary_review_migration_can_downgrade_cleanly(
         assert connection.exec_driver_sql(
             "SELECT version_num FROM alembic_version"
         ).scalar_one() == "0007_plan_item_timestamps"
+
+
+def test_work_evaluation_migration_can_downgrade_cleanly(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    engine = _use_database(tmp_path / "work-evaluations.db", monkeypatch)
+    database_migrations.upgrade_database()
+    database_url = database_migrations.settings.database_url
+    config = Config(FASTAPI_ROOT / "alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+
+    command.downgrade(config, "0013_speaking_workspace")
+
+    assert "work_evaluations" not in inspect(engine).get_table_names()
+    with engine.connect() as connection:
+        assert connection.exec_driver_sql(
+            "SELECT version_num FROM alembic_version"
+        ).scalar_one() == "0013_speaking_workspace"
 
 
 def test_practice_notebook_migration_preserves_vocabulary_review_state(

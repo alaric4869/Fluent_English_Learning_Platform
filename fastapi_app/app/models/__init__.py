@@ -1,4 +1,5 @@
 from app.models.adaptive_learning import AdaptationDecisionModel
+from app.models.ai_evaluation import WorkEvaluationModel
 from app.models.ielts import PracticeAttempt, PracticeQuestion, PracticeSection, PracticeSet
 from app.models.learning_evidence import (
     ExerciseAttempt,
@@ -31,6 +32,7 @@ from app.models.writing import WritingDraftModel, WritingSubmissionModel
 
 __all__ = [
     "AdaptationDecisionModel",
+    "WorkEvaluationModel",
     "ExerciseAttempt",
     "LearningResource",
     "ResourceUserState",

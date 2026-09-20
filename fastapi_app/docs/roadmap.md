@@ -123,9 +123,9 @@
 
 ## M17 · AI evaluation and adaptive planning
 
-- Add Writing/retelling evaluation behind replaceable interfaces.
-- Store rubric evidence and explanations separately from learner-authored work.
-- Let AI recommendations supplement, not silently replace, deterministic planning and manual overrides.
+- **Completed.** Added optional OpenAI Responses adapters behind provider-neutral interfaces, while keeping offline mocks and a disabled-by-default configuration.
+- Writing and text retelling feedback use strict structured output and persist rubric evidence separately from immutable learner submissions; the UI requires an explicit request and never calls AI on submit.
+- Added a separately authorized `save_ai_recommendation` tool that appends explainable suggestions without changing deterministic plans or learner overrides.
 
 ## M18 · Reading split layout and product polish
 

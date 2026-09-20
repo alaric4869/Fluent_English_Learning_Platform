@@ -110,6 +110,26 @@ class SqlAlchemyWritingRepository:
         self.session.refresh(submission)
         return _to_draft(row), _to_submission(submission, created=True)
 
+    def get_submission(
+        self,
+        user_key: str,
+        resource_id: int,
+        revision: int | None = None,
+    ) -> WritingSubmission | None:
+        statement = (
+            select(WritingSubmissionModel)
+            .join(WritingDraftModel)
+            .where(
+                WritingDraftModel.user_key == user_key,
+                WritingDraftModel.resource_id == resource_id,
+            )
+        )
+        if revision is not None:
+            statement = statement.where(WritingSubmissionModel.revision == revision)
+        statement = statement.order_by(WritingSubmissionModel.revision.desc())
+        row = self.session.scalar(statement)
+        return _to_submission(row, created=False) if row is not None else None
+
     def _get_row(self, user_key: str, resource_id: int) -> WritingDraftModel | None:
         return self.session.scalar(
             select(WritingDraftModel).where(

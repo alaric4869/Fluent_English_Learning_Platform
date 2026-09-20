@@ -26,3 +26,10 @@ class WritingRepository(Protocol):
         resource_id: int,
         occurred_at: datetime,
     ) -> tuple[WritingDraft, WritingSubmission]: ...
+
+    def get_submission(
+        self,
+        user_key: str,
+        resource_id: int,
+        revision: int | None = None,
+    ) -> WritingSubmission | None: ...

@@ -14,6 +14,14 @@ python3.12 -m venv .venv
 
 Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open at `/listening/{resource_id}`, Speaking practices at `/speaking/{resource_id}`, and Writing tasks at `/writing/{resource_id}`.
 
+AI is disabled by default. The full learning app works without a model or API key. To enable explicit Writing/Retelling feedback and the OpenAI Agent adapter, install the optional dependency, copy `environment.example` to `.env`, set `ENGLISH_TOOL_AI_PROVIDER=openai`, and provide `OPENAI_API_KEY` plus an available `OPENAI_MODEL`:
+
+```bash
+.venv/bin/pip install -e '.[ai,dev]'
+```
+
+The key remains server-side. A submitted learner response is sent only after the learner clicks “生成反馈”; automatic submission-time model calls are intentionally disabled.
+
 The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
 
 IELTS audio is streamed from the repository's private, git-ignored `resources/listening` directory. Verified question figures are stored in `assets/ielts` and served through a path-safe media route; source PDFs themselves are never exposed to the browser.
@@ -43,6 +51,8 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `templates/` and `static/`: light server-rendered UI and browser interactions.
 - `composition.py`: the explicit application-service composition root shared by routes.
 - `ai_agent/`: provider-neutral model loop, strict tool contracts, authorization policy and offline mock adapters; it has no database session.
+- `integrations/openai/`: optional Responses API and structured-evaluation adapters; provider SDK types stop at this boundary.
+- `domain/ai_evaluation/`: provider-neutral rubric evidence and evaluator/repository contracts.
 - `content_import/`: strict Pydantic validation for seed manifests, semantic source blocks and complete IELTS question sets.
 - `seed/`: versioned structured practice content imported into SQLite through the manifest.
 - `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
@@ -69,4 +79,4 @@ Dashboard composes existing service results; it does not query tables or own a s
 
 JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.
 
-The first Agent boundary is also Python-only and offline-testable. It exposes nine allow-listed read tools for plans, history, profile, weaknesses, reviews, resources and weekly evidence. Tool arguments cannot carry a learner identity: the authenticated execution context owns `user_key`. `MockAIProvider` tests the complete model → tool → result → model loop without a network key. A production provider will implement the same `AIProvider` protocol; it will not receive SQLAlchemy models or a database session.
+The Agent boundary is Python-only and offline-testable. It exposes nine allow-listed read tools for plans, history, profile, weaknesses, reviews, resources and weekly evidence. A separately authorized `save_ai_recommendation` tool appends an explainable suggestion but never applies it to the plan. Tool arguments cannot carry a learner identity: the authenticated execution context owns `user_key`. `MockAIProvider` tests the complete model → tool → result → model loop without a network key, while `OpenAIResponsesProvider` implements the same protocol without receiving SQLAlchemy models or a database session.

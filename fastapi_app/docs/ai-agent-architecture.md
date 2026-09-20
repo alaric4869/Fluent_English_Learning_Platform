@@ -14,7 +14,7 @@ Domain policies and repository protocols
 SQLAlchemy / external integration adapters
 ```
 
-## Planned tools and service owners
+## Tools and service owners
 
 - `get_skill_profile()` → `LearnerProfileService`
 - `get_weak_skills()` → `WeaknessDetectionService`
@@ -25,7 +25,7 @@ SQLAlchemy / external integration adapters
 - `get_recent_study_history(days)` → `HistoryService`
 - `get_due_reviews()` → `ReviewService`
 - `get_recent_mistakes()` → `NotebookService`, `ListeningPracticeService` and `SpeakingPracticeService` through a future read-only tool adapter
-- `save_ai_recommendation()` → `AdaptationDecisionService` after an AI-specific command contract is added
+- `save_ai_recommendation()` → `AdaptationDecisionService`; it appends a non-applied recommendation under a separate permission
 - `generate_weekly_report()` → `WeeklyReviewService`; a future AI layer may explain its typed evidence but must not replace the measured values
 
 Request and response schemas will be explicit Pydantic contracts at the tool boundary. Provider-specific SDK objects will be contained behind an `AIProvider` interface; the domain will not import OpenAI, Anthropic, Gemini or another vendor SDK.
@@ -41,11 +41,15 @@ The first boundary is available in `app/ai_agent`:
 - `build_agent_tool_registry()` wires tools to existing application services, not repositories.
 - recommendation and weekly-narrative generation have provider-neutral protocols and a deterministic mock for the next milestone.
 
-The implemented catalogue is intentionally read-only: `get_today_plan`,
+The default catalogue is intentionally read-only: `get_today_plan`,
 `get_recent_study_history`, `get_skill_profile`, `get_due_reviews`,
 `get_weak_skills`, `search_learning_resources`, `get_resource`,
 `recommend_resources` and `generate_weekly_report`. A missing profile or plan is
 returned explicitly and never created as a hidden side effect.
+
+M17 adds `save_ai_recommendation` under `SAVE_AI_RECOMMENDATION`, which is not
+granted to a normal read principal. Its validated command records proposed time,
+resource, evidence reasons, provider and model without mutating `StudyPlanItem`.
 
 ## Recommended first provider
 
@@ -53,8 +57,9 @@ Use the OpenAI Responses API (`POST /responses`) as the first production adapter
 
 Start M16 with `MockAIProvider`, typed tool contracts and deterministic authorization tests. Add the networked `OpenAIProvider` only after the tool boundary is stable. The API key remains a server-side environment variable and is never sent to templates or browser JavaScript. If another provider is added later, it implements the same `AIProvider` contract; learning-domain code and pages remain unchanged.
 
-M16 now provides that mock boundary. M17 is the first appropriate milestone for a
-networked `OpenAIProvider`, rubric evaluation and AI-supplemented planning.
+`OpenAIResponsesProvider` now implements the same protocol using custom function
+tools, `previous_response_id`, non-parallel calls and `store=False`. The OpenAI SDK is
+an optional dependency and is imported only when the provider is explicitly enabled.
 
 The OpenAI Agents SDK is optional. It can be introduced later for richer tracing or multi-agent handoffs, but the core application should not depend on its runtime types. The Responses API is sufficient for the initial model-and-tools loop.
 
@@ -62,4 +67,16 @@ The OpenAI Agents SDK is optional. It can be introduced later for richer tracing
 
 The existing `SkillEvaluator`, `WeaknessDetector`, `ResourceRecommender` and `StudyPlanGenerator` interfaces are deterministic baselines. AI implementations may be added alongside them, selected by configuration, and compared using stored algorithm versions and evidence IDs. The UI and persistence layer should not need to change when a rule-based strategy is supplemented or replaced.
 
-The current `AdaptationDecisionService` accepts validated learner overrides only. A future AI action must use a separate typed command and actor value instead of impersonating a user override.
+## Structured learner-work evaluation
+
+`LearningWorkEvaluationService` builds an immutable request from a specific Writing
+or Retelling submission snapshot. `WorkEvaluator` remains provider-neutral;
+`MockWorkEvaluator` verifies the path offline and `OpenAIWorkEvaluator` uses Responses
+structured output. The provider returns a 0–100 coaching score, rubric evidence,
+strengths, priorities, corrections and a suggested revision. It is explicitly
+instructed not to claim an official IELTS/PTE Band or infer pronunciation from text.
+
+`WorkEvaluation` stores this output in a separate table keyed by submission revision,
+evaluator version and input fingerprint. It never changes learner-authored work,
+objective accuracy, profile evidence or a saved plan. Repeated evaluation of the same
+version is idempotent and does not incur another provider call.

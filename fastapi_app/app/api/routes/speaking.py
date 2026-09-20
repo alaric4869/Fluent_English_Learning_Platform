@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
+from app.domain.ai_evaluation.mock_evaluator import WorkEvaluatorUnavailableError
 from app.domain.speaking.entities import RetellingWorkspaceInput
+from app.presenters.ai_evaluation import present_work_evaluation
 from app.presenters.speaking import (
     present_retelling_record,
     present_sentence_progress,
@@ -18,6 +20,8 @@ from app.schemas.speaking import (
     SpeakingSentenceStatusRequest,
     SpeakingSubmissionResponse,
 )
+from app.schemas.ai_evaluation import WorkEvaluationResponse
+from app.services.ai_evaluation import InvalidEvaluationSourceError
 from app.services.speaking import IncompleteRetellingError, InvalidRetellingError
 
 
@@ -45,7 +49,14 @@ def speaking_workspace(
     return templates.TemplateResponse(
         request=request,
         name="speaking/workspace.html",
-        context=present_speaking_workspace(workspace),
+        context=present_speaking_workspace(
+            workspace,
+            evaluation=services.ai_evaluation.get_latest_retelling_evaluation(
+                LOCAL_USER_KEY,
+                resource_id,
+            ),
+            evaluation_available=services.ai_evaluation.available,
+        ),
     )
 
 
@@ -132,3 +143,25 @@ def submit_speaking(
         "submitted_at": submission.submitted_at,
         "created": submission.created,
     }
+
+
+@router.post(
+    "/api/speaking/{resource_id}/evaluation",
+    response_model=WorkEvaluationResponse,
+)
+def evaluate_speaking(
+    resource_id: int,
+    services: ApplicationServices = Depends(get_services),
+):
+    try:
+        evaluation = services.ai_evaluation.evaluate_retelling(
+            LOCAL_USER_KEY,
+            resource_id,
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except InvalidEvaluationSourceError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except WorkEvaluatorUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    return present_work_evaluation(evaluation)

@@ -4,13 +4,19 @@ from zoneinfo import ZoneInfo
 from sqlalchemy.orm import Session
 
 from app.ai_agent.tools import AgentToolRegistry, build_learning_agent_tool_registry
+from app.ai_agent.service import LearningAgentService
 from app.domain.learner_profile.rule_based_evaluator import RuleBasedSkillEvaluator
+from app.domain.ai_evaluation.evaluator import WorkEvaluator
+from app.domain.ai_evaluation.mock_evaluator import UnavailableWorkEvaluator
 from app.domain.resources.rule_based_recommender import RuleBasedResourceRecommender
 from app.domain.review.fixed_interval_scheduler import FixedIntervalReviewScheduler
 from app.domain.study_plan.rule_based_generator import RuleBasedStudyPlanGenerator
 from app.domain.weakness_detection.rule_based_detector import RuleBasedWeaknessDetector
 from app.repositories.sqlalchemy_adaptive_learning import (
     SqlAlchemyAdaptationDecisionRepository,
+)
+from app.repositories.sqlalchemy_ai_evaluation import (
+    SqlAlchemyWorkEvaluationRepository,
 )
 from app.repositories.sqlalchemy_history import SqlAlchemyStudyHistoryRepository
 from app.repositories.sqlalchemy_ielts import SqlAlchemyIeltsPracticeRepository
@@ -29,6 +35,7 @@ from app.repositories.sqlalchemy_weakness_detection import (
 )
 from app.repositories.sqlalchemy_writing import SqlAlchemyWritingRepository
 from app.services.adaptive_learning import AdaptationDecisionService
+from app.services.ai_evaluation import LearningWorkEvaluationService
 from app.services.dashboard import DashboardService
 from app.services.history import HistoryService
 from app.services.ielts_learning_evidence import IeltsLearningEvidenceRecorder
@@ -68,6 +75,7 @@ class ApplicationServices:
     notebook: NotebookService
     weekly_review: WeeklyReviewService
     dashboard: DashboardService
+    ai_evaluation: LearningWorkEvaluationService
 
 
 def build_application_services(session: Session) -> ApplicationServices:
@@ -106,15 +114,17 @@ def build_application_services(session: Session) -> ApplicationServices:
         resource_repository,
         review_scheduler,
     )
+    speaking_repository = SqlAlchemySpeakingPracticeRepository(session)
     speaking_service = SpeakingPracticeService(
-        SqlAlchemySpeakingPracticeRepository(session),
+        speaking_repository,
         resource_repository,
         evidence_service,
         profile_service,
         weakness_service,
     )
+    writing_repository = SqlAlchemyWritingRepository(session)
     writing_service = WritingPracticeService(
-        SqlAlchemyWritingRepository(session),
+        writing_repository,
         resource_repository,
         evidence_service,
         profile_service,
@@ -171,6 +181,13 @@ def build_application_services(session: Session) -> ApplicationServices:
         review_service,
         weekly_review_service,
     )
+    ai_evaluation_service = LearningWorkEvaluationService(
+        SqlAlchemyWorkEvaluationRepository(session),
+        build_work_evaluator(),
+        resource_repository,
+        writing_repository,
+        speaking_repository,
+    )
     evidence_recorder = IeltsLearningEvidenceRecorder(
         evidence_service,
         profile_service,
@@ -198,6 +215,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         notebook=notebook_service,
         weekly_review=weekly_review_service,
         dashboard=dashboard_service,
+        ai_evaluation=ai_evaluation_service,
     )
 
 
@@ -211,4 +229,44 @@ def build_agent_tool_registry(services: ApplicationServices) -> AgentToolRegistr
         history=services.history,
         review=services.review,
         weekly_review=services.weekly_review,
+        adaptation_decisions=services.adaptation_decisions,
     )
+
+
+def build_work_evaluator() -> WorkEvaluator:
+    from app.config import settings
+
+    if settings.ai_provider == "disabled":
+        return UnavailableWorkEvaluator()
+    from app.integrations.openai.work_evaluator import OpenAIWorkEvaluator
+
+    api_key = (
+        settings.openai_api_key.get_secret_value()
+        if settings.openai_api_key is not None
+        else None
+    )
+    return OpenAIWorkEvaluator(
+        model=settings.openai_model,
+        api_key=api_key,
+    )
+
+
+def build_learning_agent_service(
+    services: ApplicationServices,
+) -> LearningAgentService | None:
+    from app.config import settings
+
+    if settings.ai_provider == "disabled":
+        return None
+    from app.integrations.openai.responses_provider import OpenAIResponsesProvider
+
+    api_key = (
+        settings.openai_api_key.get_secret_value()
+        if settings.openai_api_key is not None
+        else None
+    )
+    provider = OpenAIResponsesProvider(
+        model=settings.openai_model,
+        api_key=api_key,
+    )
+    return LearningAgentService(provider, build_agent_tool_registry(services))

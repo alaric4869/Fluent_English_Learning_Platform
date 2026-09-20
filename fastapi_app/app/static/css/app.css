@@ -700,6 +700,27 @@ a { color: inherit; text-decoration: none; }
 .writing-submission-note { margin-top: 18px; padding: 16px 18px; border: 1px solid #a9c9bc; border-radius: 9px; background: var(--accent-soft); }
 .writing-submission-note strong { font: 600 1rem Georgia, serif; }
 .writing-submission-note p { margin: 7px 0 0; color: #52645e; font-size: .72rem; line-height: 1.6; }
+.ai-feedback-card { margin-top: 18px; padding: 18px; border: 1px solid var(--line); border-radius: 11px; background: #fbfaf6; }
+.ai-feedback-card > header { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.ai-feedback-card h3 { margin: 2px 0 0; font: 600 1.18rem Georgia, serif; }
+.ai-feedback-card button:disabled { cursor: not-allowed; opacity: .5; }
+.ai-feedback-summary { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; align-items: center; margin-top: 18px; padding: 15px; border-radius: 9px; background: var(--accent-soft); }
+.ai-feedback-summary > strong { grid-row: 1 / span 2; color: var(--accent); font: 600 1.35rem Georgia, serif; }
+.ai-feedback-summary p, .ai-feedback-summary small { margin: 0; }
+.ai-feedback-summary p { font-size: .75rem; line-height: 1.55; }
+.ai-feedback-summary small { color: var(--muted); font-size: .6rem; }
+.ai-criteria-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.ai-criteria-grid article { padding: 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.ai-criteria-grid article b, .ai-criteria-grid article span { display: block; font-size: .67rem; }
+.ai-criteria-grid article span { margin-top: 3px; color: var(--accent); font-weight: 750; }
+.ai-criteria-grid article p, .ai-feedback-empty { margin: 8px 0 0; color: var(--muted); font-size: .67rem; line-height: 1.55; }
+.ai-feedback-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 16px; }
+.ai-feedback-lists b { font-size: .7rem; }
+.ai-feedback-lists ul { margin: 8px 0 0; padding-left: 18px; }
+.ai-feedback-lists li { color: var(--muted); font-size: .66rem; line-height: 1.5; }
+.ai-feedback-card details { margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.ai-feedback-card summary { cursor: pointer; color: var(--accent); font-size: .7rem; font-weight: 700; }
+.ai-feedback-card details p { white-space: pre-wrap; font-size: .7rem; line-height: 1.6; }
 
 .speaking-workspace { padding-bottom: 70px; }
 .speaking-heading { display: grid; grid-template-columns: minmax(0, 1fr) 245px; gap: 38px; align-items: end; padding: 42px 0 28px; }
@@ -887,4 +908,5 @@ a { color: inherit; text-decoration: none; }
   .shadowing-transcript-text, .shadowing-notes, .shadowing-chunks, .shadowing-status-buttons { margin-left: 0; }
   .shadowing-notes, .speaking-assessment-grid { grid-template-columns: 1fr; }
   .retelling-editor-card { padding: 20px 17px; }
+  .ai-criteria-grid, .ai-feedback-lists { grid-template-columns: 1fr; }
 }

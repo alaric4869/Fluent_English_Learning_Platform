@@ -29,12 +29,12 @@ Resources are scored from explicit priority, target difficulty, completed-study 
 
 ## Explainability and history
 
-Profile snapshots, weakness assessments and daily plans store their algorithm versions, source IDs and reasons. A plan stores both its system-recommended values and current values. Each initial recommendation and validated learner override is also stored as an append-only adaptation decision. Repeating identical values does not add noise; returning to the original recommendation remains visible as a learner decision. Today presents these reasons directly instead of hiding them behind a black box.
+Profile snapshots, weakness assessments and daily plans store their algorithm versions, source IDs and reasons. A plan stores both its system-recommended values and current values. Each initial recommendation and validated learner override is also stored as an append-only adaptation decision. An AI proposal is a third, explicitly labelled decision type: saving it does not mutate plan values. Repeating identical learner values does not add noise; returning to the original recommendation remains visible as a learner decision. Today presents measured reasons directly instead of hiding them behind a black box.
 
 ## Known limits
 
 - Listening, Reading, Writing and one G20 Test 1 real-audio Speaking practice currently have curated resources; missing Vocabulary resources stay explicit rather than being fabricated.
-- Speaking evidence currently uses marked-sentence counts, time, intended chunks, difficulty and confidence. Fluency, pronunciation and lexical scores remain unknown until a later recording/transcription evaluator is explicitly invoked.
-- Writing evidence currently uses word count, time, difficulty and confidence. IELTS Band criteria remain unknown until M17 adds an evaluator; the profile explanation must keep that distinction visible.
+- Speaking evidence uses marked-sentence counts, time, intended chunks, difficulty and confidence. Optional AI feedback can evaluate supplied retelling text, but fluency, pronunciation and accent remain unknown until a recording/transcription evaluator is explicitly invoked.
+- Writing evidence uses word count, time, difficulty and confidence. Optional AI coaching is stored separately and deliberately does not become an official IELTS Band or silently change the rule-based profile.
 - Topic balancing and richer comprehension/listening measurements remain later inputs.
 - Rule thresholds require tuning after enough real usage data exists.

@@ -1,11 +1,18 @@
+from app.domain.ai_evaluation.entities import StoredWorkEvaluation
 from app.domain.speaking.entities import (
     RetellingRecord,
     ShadowingSentenceProgress,
     SpeakingWorkspace,
 )
+from app.presenters.ai_evaluation import present_work_evaluation
 
 
-def present_speaking_workspace(workspace: SpeakingWorkspace) -> dict:
+def present_speaking_workspace(
+    workspace: SpeakingWorkspace,
+    *,
+    evaluation: StoredWorkEvaluation | None = None,
+    evaluation_available: bool = False,
+) -> dict:
     record = _present_record(workspace.record)
     marked_count = sum(sentence.progress is not None for sentence in workspace.sentences)
     mastered_count = sum(
@@ -19,6 +26,10 @@ def present_speaking_workspace(workspace: SpeakingWorkspace) -> dict:
         "record": record,
         "marked_count": marked_count,
         "mastered_count": mastered_count,
+        "evaluation": (
+            present_work_evaluation(evaluation) if evaluation is not None else None
+        ),
+        "evaluation_available": evaluation_available,
     }
 
 

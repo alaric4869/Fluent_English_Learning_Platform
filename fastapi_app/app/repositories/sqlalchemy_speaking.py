@@ -188,6 +188,29 @@ class SqlAlchemySpeakingPracticeRepository:
         self.session.refresh(submission)
         return to_retelling_record(row), _to_submission(submission, created=True)
 
+    def get_workspace_submission(
+        self,
+        user_key: str,
+        resource_id: int,
+        revision: int | None = None,
+    ) -> RetellingSubmission | None:
+        statement = (
+            select(SpeakingRetellingSubmissionModel)
+            .join(RetellingRecordModel)
+            .where(
+                RetellingRecordModel.user_key == user_key,
+                RetellingRecordModel.source_resource_id == resource_id,
+                RetellingRecordModel.workspace_managed.is_(True),
+            )
+        )
+        if revision is not None:
+            statement = statement.where(
+                SpeakingRetellingSubmissionModel.revision == revision
+            )
+        statement = statement.order_by(SpeakingRetellingSubmissionModel.revision.desc())
+        row = self.session.scalar(statement)
+        return _to_submission(row, created=False) if row is not None else None
+
     def list_sentence_progress(
         self,
         user_key: str,

@@ -57,6 +57,10 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `ai_agent/authorization.py`: permission and per-tool allow-list enforcement.
 - `ai_agent/provider.py` and `service.py`: provider protocol, offline mock and bounded model/tool loop.
 - `ai_agent/capabilities.py`: replaceable recommendation/report interfaces with a deterministic mock seam.
+- `domain/ai_evaluation/`: immutable learner-work evaluation contracts and provider/repository protocols.
+- `services/ai_evaluation.py`: explicit Writing/Retelling evaluation use cases with input fingerprinting and idempotency.
+- `integrations/openai/`: optional Responses function-calling and structured-output adapters; no provider SDK types cross this boundary.
+- `repositories/sqlalchemy_ai_evaluation.py`: persists feedback separately from learner submissions and measured profile evidence.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `presenters/listening.py`: derives safe media presentation and stable transcript sentences without persistence.
 - `presenters/speaking.py`: combines structured speaking content with learner sentence/draft state for display only.
@@ -119,9 +123,19 @@ makes the whole path deterministic in tests. There is no browser chatbot or exte
 network call in this milestone; M17 can add an OpenAI Responses adapter without
 changing any learning service or repository.
 
-All current tools are read-only. Future plan/recommendation writes require separate
-permissions and explicit application commands; they must never be smuggled into a
-read tool or implemented as direct table mutations.
+Read tools remain the default. `save_ai_recommendation` requires a separate permission
+and appends a proposal without mutating the plan. Applying a proposal still requires
+the existing explicit learner override path.
+
+## Implemented optional AI evaluation
+
+Writing and text Retelling pages can explicitly request structured coaching after a
+submission. The provider is disabled by default, and submission never triggers a
+network call. `OpenAIWorkEvaluator` uses structured output and `store=False`; the
+result is saved as an immutable `WorkEvaluation` tied to the exact submission input.
+It does not overwrite authored text, write objective accuracy or silently refresh the
+learner profile. Text-only feedback cannot claim pronunciation or audio-fluency
+assessment.
 
 ## Persistence safety
 

@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.domain.adaptive_learning.entities import (
+    AIPlanItemRecommendation,
     AdaptationActor,
     AdaptationDecision,
     AdaptationDecisionType,
@@ -52,6 +53,68 @@ class SqlAlchemyAdaptationDecisionRepository:
             previous_resource_id=command.previous_resource_id,
             new_resource_id=command.new_resource_id,
             reasons=_manual_override_reasons(command.note),
+            created_at=command.decided_at,
+        )
+        self.session.add(decision)
+        self.session.commit()
+        self.session.refresh(decision)
+        return self._to_decision(decision)
+
+    def append_ai_recommendation(
+        self,
+        command: AIPlanItemRecommendation,
+    ) -> AdaptationDecision:
+        item = self.session.scalar(
+            select(StudyPlanItemModel).where(
+                StudyPlanItemModel.id == command.study_plan_item_id,
+                StudyPlanItemModel.study_plan_id == command.study_plan_id,
+            )
+        )
+        if item is None:
+            raise LookupError("Study plan item not found")
+        if (
+            item.planned_minutes != command.current_planned_minutes
+            or item.resource_id != command.current_resource_id
+        ):
+            raise StaleStudyPlanOverrideError(
+                "Study plan item changed before the AI recommendation was saved"
+            )
+        reasons = [
+            *command.reasons,
+            f"AI provider: {command.provider_name}; model: {command.model_name}.",
+            "This recommendation has not changed the learner's plan.",
+        ]
+        existing = self.session.scalar(
+            select(AdaptationDecisionModel)
+            .where(
+                AdaptationDecisionModel.study_plan_id == command.study_plan_id,
+                AdaptationDecisionModel.study_plan_item_id
+                == command.study_plan_item_id,
+                AdaptationDecisionModel.decision_type
+                == AdaptationDecisionType.AI_RECOMMENDATION.value,
+            )
+            .order_by(AdaptationDecisionModel.id.desc())
+        )
+        if (
+            existing is not None
+            and existing.previous_planned_minutes == command.current_planned_minutes
+            and existing.new_planned_minutes == command.proposed_planned_minutes
+            and existing.previous_resource_id == command.current_resource_id
+            and existing.new_resource_id == command.proposed_resource_id
+            and existing.reasons == reasons
+        ):
+            return self._to_decision(existing)
+        decision = AdaptationDecisionModel(
+            study_plan_id=command.study_plan_id,
+            study_plan_item_id=command.study_plan_item_id,
+            decision_type=AdaptationDecisionType.AI_RECOMMENDATION.value,
+            actor=AdaptationActor.AI.value,
+            skill=command.skill.value,
+            previous_planned_minutes=command.current_planned_minutes,
+            new_planned_minutes=command.proposed_planned_minutes,
+            previous_resource_id=command.current_resource_id,
+            new_resource_id=command.proposed_resource_id,
+            reasons=reasons,
             created_at=command.decided_at,
         )
         self.session.add(decision)

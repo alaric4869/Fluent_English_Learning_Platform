@@ -2,6 +2,7 @@ from collections.abc import Callable
 from datetime import date, datetime, timezone
 
 from app.domain.adaptive_learning.entities import (
+    AIPlanItemRecommendation,
     AdaptationDecision,
     ManualPlanItemOverride,
 )
@@ -88,6 +89,66 @@ class AdaptationDecisionService:
 
     def get_plan_decisions(self, study_plan_id: int) -> tuple[AdaptationDecision, ...]:
         return self.decision_repository.list_for_plan(study_plan_id)
+
+    def save_ai_recommendation(
+        self,
+        user_key: str,
+        plan_date: date,
+        study_plan_item_id: int,
+        *,
+        proposed_minutes: int,
+        proposed_resource_id: int | None,
+        reasons: tuple[str, ...],
+        provider_name: str,
+        model_name: str,
+    ) -> AdaptationDecision:
+        plan = self.study_plan_repository.get_for_date(user_key, plan_date)
+        if plan is None:
+            raise LookupError("Study plan not found")
+        item = next(
+            (value for value in plan.items if value.id == study_plan_item_id),
+            None,
+        )
+        if item is None:
+            raise LookupError("Study plan item not found")
+        time_config = SKILL_TIME_CONFIG[item.skill]
+        if not time_config.minimum_minutes <= proposed_minutes <= time_config.maximum_minutes:
+            raise InvalidPlanOverrideError(
+                f"{item.skill.value} duration must be between "
+                f"{time_config.minimum_minutes} and {time_config.maximum_minutes} minutes"
+            )
+        if proposed_resource_id is not None:
+            resource = self.resource_service.get_resource(proposed_resource_id)
+            if resource is None or not resource.active:
+                raise InvalidPlanOverrideError("Recommended resource is unavailable")
+            if resource.skill is not item.skill:
+                raise InvalidPlanOverrideError(
+                    "Recommended resource must match the study-plan skill"
+                )
+        normalized_reasons = tuple(value.strip() for value in reasons if value.strip())
+        if not normalized_reasons:
+            raise InvalidPlanOverrideError("AI recommendation requires measured reasons")
+        normalized_provider = provider_name.strip()
+        normalized_model = model_name.strip()
+        if not normalized_provider or not normalized_model:
+            raise InvalidPlanOverrideError(
+                "AI recommendation requires provider and model identifiers"
+            )
+        return self.decision_repository.append_ai_recommendation(
+            AIPlanItemRecommendation(
+                study_plan_id=plan.id,
+                study_plan_item_id=item.id,
+                skill=item.skill,
+                current_planned_minutes=item.planned_minutes,
+                proposed_planned_minutes=proposed_minutes,
+                current_resource_id=item.resource_id,
+                proposed_resource_id=proposed_resource_id,
+                reasons=normalized_reasons,
+                provider_name=normalized_provider,
+                model_name=normalized_model,
+                decided_at=self.now(),
+            )
+        )
 
 
 class InvalidPlanOverrideError(ValueError):

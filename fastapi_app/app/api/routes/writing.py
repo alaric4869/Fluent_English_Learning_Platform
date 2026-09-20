@@ -5,8 +5,11 @@ from sqlalchemy.orm import Session
 from app.composition import ApplicationServices, build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import get_db
+from app.domain.ai_evaluation.mock_evaluator import WorkEvaluatorUnavailableError
 from app.domain.writing.entities import WritingDraftInput
+from app.presenters.ai_evaluation import present_work_evaluation
 from app.presenters.writing import present_writing_draft, present_writing_workspace
+from app.schemas.ai_evaluation import WorkEvaluationResponse
 from app.schemas.writing import (
     WritingDraftRequest,
     WritingDraftResponse,
@@ -16,6 +19,7 @@ from app.services.writing import (
     IncompleteWritingDraftError,
     InvalidWritingDraftError,
 )
+from app.services.ai_evaluation import InvalidEvaluationSourceError
 
 
 router = APIRouter()
@@ -42,7 +46,14 @@ def writing_workspace(
     return templates.TemplateResponse(
         request=request,
         name="writing/workspace.html",
-        context=present_writing_workspace(workspace),
+        context=present_writing_workspace(
+            workspace,
+            evaluation=services.ai_evaluation.get_latest_writing_evaluation(
+                LOCAL_USER_KEY,
+                resource_id,
+            ),
+            evaluation_available=services.ai_evaluation.available,
+        ),
     )
 
 
@@ -103,3 +114,25 @@ def submit_writing(
         "submitted_at": submission.submitted_at,
         "created": submission.created,
     }
+
+
+@router.post(
+    "/api/writing/{resource_id}/evaluation",
+    response_model=WorkEvaluationResponse,
+)
+def evaluate_writing(
+    resource_id: int,
+    services: ApplicationServices = Depends(get_services),
+):
+    try:
+        evaluation = services.ai_evaluation.evaluate_writing(
+            LOCAL_USER_KEY,
+            resource_id,
+        )
+    except LookupError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except InvalidEvaluationSourceError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except WorkEvaluatorUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    return present_work_evaluation(evaluation)

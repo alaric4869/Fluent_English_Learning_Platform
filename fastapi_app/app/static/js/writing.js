@@ -16,6 +16,8 @@
   const timerToggle = document.querySelector("#writingTimerToggle");
   const submitButton = document.querySelector("#submitWriting");
   const submissionNote = document.querySelector("#writingSubmissionNote");
+  const evaluationButton = document.querySelector("#evaluateWriting");
+  const evaluationAvailable = workspace.dataset.aiEvaluationAvailable === "true";
   let accumulatedSeconds = Number(workspace.dataset.savedSeconds || 0);
   let timerStartedAt = null;
   let timerInterval = null;
@@ -145,12 +147,27 @@
       workspace.dataset.draftStatus = "submitted";
       saveState.textContent = `第 ${body.submission_revision} 版已提交`;
       submissionNote.classList.remove("is-hidden");
+      if (evaluationButton && evaluationAvailable) evaluationButton.disabled = false;
       setAction(`写作已提交：${body.word_count} 词，学习记录已更新。`);
     } catch (error) {
       saveState.textContent = "提交失败，请检查后重试";
       setAction(error.message, true);
     } finally {
       submitButton.disabled = false;
+    }
+  });
+
+  evaluationButton?.addEventListener("click", async () => {
+    evaluationButton.disabled = true;
+    setAction("正在生成结构化写作反馈…");
+    try {
+      const response = await fetch(`/api/writing/${resourceId}/evaluation`, { method: "POST" });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(typeof body.detail === "string" ? body.detail : "AI 反馈生成失败。");
+      window.location.reload();
+    } catch (error) {
+      setAction(error.message, true);
+      evaluationButton.disabled = !evaluationAvailable;
     }
   });
 

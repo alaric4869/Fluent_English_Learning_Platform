@@ -39,7 +39,13 @@ The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stabl
 
 ## Implemented adaptive-decision slice
 
-- `AdaptationDecision`: append-only system recommendation or learner override, including actor, skill, previous/new duration, previous/new resource, reasons and timestamp.
+- `AdaptationDecision`: append-only system recommendation, learner override or non-applied AI proposal, including actor, skill, previous/new duration, previous/new resource, reasons and timestamp.
+
+## Implemented AI-evaluation slice
+
+- `WorkEvaluation`: one immutable provider result for a specific Writing/Retelling submission revision, evaluator version and input fingerprint.
+
+The row stores the exact task/text/context sent for evaluation, provider/model identifiers, a 0–100 coaching score, per-criterion evidence, strengths, priorities, corrections and suggested revision. It is separate from `WritingSubmission`, `RetellingSubmission`, `SkillPerformance` and `StudyPlan`, so provider feedback cannot overwrite learner work or become objective performance accidentally. Repeating the same request returns the existing row.
 
 ## Implemented daily-planning slice
 
@@ -81,14 +87,14 @@ Notebook content remains separated by domain responsibility instead of being sto
 - `SpeakingSentenceProgress`: learner/resource/sentence state (`need_practice`, `good`, `mastered`) plus an explicit practice count.
 - `RetellingSubmission`: immutable snapshot of the learner-authored retelling fields, active duration and self-ratings for one revision.
 
-One workspace-managed `RetellingRecord` holds the current editable state for a source resource. Older manual Notebook records remain valid and are not converted into workspace drafts. A submission creates generic `StudySession` and `SkillPerformance` evidence with `NULL` accuracy; marked-sentence counts, intended-chunk count, time, confidence and perceived difficulty are stored as measurable signals. Voice recording and AI evaluation remain separate future adapters.
+One workspace-managed `RetellingRecord` holds the current editable state for a source resource. Older manual Notebook records remain valid and are not converted into workspace drafts. A submission creates generic `StudySession` and `SkillPerformance` evidence with `NULL` accuracy; marked-sentence counts, intended-chunk count, time, confidence and perceived difficulty are stored as measurable signals. Text evaluation is now a separate explicit adapter; voice recording/transcription remains future work.
 
 ## Implemented Writing slice
 
 - `WritingDraft`: the learner's current response, outline, word count, active time, self-ratings and latest submission revision for one resource.
 - `WritingSubmission`: an immutable response/outline snapshot for one explicit submission revision.
 
-The writing task itself remains a `LearningResource` with structured task metadata. A submission produces a generic `StudySession` and `SkillPerformance` with `NULL` accuracy plus word-count, duration and self-assessment signals. No rule-based code invents IELTS rubric scores; a later evaluator writes separate measured feedback through an application service.
+The writing task itself remains a `LearningResource` with structured task metadata. A submission produces a generic `StudySession` and `SkillPerformance` with `NULL` accuracy plus word-count, duration and self-assessment signals. No rule-based code invents IELTS rubric scores; optional structured AI coaching is written to `WorkEvaluation` through an application service.
 
 ## Implemented permanent Resource Library slice
 

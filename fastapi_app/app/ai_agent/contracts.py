@@ -29,6 +29,7 @@ class AgentToolName(StrEnum):
     GET_RESOURCE = "get_resource"
     RECOMMEND_RESOURCES = "recommend_resources"
     GENERATE_WEEKLY_REPORT = "generate_weekly_report"
+    SAVE_AI_RECOMMENDATION = "save_ai_recommendation"
 
 
 class AgentPrincipal(StrictContract):
@@ -86,6 +87,29 @@ class ResourceRecommendationArguments(StrictContract):
     difficulty: str | None = Field(default=None, max_length=100)
     count: int = Field(default=3, ge=1, le=10)
     target_date: date | None = None
+
+
+class SaveAIRecommendationArguments(StrictContract):
+    plan_date: date
+    study_plan_item_id: int = Field(gt=0)
+    proposed_minutes: int = Field(ge=5, le=120)
+    proposed_resource_id: int | None = Field(default=None, gt=0)
+    reasons: tuple[str, ...] = Field(min_length=1, max_length=10)
+    provider_name: str = Field(min_length=1, max_length=60)
+    model_name: str = Field(min_length=1, max_length=120)
+
+
+class SavedAIRecommendationContract(StrictContract):
+    decision_id: int
+    study_plan_id: int
+    study_plan_item_id: int
+    skill: Skill
+    current_minutes: int
+    proposed_minutes: int
+    current_resource_id: int | None
+    proposed_resource_id: int | None
+    reasons: tuple[str, ...]
+    applied: Literal[False] = False
 
 
 class StudyPlanItemContract(StrictContract):

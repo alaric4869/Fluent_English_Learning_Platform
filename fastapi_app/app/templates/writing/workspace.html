@@ -8,6 +8,7 @@
   data-minimum-words="{{ workspace.minimum_words }}"
   data-saved-seconds="{{ draft.active_duration_seconds }}"
   data-draft-status="{{ draft.status.value if draft.status.value is defined else draft.status }}"
+  data-ai-evaluation-available="{{ 'true' if evaluation_available else 'false' }}"
 >
   <header class="writing-heading">
     <div>
@@ -79,11 +80,43 @@
       </footer>
       <div class="writing-submission-note{% if draft.status != 'submitted' %} is-hidden{% endif %}" id="writingSubmissionNote">
         <strong>写作已记录</strong>
-        <p>当前版本已进入 History 与 Progress。M17 接入 AI 评估后，会在这里显示 Task Response、Coherence、Lexical Resource 和 Grammar 反馈；现在不会伪造 Band 分数。</p>
+        <p>当前版本已进入 History 与 Progress。AI 反馈需要单独点击生成，不会覆盖你的原文或伪造官方 Band 分数。</p>
       </div>
+      <section class="ai-feedback-card" id="writingEvaluationCard">
+        <header>
+          <div><p class="eyebrow">AI COACHING · OPTIONAL</p><h3>写作反馈</h3></div>
+          <button
+            class="button button-secondary"
+            id="evaluateWriting"
+            type="button"
+            {% if draft.status != 'submitted' or not evaluation_available %}disabled{% endif %}
+          >生成反馈</button>
+        </header>
+        {% if evaluation %}
+        <div class="ai-feedback-summary">
+          <strong>{{ evaluation.overall_score|round|int }} / 100</strong>
+          <p>{{ evaluation.summary }}</p>
+          <small>第 {{ evaluation.source_revision }} 版 · {{ evaluation.provider_name }} / {{ evaluation.model_name }}</small>
+        </div>
+        <div class="ai-criteria-grid">
+          {% for item in evaluation.criteria %}
+          <article><b>{{ item.label }}</b><span>{{ item.score }} / {{ item.maximum_score }}</span><p>{{ item.explanation }}</p></article>
+          {% endfor %}
+        </div>
+        <div class="ai-feedback-lists">
+          <div><b>做得好的地方</b><ul>{% for item in evaluation.strengths %}<li>{{ item }}</li>{% endfor %}</ul></div>
+          <div><b>下一步优先改进</b><ul>{% for item in evaluation.improvement_priorities %}<li>{{ item }}</li>{% endfor %}</ul></div>
+        </div>
+        {% if evaluation.suggested_revision %}<details><summary>查看建议改写</summary><p>{{ evaluation.suggested_revision }}</p></details>{% endif %}
+        {% else %}
+        <p class="ai-feedback-empty">
+          {% if not evaluation_available %}尚未配置 AI Provider；当前学习与评分功能不受影响。{% elif draft.status == 'submitted' %}可为当前提交版本生成一次结构化反馈。{% else %}完整提交后才能请求 AI 反馈。{% endif %}
+        </p>
+        {% endif %}
+      </section>
     </section>
   </div>
   <p class="today-action-status" id="writingActionStatus" role="status" aria-live="polite"></p>
 </div>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', path='/js/writing.js') }}?v=1" defer></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='/js/writing.js') }}?v=2" defer></script>{% endblock %}

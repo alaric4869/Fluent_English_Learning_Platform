@@ -36,7 +36,9 @@ def test_agent_tool_catalogue_is_typed_and_read_only_by_default() -> None:
 
         catalogue = registry.catalogue(principal)
 
-        assert {item.name for item in catalogue} == set(AgentToolName)
+        assert {item.name for item in catalogue} == set(AgentToolName) - {
+            AgentToolName.SAVE_AI_RECOMMENDATION
+        }
         assert all(
             item.required_permission is AgentPermission.READ_LEARNING_DATA
             for item in catalogue
@@ -48,6 +50,62 @@ def test_agent_tool_catalogue_is_typed_and_read_only_by_default() -> None:
         )
         assert "user_key" not in search.input_schema.get("properties", {})
         assert search.input_schema["additionalProperties"] is False
+
+
+def test_ai_recommendation_is_separately_authorized_and_does_not_change_plan() -> None:
+    with _services() as (_, services):
+        plan = services.study_plan.get_or_create_daily_plan("learner", TODAY)
+        item = plan.items[0]
+        registry = build_agent_tool_registry(services)
+        principal = AgentPrincipal(
+            user_key="learner",
+            permissions=frozenset(
+                {
+                    AgentPermission.READ_LEARNING_DATA,
+                    AgentPermission.SAVE_AI_RECOMMENDATION,
+                }
+            ),
+        )
+        context = AgentExecutionContext(principal=principal, today=TODAY)
+
+        saved = registry.execute(
+            context,
+            "call-save",
+            AgentToolName.SAVE_AI_RECOMMENDATION,
+            {
+                "plan_date": TODAY.isoformat(),
+                "study_plan_item_id": item.id,
+                "proposed_minutes": item.planned_minutes + 5,
+                "reasons": ["Listening accuracy averaged 58% across three sessions."],
+                "provider_name": "openai",
+                "model_name": "configured-model",
+            },
+        )
+        repeated = registry.execute(
+            context,
+            "call-save-retry",
+            AgentToolName.SAVE_AI_RECOMMENDATION,
+            {
+                "plan_date": TODAY.isoformat(),
+                "study_plan_item_id": item.id,
+                "proposed_minutes": item.planned_minutes + 5,
+                "reasons": ["Listening accuracy averaged 58% across three sessions."],
+                "provider_name": "openai",
+                "model_name": "configured-model",
+            },
+        )
+        unchanged = services.study_plan.get_daily_plan("learner", TODAY)
+        decisions = services.adaptation_decisions.get_plan_decisions(plan.id)
+
+        assert saved.output["applied"] is False
+        assert saved.output["proposed_minutes"] == item.planned_minutes + 5
+        assert repeated.output["decision_id"] == saved.output["decision_id"]
+        assert unchanged.items[0].planned_minutes == item.planned_minutes
+        assert decisions[-1].decision_type.value == "ai_recommendation"
+        assert sum(
+            decision.decision_type.value == "ai_recommendation"
+            for decision in decisions
+        ) == 1
 
 
 def test_tool_context_owns_user_identity_and_rejects_injected_user_key() -> None:

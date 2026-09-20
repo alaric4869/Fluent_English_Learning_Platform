@@ -1,7 +1,14 @@
+from app.domain.ai_evaluation.entities import StoredWorkEvaluation
 from app.domain.writing.entities import WritingDraft, WritingWorkspace
+from app.presenters.ai_evaluation import present_work_evaluation
 
 
-def present_writing_workspace(workspace: WritingWorkspace) -> dict:
+def present_writing_workspace(
+    workspace: WritingWorkspace,
+    *,
+    evaluation: StoredWorkEvaluation | None = None,
+    evaluation_available: bool = False,
+) -> dict:
     return {
         "active_page": "ielts",
         "workspace": workspace,
@@ -12,6 +19,10 @@ def present_writing_workspace(workspace: WritingWorkspace) -> dict:
         )
         if workspace.draft
         else 0,
+        "evaluation": (
+            present_work_evaluation(evaluation) if evaluation is not None else None
+        ),
+        "evaluation_available": evaluation_available,
     }
 
 

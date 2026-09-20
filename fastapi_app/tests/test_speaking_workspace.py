@@ -169,6 +169,7 @@ def test_speaking_workspace_is_web_native_and_uses_real_audio() -> None:
                 },
             )
             submitted = client.post(f"/api/speaking/{resource.id}/submit")
+            evaluation = client.post(f"/api/speaking/{resource.id}/evaluation")
 
         assert index.status_code == 200
         assert "17 modules available" in index.text
@@ -187,6 +188,8 @@ def test_speaking_workspace_is_web_native_and_uses_real_audio() -> None:
         assert saved.json()["retelling_text"].startswith("The woman")
         assert submitted.status_code == 200
         assert submitted.json()["submission_revision"] == 1
+        assert evaluation.status_code == 503
+        assert "AI evaluation is not configured" in evaluation.json()["detail"]
 
 
 def _speaking_resource(session: Session) -> LearningResource:

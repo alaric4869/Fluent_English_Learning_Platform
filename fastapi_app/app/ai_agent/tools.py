@@ -33,6 +33,8 @@ from app.ai_agent.contracts import (
     ResourceSearchContract,
     ResourceSummaryContract,
     ReviewItemContract,
+    SaveAIRecommendationArguments,
+    SavedAIRecommendationContract,
     SkillProfileContract,
     StudyHistoryContract,
     StudyPlanContract,
@@ -46,6 +48,7 @@ from app.ai_agent.contracts import (
 from app.domain.resources.entities import ResourceLibraryFilters
 from app.domain.weakness_detection.entities import SkillClassification
 from app.services.history import HistoryService
+from app.services.adaptive_learning import AdaptationDecisionService
 from app.services.learner_profile import LearnerProfileService
 from app.services.resources import ResourceService
 from app.services.review import ReviewService
@@ -135,6 +138,7 @@ class LearningAgentToolHandlers:
         history: HistoryService,
         review: ReviewService,
         weekly_review: WeeklyReviewService,
+        adaptation_decisions: AdaptationDecisionService,
     ) -> None:
         self.learner_profile = learner_profile
         self.weakness_detection = weakness_detection
@@ -143,6 +147,7 @@ class LearningAgentToolHandlers:
         self.history = history
         self.review = review
         self.weekly_review = weekly_review
+        self.adaptation_decisions = adaptation_decisions
 
     def get_today_plan(
         self,
@@ -450,6 +455,33 @@ class LearningAgentToolHandlers:
             ),
         )
 
+    def save_ai_recommendation(
+        self,
+        context: AgentExecutionContext,
+        arguments: SaveAIRecommendationArguments,
+    ) -> SavedAIRecommendationContract:
+        decision = self.adaptation_decisions.save_ai_recommendation(
+            context.principal.user_key,
+            arguments.plan_date,
+            arguments.study_plan_item_id,
+            proposed_minutes=arguments.proposed_minutes,
+            proposed_resource_id=arguments.proposed_resource_id,
+            reasons=arguments.reasons,
+            provider_name=arguments.provider_name,
+            model_name=arguments.model_name,
+        )
+        return SavedAIRecommendationContract(
+            decision_id=decision.id,
+            study_plan_id=decision.study_plan_id,
+            study_plan_item_id=decision.study_plan_item_id,
+            skill=decision.skill,
+            current_minutes=decision.previous_planned_minutes,
+            proposed_minutes=decision.new_planned_minutes,
+            current_resource_id=decision.previous_resource_id,
+            proposed_resource_id=decision.new_resource_id,
+            reasons=decision.reasons,
+        )
+
     def _resource_title(self, resource_id: int | None) -> str | None:
         if resource_id is None:
             return None
@@ -482,6 +514,7 @@ def build_learning_agent_tool_registry(
     history: HistoryService,
     review: ReviewService,
     weekly_review: WeeklyReviewService,
+    adaptation_decisions: AdaptationDecisionService,
     authorization_policy: AgentToolAuthorizationPolicy | None = None,
 ) -> AgentToolRegistry:
     handlers = LearningAgentToolHandlers(
@@ -492,6 +525,7 @@ def build_learning_agent_tool_registry(
         history=history,
         review=review,
         weekly_review=weekly_review,
+        adaptation_decisions=adaptation_decisions,
     )
     permission = AgentPermission.READ_LEARNING_DATA
     tools: tuple[AgentTool[BaseModel, BaseModel], ...] = (
@@ -557,6 +591,13 @@ def build_learning_agent_tool_registry(
             DatedToolArguments,
             handlers.generate_weekly_report,
             permission,
+        ),
+        _tool(
+            AgentToolName.SAVE_AI_RECOMMENDATION,
+            "Save an explainable AI suggestion without changing the study plan.",
+            SaveAIRecommendationArguments,
+            handlers.save_ai_recommendation,
+            AgentPermission.SAVE_AI_RECOMMENDATION,
         ),
     )
     return AgentToolRegistry(tools, authorization_policy)
