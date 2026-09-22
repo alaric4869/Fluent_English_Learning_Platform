@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import Base
 from app.domain.adaptive_learning.entities import (
+    AIRecommendationAction,
     AdaptationActor,
     AdaptationDecisionType,
 )
@@ -29,6 +30,7 @@ from app.repositories.sqlalchemy_weakness_detection import (
 from app.services.adaptive_learning import (
     AdaptationDecisionService,
     InvalidPlanOverrideError,
+    StaleAIRecommendationError,
 )
 from app.services.learning_evidence import LearningEvidenceService
 from app.services.learner_profile import LearnerProfileService
@@ -148,6 +150,104 @@ def test_wrong_skill_resource_and_out_of_range_duration_are_rejected() -> None:
             )
 
         assert _count(session, AdaptationDecisionModel) == 4
+
+
+def test_ai_recommendation_requires_explicit_acceptance_and_keeps_linked_audit() -> None:
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine, expire_on_commit=False) as session:
+        _add_resources(session)
+        plan_service, decision_service = _services(session)
+        plan = plan_service.get_or_create_daily_plan("learner", PLAN_DATE)
+        listening = plan.items[0]
+
+        recommendation = decision_service.save_ai_recommendation(
+            "learner",
+            PLAN_DATE,
+            listening.id,
+            proposed_minutes=listening.planned_minutes + 5,
+            proposed_resource_id=listening.resource_id,
+            reasons=("Listening confidence averaged 2.4/5.",),
+            provider_name="test-provider",
+            model_name="test-model",
+        )
+
+        unchanged = plan_service.get_daily_plan("learner", PLAN_DATE)
+        assert unchanged.items[0].planned_minutes == listening.planned_minutes
+        assert decision_service.get_pending_ai_recommendations(
+            "learner", PLAN_DATE
+        ) == (recommendation,)
+
+        updated = decision_service.respond_to_ai_recommendation(
+            "learner",
+            PLAN_DATE,
+            recommendation.id,
+            action=AIRecommendationAction.ACCEPT,
+        )
+
+        assert updated.items[0].planned_minutes == listening.planned_minutes + 5
+        assert updated.items[0].manual_override is True
+        assert decision_service.get_pending_ai_recommendations(
+            "learner", PLAN_DATE
+        ) == ()
+        response = decision_service.get_plan_decisions(plan.id)[-1]
+        assert (
+            response.decision_type
+            is AdaptationDecisionType.AI_RECOMMENDATION_ACCEPTED
+        )
+        assert response.actor is AdaptationActor.USER
+        assert response.source_decision_id == recommendation.id
+
+
+def test_stale_ai_recommendation_can_be_dismissed_but_not_applied() -> None:
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    with Session(engine, expire_on_commit=False) as session:
+        _add_resources(session)
+        plan_service, decision_service = _services(session)
+        plan = plan_service.get_or_create_daily_plan("learner", PLAN_DATE)
+        listening = plan.items[0]
+        recommendation = decision_service.save_ai_recommendation(
+            "learner",
+            PLAN_DATE,
+            listening.id,
+            proposed_minutes=35,
+            proposed_resource_id=listening.resource_id,
+            reasons=("Measured listening evidence supports a small increase.",),
+            provider_name="test-provider",
+            model_name="test-model",
+        )
+        decision_service.override_plan_item(
+            "learner",
+            PLAN_DATE,
+            listening.id,
+            planned_minutes=40,
+            resource_id=listening.resource_id,
+            note="Learner changed the plan first",
+        )
+
+        with pytest.raises(StaleAIRecommendationError):
+            decision_service.respond_to_ai_recommendation(
+                "learner",
+                PLAN_DATE,
+                recommendation.id,
+                action=AIRecommendationAction.ACCEPT,
+            )
+
+        unchanged = decision_service.respond_to_ai_recommendation(
+            "learner",
+            PLAN_DATE,
+            recommendation.id,
+            action=AIRecommendationAction.DISMISS,
+        )
+
+        assert unchanged.items[0].planned_minutes == 40
+        response = decision_service.get_plan_decisions(plan.id)[-1]
+        assert (
+            response.decision_type
+            is AdaptationDecisionType.AI_RECOMMENDATION_DISMISSED
+        )
+        assert response.source_decision_id == recommendation.id
 
 
 def _services(session: Session) -> tuple[StudyPlanService, AdaptationDecisionService]:

@@ -1,6 +1,7 @@
 from datetime import datetime
 from urllib.parse import urlparse
 
+from app.domain.adaptive_learning.entities import AdaptationDecision
 from app.domain.learning_evidence.entities import Skill
 from app.domain.resources.entities import LearningResourceDetails, ResourceCandidate
 from app.domain.study_plan.config import SKILL_TIME_CONFIG
@@ -49,8 +50,12 @@ def present_today_plan(
     resource_options: dict[Skill, tuple[ResourceCandidate, ...]],
     due_review_count: int = 0,
     sessions: dict[int, ModuleStudySession] | None = None,
+    ai_recommendations: tuple[AdaptationDecision, ...] = (),
 ) -> dict:
     sessions = sessions or {}
+    recommendation_by_item = {
+        item.study_plan_item_id: item for item in ai_recommendations
+    }
     completed_count = sum(
         item.status is StudyPlanItemStatus.COMPLETED for item in plan.items
     )
@@ -70,6 +75,7 @@ def present_today_plan(
                 resources,
                 resource_options.get(item.skill, ()),
                 sessions.get(item.id),
+                recommendation_by_item.get(item.id),
             )
             for item in plan.items
         ],
@@ -105,6 +111,7 @@ def _present_module(
     resources: dict[int, LearningResourceDetails],
     options: tuple[ResourceCandidate, ...],
     session: ModuleStudySession | None,
+    ai_recommendation: AdaptationDecision | None,
 ) -> dict:
     resource = resources.get(item.resource_id) if item.resource_id else None
     presentation = MODULE_PRESENTATION[item.skill]
@@ -120,6 +127,56 @@ def _present_module(
         "maximum_minutes": time_config.maximum_minutes,
         "is_completed": item.status is StudyPlanItemStatus.COMPLETED,
         "session": _present_session(session),
+        "ai_recommendation": _present_ai_recommendation(
+            item, ai_recommendation, resources
+        ),
+    }
+
+
+def _present_ai_recommendation(
+    item,
+    recommendation: AdaptationDecision | None,
+    resources: dict[int, LearningResourceDetails],
+) -> dict | None:
+    if recommendation is None:
+        return None
+    current_resource = (
+        resources.get(recommendation.previous_resource_id)
+        if recommendation.previous_resource_id is not None
+        else None
+    )
+    proposed_resource = (
+        resources.get(recommendation.new_resource_id)
+        if recommendation.new_resource_id is not None
+        else None
+    )
+    return {
+        "id": recommendation.id,
+        "current_minutes": recommendation.previous_planned_minutes,
+        "proposed_minutes": recommendation.new_planned_minutes,
+        "minutes_changed": (
+            recommendation.previous_planned_minutes
+            != recommendation.new_planned_minutes
+        ),
+        "current_resource_title": (
+            current_resource.title if current_resource else "暂不指定材料"
+        ),
+        "proposed_resource_title": (
+            proposed_resource.title if proposed_resource else "暂不指定材料"
+        ),
+        "resource_changed": (
+            recommendation.previous_resource_id != recommendation.new_resource_id
+        ),
+        "is_stale": (
+            item.planned_minutes != recommendation.previous_planned_minutes
+            or item.resource_id != recommendation.previous_resource_id
+        ),
+        "reasons": tuple(
+            reason
+            for reason in recommendation.reasons
+            if not reason.startswith("AI provider:")
+            and reason != "This recommendation has not changed the learner's plan."
+        ),
     }
 
 

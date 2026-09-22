@@ -13,6 +13,7 @@ from app.composition import build_application_services
 from app.config import FASTAPI_ROOT
 from app.database import Base
 from app.domain.learning_evidence.entities import Skill
+from app.domain.adaptive_learning.entities import AIRecommendationAction
 from app.models.learning_evidence import LearningResource
 
 
@@ -49,6 +50,30 @@ def test_today_page_and_typed_plan_actions_use_the_same_services() -> None:
             plan_date = datetime.now(ZoneInfo("Australia/Sydney")).date()
             plan = services.study_plan.get_daily_plan("local-user", plan_date)
             listening = plan.items[0]
+            speaking = plan.items[1]
+            recommendation = services.adaptation_decisions.save_ai_recommendation(
+                "local-user",
+                plan_date,
+                speaking.id,
+                proposed_minutes=speaking.planned_minutes + 5,
+                proposed_resource_id=speaking.resource_id,
+                reasons=("Speaking confidence was below target.",),
+                provider_name="test-provider",
+                model_name="test-model",
+            )
+            proposal_page = client.get("/today")
+            assert "AI SUGGESTION" in proposal_page.text
+            dismissed = client.post(
+                f"/api/study-plans/{plan_date}/ai-recommendations/"
+                f"{recommendation.id}/respond",
+                json={"action": AIRecommendationAction.DISMISS.value, "note": ""},
+            )
+            assert dismissed.status_code == 200
+            assert dismissed.json()["items"][1]["planned_minutes"] == (
+                speaking.planned_minutes
+            )
+            unavailable_agent = client.post("/api/agent/plan-recommendations")
+            assert unavailable_agent.status_code == 503
             replacement = session.scalar(
                 select(LearningResource).where(
                     LearningResource.skill == Skill.LISTENING.value,

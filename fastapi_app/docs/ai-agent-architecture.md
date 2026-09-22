@@ -63,6 +63,14 @@ the server supplies a fixed coaching objective and an allow-list containing only
 `get_due_reviews`. All four calls are required before output can be persisted. Saved
 coaching text remains separate from measured evidence and cannot update a study plan.
 
+The second explicit action lives on Today. `AgentPlanningService` requires the Agent to
+read the existing plan, profile, weakness assessment and due reviews before it may call
+the separately authorized `save_ai_recommendation` tool. The tool can only append a
+proposal. Today renders its evidence and before/after values, and only a learner action
+can accept or dismiss it. That response is linked back to the proposal; an accepted
+change and its audit decision are committed together. Old or already answered proposals
+cannot be applied.
+
 `OpenAIResponsesProvider` now implements the same protocol using custom function
 tools, `previous_response_id`, non-parallel calls and `store=False`. The OpenAI SDK is
 an optional dependency and is imported only when the provider is explicitly enabled.

@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
+from app.ai_agent.contracts import AgentToolName
+from app.domain.adaptive_learning.entities import AIRecommendationAction
 from app.domain.learning_evidence.entities import Skill
 from app.domain.study_plan.entities import StudyPlanItemStatus, StudyPlanStatus
 
@@ -14,6 +16,17 @@ class PlanItemOverrideRequest(BaseModel):
 
 class PlanItemStatusRequest(BaseModel):
     status: StudyPlanItemStatus
+
+
+class AIRecommendationResponseRequest(BaseModel):
+    action: AIRecommendationAction
+    note: str = Field(default="", max_length=500)
+
+
+class AgentPlanRecommendationResponse(BaseModel):
+    output_text: str
+    tools_used: tuple[AgentToolName, ...]
+    pending_count: int
 
 
 class StudyPlanItemResponse(BaseModel):

@@ -22,6 +22,17 @@
     <small>{% if due_review_count %}先复习，再学习新内容 →{% else %}词块和听力难句都会显示在这里 →{% endif %}</small>
   </a>
 
+  {% if agent_plan_available %}
+  <section class="ai-plan-toolbar">
+    <div>
+      <span>AI PLAN REVIEW</span>
+      <strong>让 Agent 检查今天的安排</strong>
+      <p>建议只会作为提案保存，必须由你手动确认才会应用。</p>
+    </div>
+    <button id="generatePlanRecommendations" class="button button-secondary" type="button">检查今日计划</button>
+  </section>
+  {% endif %}
+
   <section class="today-plan-section">
     <div class="section-heading">
       <div>
@@ -64,6 +75,26 @@
           <summary>为什么这样安排？</summary>
           <ul>{% for reason in module.item.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
         </details>
+
+        {% if module.ai_recommendation %}
+        <section class="ai-plan-proposal" data-ai-recommendation-id="{{ module.ai_recommendation.id }}">
+          <header><span>AI SUGGESTION</span><strong>{{ "已过期" if module.ai_recommendation.is_stale else "尚未应用" }}</strong></header>
+          <h4>建议调整 {{ module.title }}</h4>
+          <div class="ai-plan-change-list">
+            {% if module.ai_recommendation.minutes_changed %}
+            <p><span>时长</span><del>{{ module.ai_recommendation.current_minutes }} min</del><b>→</b><ins>{{ module.ai_recommendation.proposed_minutes }} min</ins></p>
+            {% endif %}
+            {% if module.ai_recommendation.resource_changed %}
+            <p><span>材料</span><del>{{ module.ai_recommendation.current_resource_title }}</del><b>→</b><ins>{{ module.ai_recommendation.proposed_resource_title }}</ins></p>
+            {% endif %}
+          </div>
+          <ul>{% for reason in module.ai_recommendation.reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+          <div class="ai-plan-proposal-actions">
+            <button class="button button-primary ai-plan-response" type="button" data-action="accept"{% if module.is_completed or module.ai_recommendation.is_stale %} disabled{% endif %}>接受建议</button>
+            <button class="button button-secondary ai-plan-response" type="button" data-action="dismiss">忽略</button>
+          </div>
+        </section>
+        {% endif %}
 
         <details class="study-session-panel"{% if module.session.status == 'in_progress' %} open{% endif %}>
           <summary>

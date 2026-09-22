@@ -140,3 +140,9 @@ Additional IELTS books should use the same manifest, source verification and val
 - **Completed.** Weekly Review now exposes an explicit, persisted AI coaching action backed by the existing provider-neutral Agent tools.
 - The Agent is restricted to four read-only evidence tools and the service rejects reports that omit any required evidence source.
 - Disabled or incomplete OpenAI configuration produces setup guidance; no learning page depends on network availability.
+
+## Post-roadmap · Learner-approved AI plan proposals
+
+- **Completed.** Today can explicitly ask the Agent to inspect the existing plan through a bounded evidence-tool allow-list.
+- Duration/resource suggestions remain non-applied proposals until the learner accepts them; dismissal is also preserved as linked audit history.
+- Applying a proposal revalidates plan state, skill limits, resource availability and module lifecycle, then commits the change and learner response atomically.

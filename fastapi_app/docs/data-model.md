@@ -39,7 +39,9 @@ The detector distinguishes `insufficient_evidence`, `weak`, `developing`, `stabl
 
 ## Implemented adaptive-decision slice
 
-- `AdaptationDecision`: append-only system recommendation, learner override or non-applied AI proposal, including actor, skill, previous/new duration, previous/new resource, reasons and timestamp.
+- `AdaptationDecision`: append-only system recommendation, learner override, non-applied AI proposal, or learner response to that proposal, including actor, skill, previous/new duration, previous/new resource, reasons and timestamp.
+
+An AI proposal never changes `StudyPlanItem`. Accepting or dismissing it appends a second learner-authored decision whose nullable `source_decision_id` points to the proposal. The link is unique, so one proposal can receive only one response. Acceptance updates the current plan values in the same transaction; dismissal leaves them untouched. Superseded, stale, completed-module and unavailable-resource proposals cannot be applied.
 
 ## Implemented AI-evaluation slice
 

@@ -43,7 +43,7 @@ EXPECTED_TABLES = {
     "work_evaluations",
     "weekly_coaching_reports",
 }
-HEAD_REVISION = "0015_weekly_coaching_reports"
+HEAD_REVISION = "0016_ai_recommendation_responses"
 
 
 def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
@@ -70,6 +70,10 @@ def test_upgrade_database_creates_a_fresh_schema(tmp_path, monkeypatch) -> None:
         for column in inspect(engine).get_columns("skill_performances")
     }
     assert skill_performance_columns["accuracy"]["nullable"] is True
+    assert "source_decision_id" in {
+        column["name"]
+        for column in inspect(engine).get_columns("adaptation_decisions")
+    }
     with engine.connect() as connection:
         assert connection.exec_driver_sql("SELECT version_num FROM alembic_version").scalar_one() == (
             HEAD_REVISION
@@ -174,6 +178,28 @@ def test_weekly_coaching_migration_can_downgrade_cleanly(
         assert connection.exec_driver_sql(
             "SELECT version_num FROM alembic_version"
         ).scalar_one() == "0014_work_evaluations"
+
+
+def test_ai_recommendation_response_migration_can_downgrade_cleanly(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    engine = _use_database(tmp_path / "ai-recommendation-responses.db", monkeypatch)
+    database_migrations.upgrade_database()
+    database_url = database_migrations.settings.database_url
+    config = Config(FASTAPI_ROOT / "alembic.ini")
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+
+    command.downgrade(config, "0015_weekly_coaching_reports")
+
+    assert "source_decision_id" not in {
+        column["name"]
+        for column in inspect(engine).get_columns("adaptation_decisions")
+    }
+    with engine.connect() as connection:
+        assert connection.exec_driver_sql(
+            "SELECT version_num FROM alembic_version"
+        ).scalar_one() == "0015_weekly_coaching_reports"
 
 
 def test_practice_notebook_migration_preserves_vocabulary_review_state(

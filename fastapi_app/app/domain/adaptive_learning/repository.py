@@ -2,6 +2,7 @@ from typing import Protocol
 
 from app.domain.adaptive_learning.entities import (
     AIPlanItemRecommendation,
+    AIPlanItemRecommendationResponse,
     AdaptationDecision,
     ManualPlanItemOverride,
 )
@@ -15,4 +16,17 @@ class AdaptationDecisionRepository(Protocol):
         command: AIPlanItemRecommendation,
     ) -> AdaptationDecision: ...
 
+    def respond_to_ai_recommendation(
+        self,
+        command: AIPlanItemRecommendationResponse,
+    ) -> AdaptationDecision: ...
+
     def list_for_plan(self, study_plan_id: int) -> tuple[AdaptationDecision, ...]: ...
+
+
+class StaleStudyPlanOverrideError(RuntimeError):
+    pass
+
+
+class AIRecommendationAlreadyRespondedError(RuntimeError):
+    pass

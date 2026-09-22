@@ -40,6 +40,7 @@ from app.repositories.sqlalchemy_weakness_detection import (
 from app.repositories.sqlalchemy_writing import SqlAlchemyWritingRepository
 from app.services.adaptive_learning import AdaptationDecisionService
 from app.services.agent_coaching import AgentCoachingService
+from app.services.agent_planning import AgentPlanningService
 from app.services.ai_evaluation import LearningWorkEvaluationService
 from app.services.dashboard import DashboardService
 from app.services.history import HistoryService
@@ -82,6 +83,7 @@ class ApplicationServices:
     dashboard: DashboardService
     ai_evaluation: LearningWorkEvaluationService
     agent_coaching: AgentCoachingService
+    agent_planning: AgentPlanningService
 
 
 def build_application_services(session: Session) -> ApplicationServices:
@@ -220,6 +222,12 @@ def build_application_services(session: Session) -> ApplicationServices:
         available=agent_available,
         unavailable_reason=unavailable_reason,
     )
+    agent_planning_service = AgentPlanningService(
+        adaptation_service,
+        lambda: _build_learning_agent_service(agent_registry),
+        available=agent_available,
+        unavailable_reason=unavailable_reason,
+    )
     return ApplicationServices(
         ielts_practice=ielts_service,
         learner_profile=profile_service,
@@ -240,6 +248,7 @@ def build_application_services(session: Session) -> ApplicationServices:
         dashboard=dashboard_service,
         ai_evaluation=ai_evaluation_service,
         agent_coaching=agent_coaching_service,
+        agent_planning=agent_planning_service,
     )
 
 

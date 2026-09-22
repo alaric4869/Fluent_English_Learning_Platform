@@ -32,5 +32,11 @@ class AdaptationDecisionModel(Base):
         ForeignKey("learning_resources.id"),
         nullable=True,
     )
+    source_decision_id: Mapped[int | None] = mapped_column(
+        ForeignKey("adaptation_decisions.id"),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
     reasons: Mapped[list[str]] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

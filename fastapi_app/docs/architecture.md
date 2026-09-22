@@ -234,6 +234,8 @@ Creating a plan appends one `system_recommendation` decision per plan item. `Ada
 
 The original system duration/resource never changes. Returning to those values clears the item's current override flag but still appends history, so the system can later answer whether and how recommendations were accepted. A repeated request with no value change is idempotent and does not create another decision.
 
+AI planning follows the same boundary but adds a deliberate approval gate. `AgentPlanningService` grants one fixed allow-list the read permission plus the separately scoped recommendation-write permission. `save_ai_recommendation` appends a proposal only. Today reads pending proposals through `AdaptationDecisionService`; accepting or dismissing one appends a uniquely linked learner response. The repository applies an accepted change and its audit row atomically, while stale state and a second response are rejected.
+
 ## Implemented Today presentation
 
 `GET /today` asks `StudyPlanService` for the Sydney calendar date, then passes its result and resource options to a presenter. The presenter contains labels and instructional copy but no persistence or adaptation rules. Jinja renders the established green/cream shell and four module cards.

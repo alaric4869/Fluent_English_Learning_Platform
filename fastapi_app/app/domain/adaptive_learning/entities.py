@@ -9,12 +9,19 @@ class AdaptationDecisionType(StrEnum):
     SYSTEM_RECOMMENDATION = "system_recommendation"
     MANUAL_OVERRIDE = "manual_override"
     AI_RECOMMENDATION = "ai_recommendation"
+    AI_RECOMMENDATION_ACCEPTED = "ai_recommendation_accepted"
+    AI_RECOMMENDATION_DISMISSED = "ai_recommendation_dismissed"
 
 
 class AdaptationActor(StrEnum):
     RULE_BASED = "rule_based"
     USER = "user"
     AI = "ai"
+
+
+class AIRecommendationAction(StrEnum):
+    ACCEPT = "accept"
+    DISMISS = "dismiss"
 
 
 @dataclass(frozen=True)
@@ -48,6 +55,23 @@ class AIPlanItemRecommendation:
 
 
 @dataclass(frozen=True)
+class AIPlanItemRecommendationResponse:
+    recommendation_id: int
+    study_plan_id: int
+    study_plan_item_id: int
+    skill: Skill
+    action: AIRecommendationAction
+    current_planned_minutes: int
+    proposed_planned_minutes: int
+    current_resource_id: int | None
+    proposed_resource_id: int | None
+    updated_plan_total_minutes: int
+    remains_overridden: bool
+    note: str
+    decided_at: datetime
+
+
+@dataclass(frozen=True)
 class AdaptationDecision:
     id: int
     study_plan_id: int
@@ -61,3 +85,4 @@ class AdaptationDecision:
     new_resource_id: int | None
     reasons: tuple[str, ...]
     created_at: datetime
+    source_decision_id: int | None = None

@@ -198,6 +198,55 @@
 
   document.querySelectorAll("[data-plan-item-id]").forEach(setupSession);
 
+  const generateRecommendations = document.querySelector("#generatePlanRecommendations");
+  if (generateRecommendations) {
+    generateRecommendations.addEventListener("click", async () => {
+      generateRecommendations.disabled = true;
+      generateRecommendations.textContent = "正在检查…";
+      setStatus("Agent 正在读取允许的计划、能力和复习数据…");
+      try {
+        const result = await request("/api/agent/plan-recommendations", {
+          method: "POST",
+          body: JSON.stringify({})
+        });
+        if (result.pending_count > 0) {
+          setStatus(`当前有 ${result.pending_count} 条待确认建议。`);
+          window.location.reload();
+          return;
+        }
+        setStatus(result.output_text || "当前证据不支持修改今日计划。");
+        generateRecommendations.textContent = "重新检查";
+      } catch (error) {
+        generateRecommendations.disabled = false;
+        generateRecommendations.textContent = "重试检查";
+        setStatus(error.message, true);
+      }
+    });
+  }
+
+  document.querySelectorAll(".ai-plan-response").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const proposal = button.closest("[data-ai-recommendation-id]");
+      if (!proposal) return;
+      proposal.querySelectorAll("button").forEach((item) => { item.disabled = true; });
+      const action = button.dataset.action;
+      setStatus(action === "accept" ? "正在应用 AI 建议…" : "正在忽略 AI 建议…");
+      try {
+        await request(
+          `/api/study-plans/${planDate}/ai-recommendations/${proposal.dataset.aiRecommendationId}/respond`,
+          {
+            method: "POST",
+            body: JSON.stringify({ action, note: "" })
+          }
+        );
+        window.location.reload();
+      } catch (error) {
+        proposal.querySelectorAll("button").forEach((item) => { item.disabled = false; });
+        setStatus(error.message, true);
+      }
+    });
+  });
+
   document.querySelectorAll(".module-status-button").forEach((button) => {
     button.addEventListener("click", async () => {
       const card = button.closest("[data-plan-item-id]");
