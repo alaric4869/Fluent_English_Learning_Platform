@@ -24,6 +24,8 @@ AI is disabled by default. The full learning app works without a model or API ke
 
 The key remains server-side. A submitted learner response is sent only after the learner clicks “生成反馈”; automatic submission-time model calls are intentionally disabled.
 
+`OPENAI_MAX_OUTPUT_TOKENS` defaults to `2000` and is passed to every Responses API request as a server-side cost/safety ceiling. Agent tool rounds are separately bounded. These are upper limits, not prepaid or guaranteed usage; actual input/output token totals remain available in the OpenAI usage dashboard.
+
 Weekly Review also contains an explicit AI Learning Coach action. It gives the model only four read-only tools—weekly evidence, skill profile, confirmed weakness state and due reviews—and refuses to save a report unless all four were actually used. The generated text is persisted as an append-only weekly coaching report. It never changes the deterministic plan; with AI disabled the page shows setup guidance and all non-AI features continue normally.
 
 When AI is enabled, Today can explicitly ask the Agent to inspect the current plan. Any proposed duration or resource change is saved as a pending, explainable recommendation. The plan remains unchanged until the learner clicks “接受建议”; ignoring it also creates a linked audit decision. Stale suggestions, completed modules and unavailable resources are rejected instead of being applied silently.

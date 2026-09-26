@@ -53,6 +53,7 @@ def test_openai_provider_maps_typed_tools_and_function_outputs() -> None:
     assert first.tool_calls[0].name is AgentToolName.GET_SKILL_PROFILE
     assert client.responses.calls[0]["store"] is False
     assert client.responses.calls[0]["parallel_tool_calls"] is False
+    assert client.responses.calls[0]["max_output_tokens"] == 2000
     assert client.responses.calls[0]["tools"][0]["name"] == "get_skill_profile"
 
     client.responses.next_response = SimpleNamespace(
@@ -124,6 +125,7 @@ def test_openai_evaluator_uses_structured_output_without_official_band() -> None
     assert result.model_name == "configured-model"
     parse_call = client.responses.parse_calls[0]
     assert parse_call["store"] is False
+    assert parse_call["max_output_tokens"] == 2000
     assert "not an official IELTS/PTE Band score" in parse_call["instructions"]
 
 

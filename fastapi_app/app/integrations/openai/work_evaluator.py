@@ -54,11 +54,14 @@ class OpenAIWorkEvaluator:
         *,
         model: str,
         api_key: str | None = None,
+        max_output_tokens: int = 2000,
         client: StructuredResponsesClient | None = None,
     ) -> None:
         normalized_model = model.strip()
         if not normalized_model:
             raise ValueError("An OpenAI evaluation model must be configured")
+        if not 256 <= max_output_tokens <= 8192:
+            raise ValueError("max_output_tokens must be between 256 and 8192")
         if client is None:
             try:
                 from openai import OpenAI
@@ -70,6 +73,7 @@ class OpenAIWorkEvaluator:
                 raise RuntimeError("OPENAI_API_KEY is required for AI evaluation")
             client = OpenAI(api_key=api_key)
         self.model_name = normalized_model
+        self.max_output_tokens = max_output_tokens
         self.client = client
         self.evaluator_version = f"openai-english-work-v1:{self.model_name}"
 
@@ -86,6 +90,7 @@ class OpenAIWorkEvaluator:
                 ensure_ascii=False,
             ),
             text_format=WorkEvaluationOutput,
+            max_output_tokens=self.max_output_tokens,
             store=False,
         )
         parsed = response.output_parsed

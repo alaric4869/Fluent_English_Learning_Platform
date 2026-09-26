@@ -31,6 +31,15 @@ class Settings(BaseSettings):
             "ENGLISH_TOOL_OPENAI_MODEL",
         ),
     )
+    openai_max_output_tokens: int = Field(
+        default=2000,
+        ge=256,
+        le=8192,
+        validation_alias=AliasChoices(
+            "OPENAI_MAX_OUTPUT_TOKENS",
+            "ENGLISH_TOOL_OPENAI_MAX_OUTPUT_TOKENS",
+        ),
+    )
 
     model_config = SettingsConfigDict(
         env_prefix="ENGLISH_TOOL_",

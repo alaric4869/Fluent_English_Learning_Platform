@@ -282,6 +282,7 @@ def build_work_evaluator() -> WorkEvaluator:
     return OpenAIWorkEvaluator(
         model=settings.openai_model,
         api_key=api_key,
+        max_output_tokens=settings.openai_max_output_tokens,
     )
 
 
@@ -309,6 +310,7 @@ def _build_learning_agent_service(
     provider = OpenAIResponsesProvider(
         model=settings.openai_model,
         api_key=api_key,
+        max_output_tokens=settings.openai_max_output_tokens,
     )
     return LearningAgentService(provider, registry)
 

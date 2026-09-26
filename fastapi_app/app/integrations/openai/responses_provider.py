@@ -23,11 +23,14 @@ class OpenAIResponsesProvider:
         *,
         model: str,
         api_key: str | None = None,
+        max_output_tokens: int = 2000,
         client: ResponsesClient | None = None,
     ) -> None:
         normalized_model = model.strip()
         if not normalized_model:
             raise ValueError("An OpenAI model must be configured")
+        if not 256 <= max_output_tokens <= 8192:
+            raise ValueError("max_output_tokens must be between 256 and 8192")
         if client is None:
             try:
                 from openai import OpenAI
@@ -41,6 +44,7 @@ class OpenAIResponsesProvider:
                 )
             client = OpenAI(api_key=api_key)
         self.model = normalized_model
+        self.max_output_tokens = max_output_tokens
         self.client = client
 
     def respond(self, request: AIProviderRequest) -> AIProviderResponse:
@@ -51,6 +55,7 @@ class OpenAIResponsesProvider:
             tools=[_function_tool(item) for item in request.tools],
             previous_response_id=request.previous_response_id,
             parallel_tool_calls=False,
+            max_output_tokens=self.max_output_tokens,
             store=False,
         )
         calls = tuple(
