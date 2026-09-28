@@ -48,6 +48,7 @@ class WorkEvaluationOutput(_StrictOutput):
 
 class OpenAIWorkEvaluator:
     available = True
+    provider_name = "openai"
 
     def __init__(
         self,
@@ -75,12 +76,14 @@ class OpenAIWorkEvaluator:
         self.model_name = normalized_model
         self.max_output_tokens = max_output_tokens
         self.client = client
-        self.evaluator_version = f"openai-english-work-v1:{self.model_name}"
+        self.evaluator_version = (
+            f"{self.provider_name}-english-work-v1:{self.model_name}"
+        )
 
     def evaluate(self, request: WorkEvaluationRequest) -> GeneratedWorkEvaluation:
         response = self.client.responses.parse(
             model=self.model_name,
-            instructions=_instructions(request),
+            instructions=evaluation_instructions(request),
             input=json.dumps(
                 {
                     "task_prompt": request.task_prompt,
@@ -98,9 +101,17 @@ class OpenAIWorkEvaluator:
             raise InvalidStructuredEvaluationError(
                 "OpenAI returned no structured evaluation"
             )
+        return self.build_result(parsed)
+
+    def build_result(
+        self,
+        parsed: WorkEvaluationOutput,
+        *,
+        model_name: str | None = None,
+    ) -> GeneratedWorkEvaluation:
         return GeneratedWorkEvaluation(
-            provider_name="openai",
-            model_name=self.model_name,
+            provider_name=self.provider_name,
+            model_name=model_name or self.model_name,
             evaluator_version=self.evaluator_version,
             overall_score=parsed.overall_score,
             summary=parsed.summary,
@@ -129,7 +140,7 @@ class OpenAIWorkEvaluator:
         )
 
 
-def _instructions(request: WorkEvaluationRequest) -> str:
+def evaluation_instructions(request: WorkEvaluationRequest) -> str:
     if request.skill.value == "writing":
         criteria = (
             "task fulfilment, coherence and cohesion, lexical resource, "

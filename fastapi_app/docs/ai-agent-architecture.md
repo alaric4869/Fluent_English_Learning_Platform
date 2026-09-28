@@ -51,11 +51,11 @@ M17 adds `save_ai_recommendation` under `SAVE_AI_RECOMMENDATION`, which is not
 granted to a normal read principal. Its validated command records proposed time,
 resource, evidence reasons, provider and model without mutating `StudyPlanItem`.
 
-## Recommended first provider
+## Provider implementations
 
-Use the OpenAI Responses API (`POST /responses`) as the first production adapter. It supports custom function tools, so `OpenAIProvider` can present a small allow-listed tool catalogue and return structured tool calls to `AgentService`. The service validates every argument with Pydantic and invokes the existing application services; the model never receives a SQLAlchemy session or database credentials.
+The OpenAI Responses adapter supports custom function tools and server-managed response continuation. The OpenRouter adapter uses its OpenAI-compatible Chat Completions endpoint and keeps the short tool conversation inside one request-scoped provider instance. Both present the same allow-listed catalogue to `LearningAgentService`; the service validates every argument with Pydantic and the model never receives a SQLAlchemy session or database credentials.
 
-Start M16 with `MockAIProvider`, typed tool contracts and deterministic authorization tests. Add the networked `OpenAIProvider` only after the tool boundary is stable. The API key remains a server-side environment variable and is never sent to templates or browser JavaScript. If another provider is added later, it implements the same `AIProvider` contract; learning-domain code and pages remain unchanged.
+API keys remain server-side environment variables and are never sent to templates or browser JavaScript. `OpenRouterChatProvider` requires an explicit `:free` model identifier or the `openrouter/free` router and refuses paid identifiers. Additional providers implement the same `AIProvider` contract; learning-domain code and pages remain unchanged.
 
 The first user-facing Agent action lives on Weekly Review. It is not a free-form chat:
 the server supplies a fixed coaching objective and an allow-list containing only
@@ -75,6 +75,12 @@ cannot be applied.
 tools, `previous_response_id`, non-parallel calls and `store=False`. The OpenAI SDK is
 an optional dependency and is imported only when the provider is explicitly enabled.
 
+`OpenRouterChatProvider` maps the same contracts to Chat Completions tools. It stores
+only the current bounded tool loop in memory, passes validated tool results back as
+tool messages, and is discarded with the application-service graph after the request.
+If the primary free Qwen endpoint has a transient failure, it makes one attempt through
+the free router. No paid fallback is permitted by its model validator.
+
 The OpenAI Agents SDK is optional. It can be introduced later for richer tracing or multi-agent handoffs, but the core application should not depend on its runtime types. The Responses API is sufficient for the initial model-and-tools loop.
 
 ## Replacement strategy
@@ -85,8 +91,9 @@ The existing `SkillEvaluator`, `WeaknessDetector`, `ResourceRecommender` and `St
 
 `LearningWorkEvaluationService` builds an immutable request from a specific Writing
 or Retelling submission snapshot. `WorkEvaluator` remains provider-neutral;
-`MockWorkEvaluator` verifies the path offline and `OpenAIWorkEvaluator` uses Responses
-structured output. The provider returns a 0–100 coaching score, rubric evidence,
+`MockWorkEvaluator` verifies the path offline. `OpenAIWorkEvaluator` uses Responses
+structured output and `OpenRouterWorkEvaluator` uses structured Chat Completions.
+The provider returns a 0–100 coaching score, rubric evidence,
 strengths, priorities, corrections and a suggested revision. It is explicitly
 instructed not to claim an official IELTS/PTE Band or infer pronunciation from text.
 

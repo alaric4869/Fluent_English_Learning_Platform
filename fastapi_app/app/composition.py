@@ -272,16 +272,22 @@ def build_work_evaluator() -> WorkEvaluator:
     available, _ = learning_agent_configuration()
     if not available:
         return UnavailableWorkEvaluator()
+    if settings.ai_provider == "openrouter":
+        from app.integrations.openrouter.work_evaluator import (
+            OpenRouterWorkEvaluator,
+        )
+
+        return OpenRouterWorkEvaluator(
+            model=settings.openrouter_model,
+            fallback_model=settings.openrouter_fallback_model,
+            api_key=_secret_value(settings.openrouter_api_key),
+            max_output_tokens=settings.openrouter_max_output_tokens,
+        )
     from app.integrations.openai.work_evaluator import OpenAIWorkEvaluator
 
-    api_key = (
-        settings.openai_api_key.get_secret_value()
-        if settings.openai_api_key is not None
-        else None
-    )
     return OpenAIWorkEvaluator(
         model=settings.openai_model,
-        api_key=api_key,
+        api_key=_secret_value(settings.openai_api_key),
         max_output_tokens=settings.openai_max_output_tokens,
     )
 
@@ -300,16 +306,23 @@ def _build_learning_agent_service(
     available, _ = learning_agent_configuration()
     if not available:
         return None
+    if settings.ai_provider == "openrouter":
+        from app.integrations.openrouter.responses_provider import (
+            OpenRouterChatProvider,
+        )
+
+        provider = OpenRouterChatProvider(
+            model=settings.openrouter_model,
+            fallback_model=settings.openrouter_fallback_model,
+            api_key=_secret_value(settings.openrouter_api_key),
+            max_output_tokens=settings.openrouter_max_output_tokens,
+        )
+        return LearningAgentService(provider, registry)
     from app.integrations.openai.responses_provider import OpenAIResponsesProvider
 
-    api_key = (
-        settings.openai_api_key.get_secret_value()
-        if settings.openai_api_key is not None
-        else None
-    )
     provider = OpenAIResponsesProvider(
         model=settings.openai_model,
-        api_key=api_key,
+        api_key=_secret_value(settings.openai_api_key),
         max_output_tokens=settings.openai_max_output_tokens,
     )
     return LearningAgentService(provider, registry)
@@ -319,14 +332,29 @@ def learning_agent_configuration() -> tuple[bool, str]:
     from app.config import settings
 
     if settings.ai_provider == "disabled":
-        return False, "AI 尚未启用；请先配置服务器端 OpenAI API。"
-    if not settings.openai_model.strip():
-        return False, "缺少 OPENAI_MODEL 配置。"
-    if (
-        settings.openai_api_key is None
-        or not settings.openai_api_key.get_secret_value().strip()
-    ):
-        return False, "缺少服务器端 OPENAI_API_KEY。"
+        return False, "AI 尚未启用；请先配置服务器端 AI Provider。"
+    if settings.ai_provider == "openrouter":
+        if not settings.openrouter_model.strip():
+            return False, "缺少 OPENROUTER_MODEL 配置。"
+        primary = settings.openrouter_model.strip()
+        if not (primary.endswith(":free") or primary == "openrouter/free"):
+            return False, "OpenRouter 模型必须明确使用 :free 免费版本。"
+        fallback = settings.openrouter_fallback_model.strip()
+        if not (fallback.endswith(":free") or fallback == "openrouter/free"):
+            return False, "OpenRouter 备用模型必须使用免费版本。"
+        if not _secret_value(settings.openrouter_api_key):
+            return False, "缺少服务器端 OPENROUTER_API_KEY。"
+    else:
+        if not settings.openai_model.strip():
+            return False, "缺少 OPENAI_MODEL 配置。"
+        if not _secret_value(settings.openai_api_key):
+            return False, "缺少服务器端 OPENAI_API_KEY。"
     if find_spec("openai") is None:
         return False, "尚未安装可选 AI 依赖，请运行 pip install -e '.[ai]'。"
     return True, ""
+
+
+def _secret_value(secret) -> str | None:
+    if secret is None:
+        return None
+    return secret.get_secret_value().strip() or None

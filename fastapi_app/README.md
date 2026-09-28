@@ -16,15 +16,25 @@ Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today
 
 Reading practice uses a responsive two-pane workspace: the source stays on the left and questions stay on the right with independent scrolling on desktop, then collapse into a readable single column on small screens. Native tables, flowcharts and verified figures remain semantic web content rather than flattened PDF screenshots.
 
-AI is disabled by default. The full learning app works without a model or API key. To enable explicit Writing/Retelling feedback and the OpenAI Agent adapter, install the optional dependency, copy `environment.example` to `.env`, set `ENGLISH_TOOL_AI_PROVIDER=openai`, and provide `OPENAI_API_KEY` plus an available `OPENAI_MODEL`:
+AI is disabled by default. The full learning app works without a model or API key. To enable explicit Writing/Retelling feedback and Agent actions, install the optional dependency and select one provider in `.env`. The zero-cost local default uses OpenRouter's explicitly free Qwen endpoint:
 
 ```bash
 .venv/bin/pip install -e '.[ai,dev]'
 ```
 
+```dotenv
+ENGLISH_TOOL_AI_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-server-side-key
+OPENROUTER_MODEL=qwen/qwen3.8-27b:free
+OPENROUTER_FALLBACK_MODEL=openrouter/free
+OPENROUTER_MAX_OUTPUT_TOKENS=2000
+```
+
+The OpenRouter adapter accepts only explicit `:free` models and OpenRouter's free router. It tries Qwen first and uses the free router only when the shared Qwen endpoint has a transient availability or rate-limit failure; a paid fallback is impossible. OpenAI remains available by selecting `openai` and setting `OPENAI_API_KEY`, `OPENAI_MODEL` and `OPENAI_MAX_OUTPUT_TOKENS`.
+
 The key remains server-side. A submitted learner response is sent only after the learner clicks “生成反馈”; automatic submission-time model calls are intentionally disabled.
 
-`OPENAI_MAX_OUTPUT_TOKENS` defaults to `2000` and is passed to every Responses API request as a server-side cost/safety ceiling. Agent tool rounds are separately bounded. These are upper limits, not prepaid or guaranteed usage; actual input/output token totals remain available in the OpenAI usage dashboard.
+Both providers default to a `2000`-token output ceiling. Agent tool rounds are separately bounded. These are upper limits rather than guaranteed usage; free-provider rate and availability limits still apply.
 
 Weekly Review also contains an explicit AI Learning Coach action. It gives the model only four read-only tools—weekly evidence, skill profile, confirmed weakness state and due reviews—and refuses to save a report unless all four were actually used. The generated text is persisted as an append-only weekly coaching report. It never changes the deterministic plan; with AI disabled the page shows setup guidance and all non-AI features continue normally.
 
@@ -63,6 +73,7 @@ IELTS audio is streamed from the repository's private, git-ignored `resources/li
 - `composition.py`: the explicit application-service composition root shared by routes.
 - `ai_agent/`: provider-neutral model loop, strict tool contracts, authorization policy and offline mock adapters; it has no database session.
 - `integrations/openai/`: optional Responses API and structured-evaluation adapters; provider SDK types stop at this boundary.
+- `integrations/openrouter/`: free-model-only Chat Completions and structured-evaluation adapters; conversation state remains request-local.
 - `domain/ai_evaluation/`: provider-neutral rubric evidence and evaluator/repository contracts.
 - `domain/agent_coaching/`: persisted weekly coaching report and repository contracts, separate from measured learning evidence.
 - `domain/sync/`: provider-neutral change-feed contract for a future authenticated device-sync adapter; no sync side effects run in the local MVP.

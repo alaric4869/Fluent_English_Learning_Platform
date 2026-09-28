@@ -62,6 +62,7 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `domain/agent_coaching/`: append-only weekly coaching output; it is commentary over evidence, never evidence itself.
 - `services/ai_evaluation.py`: explicit Writing/Retelling evaluation use cases with input fingerprinting and idempotency.
 - `integrations/openai/`: optional Responses function-calling and structured-output adapters; no provider SDK types cross this boundary.
+- `integrations/openrouter/`: OpenAI-compatible Chat Completions adapters restricted to explicit free routes; no learning module depends on them.
 - `repositories/sqlalchemy_ai_evaluation.py`: persists feedback separately from learner submissions and measured profile evidence.
 - `presenters/today.py`: joins plan state with display-only resource and module information.
 - `presenters/listening.py`: derives safe media presentation and stable transcript sentences without persistence.
@@ -122,8 +123,9 @@ tool input; `AgentExecutionContext` supplies it after authorization.
 `LearningAgentService` gives a provider only the authorized catalogue, executes
 validated tool calls, and returns their serialized contracts for the next provider
 turn. Calls are bounded to prevent an unending model/tool loop. `MockAIProvider`
-makes the whole path deterministic in tests. The optional OpenAI Responses adapter
-implements the same boundary without changing any learning service or repository.
+makes the whole path deterministic in tests. The optional OpenAI Responses and
+OpenRouter Chat Completions adapters implement the same boundary without changing
+any learning service or repository.
 
 Read tools remain the default. `save_ai_recommendation` requires a separate permission
 and appends a proposal without mutating the plan. Applying a proposal still requires
@@ -133,8 +135,9 @@ the existing explicit learner override path.
 
 Writing and text Retelling pages can explicitly request structured coaching after a
 submission. The provider is disabled by default, and submission never triggers a
-network call. `OpenAIWorkEvaluator` uses structured output and `store=False`; the
-result is saved as an immutable `WorkEvaluation` tied to the exact submission input.
+network call. Provider evaluators request validated structured output; the OpenAI
+adapter also uses `store=False`. The result is saved as an immutable
+`WorkEvaluation` tied to the exact submission input.
 It does not overwrite authored text, write objective accuracy or silently refresh the
 learner profile. Text-only feedback cannot claim pronunciation or audio-fluency
 assessment.
