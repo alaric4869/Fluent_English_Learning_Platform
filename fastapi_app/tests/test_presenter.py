@@ -62,6 +62,33 @@ def test_reading_passages_and_answer_layouts_are_split_for_the_workspace() -> No
     assert [block["kind"] for block in section["question_blocks"]] == ["flowchart"]
 
 
+def test_test_one_notes_keep_answers_inside_the_original_layout() -> None:
+    listening = present_practice_workspace(_workspace(_practice_set("listening")))
+    reading = present_practice_workspace(_workspace(_practice_set("reading")))
+
+    listening_part_four = listening["practice_set"]["sections"][3]
+    reading_section_two = reading["practice_set"]["sections"][1]
+
+    assert listening_part_four["content_blocks"][0]["kind"] == "notes"
+    assert listening_part_four["embedded_question_numbers"] == list(range(31, 41))
+    assert listening_part_four["display_items"] == []
+    assert [block["kind"] for block in reading_section_two["source_blocks"]] == [
+        "passage",
+        "passage",
+    ]
+    assert [block["kind"] for block in reading_section_two["question_blocks"]] == ["notes"]
+    assert reading_section_two["embedded_question_numbers"] == list(range(22, 28))
+    assert [item["numbers"] for item in reading_section_two["display_items"]] == [
+        [15],
+        [16],
+        [17],
+        [18],
+        [19],
+        [20],
+        [21],
+    ]
+
+
 def _practice_set(skill: str) -> dict:
     payload = json.loads(SEED_PATH.read_text(encoding="utf-8"))
     return next(item for item in payload["practice_sets"] if item["skill"] == skill)

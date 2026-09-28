@@ -14,7 +14,7 @@ python3.12 -m venv .venv
 
 Open <http://127.0.0.1:8000/dashboard>. Today is at <http://127.0.0.1:8000/today>, Weekly Review at <http://127.0.0.1:8000/weekly-review>, Library at <http://127.0.0.1:8000/library>, Review at <http://127.0.0.1:8000/review>, Notebook at <http://127.0.0.1:8000/notebook>, History at <http://127.0.0.1:8000/history>, Progress at <http://127.0.0.1:8000/progress>, and IELTS practice remains available at <http://127.0.0.1:8000/ielts>. Listening resources open at `/listening/{resource_id}`, Speaking practices at `/speaking/{resource_id}`, and Writing tasks at `/writing/{resource_id}`.
 
-Reading practice uses a responsive two-pane workspace: the source stays on the left and questions stay on the right with independent scrolling on desktop, then collapse into a readable single column on small screens. Native tables, flowcharts and verified figures remain semantic web content rather than flattened PDF screenshots.
+Reading practice uses a responsive two-pane workspace: the source stays on the left and questions stay on the right with independent scrolling on desktop, then collapse into a readable single column on small screens. Native tables, flowcharts, hierarchical note-completion forms and verified figures remain semantic web content rather than flattened PDF screenshots.
 
 AI is disabled by default. The full learning app works without a model or API key. To enable explicit Writing/Retelling feedback and Agent actions, install the optional dependency and select one provider in `.env`. The zero-cost local default uses OpenRouter's explicitly free Qwen endpoint:
 

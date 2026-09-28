@@ -88,6 +88,63 @@
       {% endfor %}
     </div>
   </section>
+  {% elif block.kind == "notes" %}
+  <section class="source-block source-notes-block">
+    {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}
+    {% if block.lead %}
+    <p class="source-notes-lead">
+      {% for part in block.lead %}
+        {% if part.answer is defined %}
+        <span
+          class="answer-container inline-answer"
+          id="question-{{ part.answer }}"
+          data-question-numbers="{{ part.answer }}"
+          tabindex="-1"
+        >
+          <span class="inline-answer-number">{{ part.answer }}</span>
+          <label>
+            <span class="sr-only">Question {{ part.answer }} answer</span>
+            <input type="text" data-answer-number="{{ part.answer }}" value="{{ attempt.answers.get(part.answer|string, '') }}" autocomplete="off">
+          </label>
+          {{ feedback() }}
+        </span>
+        {% else %}
+        <span>{{ part.text }}</span>
+        {% endif %}
+      {% endfor %}
+    </p>
+    {% endif %}
+    {% for notes_section in block.sections %}
+    <section class="source-notes-section">
+      <h4>{{ notes_section.heading }}</h4>
+      <ul class="source-notes-list">
+        {% for item in notes_section["items"] %}
+        <li class="source-notes-level-{{ item.level or 0 }}">
+          {% for part in item.parts %}
+            {% if part.answer is defined %}
+            <span
+              class="answer-container inline-answer"
+              id="question-{{ part.answer }}"
+              data-question-numbers="{{ part.answer }}"
+              tabindex="-1"
+            >
+              <span class="inline-answer-number">{{ part.answer }}</span>
+              <label>
+                <span class="sr-only">Question {{ part.answer }} answer</span>
+                <input type="text" data-answer-number="{{ part.answer }}" value="{{ attempt.answers.get(part.answer|string, '') }}" autocomplete="off">
+              </label>
+              {{ feedback() }}
+            </span>
+            {% else %}
+            <span>{{ part.text }}</span>
+            {% endif %}
+          {% endfor %}
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endfor %}
+  </section>
   {% elif block.kind == "figure" %}
   <section class="source-block source-figure-block">
     {% if block.title %}<h3>{{ block.title }}</h3>{% endif %}

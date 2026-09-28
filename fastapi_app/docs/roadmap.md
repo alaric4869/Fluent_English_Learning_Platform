@@ -133,6 +133,13 @@
 - Added keyboard-operable section tabs and question jumps, visible focus, progress/status semantics, skip navigation, reduced-motion support and honest empty states.
 - Added one replaceable learner-context dependency, an optional PostgreSQL driver/engine seam and a provider-neutral synchronization port without changing domain services or the local-first default.
 
+## M19 · Test 1 source-fidelity audit
+
+- **Completed.** Verified all 80 Test 1 Listening and Reading answer keys against the learner-owned G20 source answer pages.
+- Restored Listening Part 4's original hierarchical notes layout with ten inline web answer fields.
+- Restored Reading Section 2's “Creating a successful business” notes layout with six inline web answer fields.
+- Added content-schema, presenter and rendered-page regression tests so embedded answers appear exactly once and still use the existing autosave/grading path.
+
 Additional IELTS books should use the same manifest, source verification and validation tests rather than adding hard-coded page data.
 
 ## Post-roadmap · User-facing AI coach

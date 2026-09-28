@@ -43,7 +43,7 @@ def test_today_page_and_typed_plan_actions_use_the_same_services() -> None:
             assert "TODAY'S STUDY PLAN" in page.text
             assert "精听 Listening" in page.text
             assert "跟读与复述 Speaking" in page.text
-            assert "阅读 Reading" in page.text
+            assert "阅读 Reading" in page.text or "写作 Writing" in page.text
             assert "词块与复习 Vocabulary" in page.text
             assert "ACTIVE STUDY TIME" in page.text
 

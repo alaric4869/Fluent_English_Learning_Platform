@@ -640,6 +640,15 @@ a { color: inherit; text-decoration: none; }
 .flowchart-arrow { color: #505854; font-size: 1.2rem; line-height: 1; }
 .flowchart-node .inline-answer { min-width: 125px; justify-content: center; }
 .flowchart-node .inline-answer .question-feedback { text-align: left; }
+.source-notes-block { padding: 24px 27px; border: 1.5px solid #505854; background: #fff; font-family: Arial, Helvetica, sans-serif; }
+.source-notes-block > h3 { margin-bottom: 20px; text-align: center; font-family: Arial, Helvetica, sans-serif; }
+.source-notes-lead { margin: 0 0 22px !important; font: 500 .9rem/1.65 Arial, Helvetica, sans-serif !important; }
+.source-notes-section + .source-notes-section { margin-top: 22px; }
+.source-notes-section h4 { margin: 0 0 9px; font-size: .9rem; }
+.source-notes-list { display: grid; gap: 8px; margin: 0; padding-left: 25px; font-size: .87rem; line-height: 1.55; }
+.source-notes-list li { padding-left: 3px; white-space: pre-line; }
+.source-notes-list .source-notes-level-1 { margin-left: 22px; list-style-type: "–  "; }
+.source-notes-block .inline-answer { min-width: 125px; }
 .source-figure-block figure { margin: 0; text-align: center; }
 .source-figure-block img { display: block; max-width: 100%; height: auto; margin: 0 auto; border: 1px solid var(--line); background: white; }
 .source-figure-block figcaption { margin-top: 8px; color: var(--muted); font-size: .72rem; }

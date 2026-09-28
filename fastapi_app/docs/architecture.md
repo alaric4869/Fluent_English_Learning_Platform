@@ -51,8 +51,8 @@ Templates never query the database and JavaScript never contains answer keys. Bo
 - `api/routes/resources.py`: owns Library reads and typed create/edit/user-state actions.
 - `api/routes/dashboard.py`: renders composed Dashboard and current Weekly Review read models.
 - `api/learner_context.py`: supplies learner identity at the HTTP boundary; the local adapter is replaceable through FastAPI dependency injection.
-- `presenters/ielts.py`: creates an IELTS workspace read model, including native table blocks, figure blocks, and grouped multi-answer questions.
-- `content_import/`: validates ordered manifests, complete 40-question IELTS sets, native tables/flowcharts/figures and grouped-answer invariants before a database write starts.
+- `presenters/ielts.py`: creates an IELTS workspace read model, including native table/note blocks, figure blocks, and grouped multi-answer questions.
+- `content_import/`: validates ordered manifests, complete 40-question IELTS sets, native tables/flowcharts/notes/figures and grouped-answer invariants before a database write starts.
 - `ai_agent/contracts.py`: strict provider, tool-input and tool-output Pydantic contracts.
 - `ai_agent/tools.py`: allow-listed read tools that delegate only to application services.
 - `ai_agent/authorization.py`: permission and per-tool allow-list enforcement.
@@ -167,7 +167,7 @@ partially configured environments render setup guidance instead of failing the p
 
 ## Presentation boundary
 
-Structured content contains semantic blocks such as `table`, `figure`, and question groups. The presenter turns those blocks into a rendering model. Jinja templates preserve the source layout using native HTML tables or approved source images, while answer inputs remain normal accessible form controls. Grading still works from question IDs and is independent of layout.
+Structured content contains semantic blocks such as `table`, `flowchart`, `notes`, `figure`, and question groups. The presenter turns those blocks into a rendering model. Jinja templates preserve the source layout using native HTML structures or approved source images, while answer inputs remain normal accessible form controls. Grading still works from question IDs and is independent of layout.
 
 Reading presentation classifies answer-bearing tables, flowcharts and figures as question blocks while keeping ordinary passages/notices as source blocks. The page places those read models in independently scrollable desktop panes and uses the same controls, autosave queue and Python grader as Listening. No content is duplicated into a second scoring path.
 

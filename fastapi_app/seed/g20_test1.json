@@ -8,7 +8,7 @@
       "title": "G20 · Test 1 Listening",
       "description": "4 个 Part、40 道题。使用本地真题音频，提交后自动评分并显示逐题中文精解。",
       "duration_minutes": 30,
-      "content_version": "g20-t1-listening-v3",
+      "content_version": "g20-t1-listening-v4",
       "sections": [
         {
           "order_index": 1,
@@ -105,7 +105,40 @@
           "instructions": "Questions 31–40. Complete the notes. Write ONE WORD ONLY for each answer.",
           "audio_path": "listening/20音频/20T1S4.mp3",
           "content_blocks": [
-            {"kind":"notice","title":"Reclaiming urban rivers","paragraphs":["Historical background: industrial development caused sewage and pollution from (31). In 1957 the Thames was declared biologically (32).","Recent improvements: seals and even a (33) have returned; warehouses become restaurants and (34). Los Angeles plans a riverside (35) and displays (36) projects. Paris creates (37) beside the river.","Transport: more than two billion passengers travel by (38). Freight may move by electric (39), or in future by (40)."]}
+            {
+              "kind": "notes",
+              "title": "Reclaiming urban rivers",
+              "sections": [
+                {
+                  "heading": "Historical background",
+                  "items": [
+                    {"parts":[{"text":"Nearly all major cities were built on a river."}]},
+                    {"parts":[{"text":"Rivers were traditionally used by city dwellers for transport, fishing and recreation."}]},
+                    {"parts":[{"text":"Industrial development and rising populations later led to:\n– more sewage from houses being discharged into the river\n– pollution from "},{"answer":31},{"text":" on the river bank."}]},
+                    {"parts":[{"text":"In 1957, the River Thames in London was declared biologically "},{"answer":32},{"text":"."}]}
+                  ]
+                },
+                {
+                  "heading": "Recent improvements",
+                  "items": [
+                    {"parts":[{"text":"Seals and even a "},{"answer":33},{"text":" have been seen in the River Thames."}]},
+                    {"parts":[{"text":"Riverside warehouses are converted to restaurants and "},{"answer":34},{"text":"."}]},
+                    {"parts":[{"text":"In Los Angeles, there are plans to:"}]},
+                    {"level":1,"parts":[{"text":"build a riverside "},{"answer":35}]},
+                    {"level":1,"parts":[{"text":"display "},{"answer":36},{"text":" projects."}]},
+                    {"parts":[{"text":"In Paris, "},{"answer":37},{"text":" are created on the sides of the river every summer."}]}
+                  ]
+                },
+                {
+                  "heading": "Transport possibilities",
+                  "items": [
+                    {"parts":[{"text":"Over 2 billion passengers already travel by "},{"answer":38},{"text":" in cities round the world."}]},
+                    {"parts":[{"text":"Changes in shopping habits mean the number of deliveries that are made is increasing."}]},
+                    {"parts":[{"text":"Instead of road transport, goods could be transported by large freight barges and electric "},{"answer":39},{"text":", or, in future, by "},{"answer":40},{"text":"."}]}
+                  ]
+                }
+              ]
+            }
           ],
           "questions": [
             {"number":31,"prompt":"Pollution from … on the riverbank","question_type":"text","accepted_answers":["factories"],"explanation":"Industrial development 和 other types of pollution 定位答案；录音说 factories beside the river discharged waste。需用复数 factories。"},
@@ -130,7 +163,7 @@
       "title": "G20 · Test 1 Reading",
       "description": "3 个 Section、40 道题。原文和题目已转换为网页文字，无需打开 PDF。",
       "duration_minutes": 60,
-      "content_version": "g20-t1-reading-v2",
+      "content_version": "g20-t1-reading-v3",
       "sections": [
         {
           "order_index": 1,
@@ -191,7 +224,34 @@
               "If you’re setting up a partnership, choosing the right person is vital. Once you have made your choice, put in place an agreement which sets out the rights and responsibilities of each partner in the business. The agreement should also deal with what happens when difficulties arise; for example, does one partner have the ability to buy the other out? Or should the business simply be closed down – which could result in the end of a successful business?",
               "Knowing your market and accurately assessing the potential demand for a product is the key to an idea succeeding or failing. If your product has a very limited market, you won’t be able to sell enough to create a successful business. You should take time to understand who your competitors are and identify what distinguishes your business from theirs. Perhaps you can provide a better service or compete on price. It all boils down to understanding why customers would rather buy from you than other companies in the field.",
               "There is a lot to think about when starting your own business, but avoiding these common pitfalls will give your business a good chance of success."
-            ]}
+            ]},
+            {
+              "kind": "notes",
+              "title": "Creating a successful business",
+              "lead": [
+                {"text":"Statistically, out of all new business ventures, "},
+                {"answer":22},
+                {"text":" will not survive two years."}
+              ],
+              "sections": [
+                {
+                  "heading": "To avoid this possibility:",
+                  "items": [
+                    {"parts":[{"text":"set clear targets and"}]},
+                    {"level":1,"parts":[{"text":"arrange frequent "},{"answer":23},{"text":" to ensure these goals are still practicable"}]},
+                    {"level":1,"parts":[{"text":"make sure all "},{"answer":24},{"text":" are fully aware of them"}]},
+                    {"parts":[{"text":"ensure the projected cashflow will be adequate to get through the year by"}]},
+                    {"level":1,"parts":[{"text":"noting "},{"answer":25},{"text":" for paying tax and other outgoings"}]},
+                    {"parts":[{"text":"select business partners carefully and draw up a document stating"}]},
+                    {"level":1,"parts":[{"text":"their "},{"answer":26},{"text":" and what they are responsible for doing in the business"}]},
+                    {"level":1,"parts":[{"text":"the procedure to follow if the business faces difficulties"}]},
+                    {"parts":[{"text":"research the market:"}]},
+                    {"level":1,"parts":[{"text":"find out how your product differs from what "},{"answer":27},{"text":" offer"}]},
+                    {"level":1,"parts":[{"text":"consider if the price of the product could be lowered"}]}
+                  ]
+                }
+              ]
+            }
           ],
           "questions": [
             {"number":15,"prompt":"A lot of people find it hard to challenge colleagues about their poor …","question_type":"text","accepted_answers":["behaviour","behavior"],"explanation":"文章首段的 confronting a co-worker over unsatisfactory behaviour 对应 challenge colleagues about poor behaviour。英美拼写均接受。"},

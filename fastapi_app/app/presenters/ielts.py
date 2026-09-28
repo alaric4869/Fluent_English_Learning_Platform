@@ -47,6 +47,15 @@ def _embedded_question_numbers(blocks: list[dict]) -> list[int]:
                 for part in node.get("parts", []):
                     if "answer" in part:
                         numbers.add(int(part["answer"]))
+        if block.get("kind") == "notes":
+            for part in block.get("lead", []):
+                if "answer" in part:
+                    numbers.add(int(part["answer"]))
+            for section in block.get("sections", []):
+                for item in section.get("items", []):
+                    for part in item.get("parts", []):
+                        if "answer" in part:
+                            numbers.add(int(part["answer"]))
     return sorted(numbers)
 
 

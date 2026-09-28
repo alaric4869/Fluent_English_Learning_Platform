@@ -57,7 +57,15 @@ class PracticeSectionSeed(StrictModel):
         question_numbers = {question.number for question in self.questions}
         for block in self.content_blocks:
             kind = block.get("kind")
-            if kind not in {"text", "notice", "passage", "table", "flowchart", "figure"}:
+            if kind not in {
+                "text",
+                "notice",
+                "passage",
+                "table",
+                "flowchart",
+                "notes",
+                "figure",
+            }:
                 raise ValueError(f"unsupported content block kind: {kind!r}")
             embedded = _embedded_question_numbers(block)
             missing = embedded - question_numbers
@@ -71,6 +79,8 @@ class PracticeSectionSeed(StrictModel):
                 _validate_table_shape(block)
             if kind == "flowchart":
                 _validate_flowchart_shape(block)
+            if kind == "notes":
+                _validate_notes_shape(block)
         return self
 
 
@@ -202,6 +212,15 @@ def _embedded_question_numbers(block: dict[str, Any]) -> set[int]:
             for part in node.get("parts", []):
                 if "answer" in part:
                     numbers.add(int(part["answer"]))
+    if block.get("kind") == "notes":
+        for part in block.get("lead", []):
+            if "answer" in part:
+                numbers.add(int(part["answer"]))
+        for section in block.get("sections", []):
+            for item in section.get("items", []):
+                for part in item.get("parts", []):
+                    if "answer" in part:
+                        numbers.add(int(part["answer"]))
     return numbers
 
 
@@ -226,3 +245,21 @@ def _validate_flowchart_shape(block: dict[str, Any]) -> None:
         parts = node.get("parts") if isinstance(node, dict) else None
         if not isinstance(parts, list) or not parts:
             raise ValueError("every flowchart node requires parts")
+
+
+def _validate_notes_shape(block: dict[str, Any]) -> None:
+    sections = block.get("sections")
+    if not isinstance(sections, list) or not sections:
+        raise ValueError("notes blocks require sections")
+    for section in sections:
+        if not isinstance(section, dict) or not str(section.get("heading", "")).strip():
+            raise ValueError("every notes section requires a heading")
+        items = section.get("items")
+        if not isinstance(items, list) or not items:
+            raise ValueError("every notes section requires items")
+        for item in items:
+            parts = item.get("parts") if isinstance(item, dict) else None
+            if not isinstance(parts, list) or not parts:
+                raise ValueError("every notes item requires parts")
+            if item.get("level", 0) not in {0, 1}:
+                raise ValueError("notes item level must be 0 or 1")

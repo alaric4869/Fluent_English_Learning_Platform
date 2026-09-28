@@ -103,6 +103,40 @@ def test_test_4_grouped_questions_render_as_two_choice_checkboxes() -> None:
         assert map_asset.headers["content-type"] == "image/png"
 
 
+def test_test_one_structured_notes_render_each_answer_once() -> None:
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(engine)
+    with Session(engine, expire_on_commit=False) as session:
+        import_seed_data(session, settings.seed_path)
+        services = build_application_services(session)
+        app = FastAPI()
+        app.mount(
+            "/static",
+            StaticFiles(directory=FASTAPI_ROOT / "app" / "static"),
+            name="static",
+        )
+        app.include_router(router)
+        app.dependency_overrides[get_service] = lambda: services.ielts_practice
+        app.dependency_overrides[get_services] = lambda: services
+
+        with TestClient(app) as client:
+            listening = client.get("/ielts/g20-test-1-listening")
+            reading = client.get("/ielts/g20-test-1-reading")
+
+        assert listening.status_code == 200
+        assert reading.status_code == 200
+        assert "Reclaiming urban rivers" in listening.text
+        assert "Creating a successful business" in reading.text
+        for number in range(31, 41):
+            assert listening.text.count(f'data-answer-number="{number}"') == 1
+        for number in range(22, 28):
+            assert reading.text.count(f'data-answer-number="{number}"') == 1
+
+
 def test_manifest_rejects_duplicate_slugs_before_database_writes(tmp_path) -> None:
     payload = {
         "practice_sets": [],
