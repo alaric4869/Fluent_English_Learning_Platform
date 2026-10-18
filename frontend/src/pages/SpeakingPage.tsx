@@ -1,0 +1,41 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AppShell } from "../components/AppShell";
+import { ErrorState, LoadingState } from "../components/LoadingState";
+import { frontendApi } from "../lib/api";
+import { useApiQuery } from "../lib/useApiQuery";
+import type { SpeakingDraftPayload, SpeakingWorkspaceResponse } from "../types/practice";
+import { ActiveTimer, Rating } from "./WritingPage";
+
+
+const EMPTY: SpeakingDraftPayload = { written_outline: "", intended_vocabulary: [], retelling_text: "", mistakes: "", improved_version: "", practice_status: "need_practice", active_duration_seconds: 0, perceived_difficulty: null, confidence: null };
+
+
+export function SpeakingPage({ resourceId }: { resourceId: number }) {
+  const loader = useCallback((signal: AbortSignal) => frontendApi.speakingWorkspace(resourceId, signal), [resourceId]);
+  const { data, error } = useApiQuery(loader);
+  const [draft, setDraft] = useState(EMPTY);
+  const [seconds, setSeconds] = useState(0);
+  const [running, setRunning] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [saveState, setSaveState] = useState("尚未保存");
+  const [notice, setNotice] = useState("");
+  const [sentences, setSentences] = useState<SpeakingWorkspaceResponse["sentences"]>([]);
+  const draftRef = useRef(draft); const secondsRef = useRef(0); const timerRef = useRef<number | null>(null); const queueRef = useRef<Promise<void>>(Promise.resolve());
+  useEffect(() => { if (!data) return; const initial: SpeakingDraftPayload = { written_outline: data.draft.written_outline, intended_vocabulary: data.draft.intended_vocabulary, retelling_text: data.draft.retelling_text, mistakes: data.draft.mistakes, improved_version: data.draft.improved_version, practice_status: data.draft.practice_status, active_duration_seconds: data.draft.active_duration_seconds, perceived_difficulty: data.draft.perceived_difficulty, confidence: data.draft.confidence }; draftRef.current=initial; secondsRef.current=initial.active_duration_seconds; setDraft(initial); setSeconds(initial.active_duration_seconds); setSentences(data.sentences); setSaveState(data.draft.id ? "草稿已保存" : "尚未保存"); }, [data]);
+  useEffect(() => { if (!running) return; const timer=window.setInterval(() => setSeconds((value) => { secondsRef.current=value+1; return value+1; }),1000); return () => window.clearInterval(timer); }, [running]);
+  useEffect(() => () => { if (timerRef.current) window.clearTimeout(timerRef.current); }, []);
+
+  function change(patch: Partial<SpeakingDraftPayload>) { const next={...draftRef.current,...patch}; draftRef.current=next; setDraft(next); setSaveState("等待自动保存…"); setNotice(""); if(timerRef.current) window.clearTimeout(timerRef.current); timerRef.current=window.setTimeout(() => void persist().catch(() => undefined),700); }
+  function persist() { if(timerRef.current) window.clearTimeout(timerRef.current); timerRef.current=null; const snapshot={...draftRef.current,active_duration_seconds:secondsRef.current}; setSaveState("正在保存…"); const operation=queueRef.current.catch(()=>undefined).then(async()=>{await frontendApi.saveSpeakingDraft(resourceId,snapshot);setSaveState("草稿已保存");}); queueRef.current=operation.catch(()=>setSaveState("保存失败")); return operation; }
+  async function mark(sentence: SpeakingWorkspaceResponse["sentences"][number], status: SpeakingDraftPayload["practice_status"]) { try { await frontendApi.markSpeakingSentence(resourceId,sentence.key,status); setSentences((current) => current.map((item) => item.key === sentence.key ? { ...item, progress: { practice_status: status, practice_count: (item.progress?.practice_count ?? 0) + 1, updated_at: new Date().toISOString() } } : item)); setNotice("句子练习状态已保存。"); } catch(reason) { setNotice(reason instanceof Error ? reason.message : "保存失败"); } }
+  async function submit() { setRunning(false); setNotice(""); try { await persist(); await queueRef.current; const result=await frontendApi.submitSpeaking(resourceId); setSaveState(`第 ${result.submission_revision} 版已提交`); setNotice("口语复述已提交，学习记录已更新。"); } catch(reason) { setNotice(reason instanceof Error ? reason.message : "提交失败"); } }
+  if(error) return <AppShell activePage="ielts"><ErrorState message={error}/></AppShell>; if(!data) return <AppShell activePage="ielts"><LoadingState/></AppShell>;
+  return <AppShell activePage="ielts" plannedMinutes={data.estimated_duration_minutes}><div className="page-container practice-form-page">
+    <header className="practice-form-header surface-panel"><div><a className="back-link" href="/ielts">← 返回 IELTS G</a><p className="eyebrow">Cambridge 20 · Test {data.test_number}</p><h1>Shadowing + Retelling</h1><p>{data.context}</p></div><ActiveTimer seconds={seconds} running={running} targetMinutes={data.estimated_duration_minutes} onToggle={()=>{setRunning(value=>!value);if(running)void persist();}}/></header>
+    <section className="speaking-workflow surface-panel">{data.workflow.map((step,index)=><span key={step}><b>{String(index+1).padStart(2,"0")}</b>{step}</span>)}</section>
+    <div className="speaking-react-grid">
+      <section className="speaking-sentences-panel surface-panel"><header><div><p className="eyebrow">Real conversation</p><h2>{data.source_label}</h2></div><button className="secondary-button" onClick={()=>setHidden(value=>!value)}>{hidden?"显示 Transcript":"隐藏 Transcript"}</button></header><audio controls preload="metadata" src={data.audio_url}/><p className="speaking-progress">已标记 {sentences.filter(sentence=>sentence.progress).length}/{sentences.length} · 已掌握 {sentences.filter(sentence=>sentence.progress?.practice_status==="mastered").length}</p>
+      <div className={`shadowing-list ${hidden?"transcript-hidden":""}`}>{sentences.map((sentence,index)=><article key={sentence.key}><span>{String(index+1).padStart(2,"0")}</span><div><small>{sentence.speaker}</small><p>{sentence.text}</p>{sentence.pronunciation_note&&<em>Pronunciation · {sentence.pronunciation_note}</em>}{sentence.connected_speech_note&&<em>Connected speech · {sentence.connected_speech_note}</em>}<div className="chunk-row">{sentence.chunks.map(chunk=><b key={chunk}>{chunk}</b>)}</div><div className="sentence-practice-buttons">{(["need_practice","good","mastered"] as const).map(status=><button className={sentence.progress?.practice_status===status?"active":""} onClick={()=>mark(sentence,status)} key={status}>{status.replace("_"," ")}</button>)}</div></div></article>)}</div></section>
+      <section className="retelling-editor surface-panel"><p className="eyebrow">Retelling task</p><h2>{data.retelling_prompt}</h2>{data.retelling_guidance.length>0&&<ul>{data.retelling_guidance.map(item=><li key={item}>{item}</li>)}</ul>}<label className="practice-text-field"><span>WRITTEN OUTLINE</span><textarea rows={4} value={draft.written_outline} onChange={e=>change({written_outline:e.target.value})}/></label><label className="practice-text-field"><span>VOCABULARY / CHUNKS · ONE PER LINE</span><textarea rows={3} value={draft.intended_vocabulary.join("\n")} onChange={e=>change({intended_vocabulary:e.target.value.split("\n").map(v=>v.trim()).filter(Boolean)})}/></label><label className="practice-text-field"><span>RETELLING TEXT</span><textarea rows={7} value={draft.retelling_text} onChange={e=>change({retelling_text:e.target.value})}/></label><label className="practice-text-field"><span>MISTAKES</span><textarea rows={3} value={draft.mistakes} onChange={e=>change({mistakes:e.target.value})}/></label><label className="practice-text-field"><span>IMPROVED VERSION</span><textarea rows={5} value={draft.improved_version} onChange={e=>change({improved_version:e.target.value})}/></label><div className="practice-rating-grid"><Rating label="难度 Difficulty" value={draft.perceived_difficulty} onChange={value=>change({perceived_difficulty:value})}/><Rating label="信心 Confidence" value={draft.confidence} onChange={value=>change({confidence:value})}/></div><footer className="practice-submit-row"><div><strong>{saveState}</strong><small>复述与错误记录会自动保存。</small></div><button className="primary-button" onClick={submit}>完整提交</button></footer>{notice&&<p className="practice-notice">{notice}</p>}<aside className="ai-migration-note"><strong>Voice + AI feedback</strong><p>数据模型已保留录音引用；语音转写与 AI 反馈将在后续阶段接入。</p></aside></section>
+    </div></div></AppShell>;
+}

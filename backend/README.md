@@ -1,0 +1,106 @@
+# Adaptive English Learning Agent · FastAPI backend
+
+This directory owns the Python learning domain, FastAPI HTTP API, SQLAlchemy persistence, Alembic migrations and provider-neutral AI Agent boundary. The server-rendered pages remain temporarily available while each workflow moves to the React application in `../frontend/`.
+
+## Run locally
+
+```bash
+cd backend
+python3.12 -m venv .venv
+.venv/bin/pip install -e '.[postgresql,dev]'
+.venv/bin/alembic upgrade head
+.venv/bin/uvicorn app.main:app --reload
+```
+
+The React development server runs at <http://127.0.0.1:5173> and proxies `/api` to this backend. Versioned frontend contracts begin at `/api/v1`. The existing server-rendered pages remain at port 8000 only as migration fallbacks.
+
+Reading practice uses a responsive two-pane workspace: the source stays on the left and questions stay on the right with independent scrolling on desktop, then collapse into a readable single column on small screens. Native tables, flowcharts, hierarchical note-completion forms and verified figures remain semantic web content rather than flattened PDF screenshots.
+
+AI is disabled by default. The full learning app works without a model or API key. To enable explicit Writing/Retelling feedback and Agent actions, install the optional dependency and select one provider in `.env`. The zero-cost local default uses OpenRouter's explicitly free Qwen endpoint:
+
+```bash
+.venv/bin/pip install -e '.[ai,dev]'
+```
+
+```dotenv
+ENGLISH_TOOL_AI_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-server-side-key
+OPENROUTER_MODEL=qwen/qwen3.8-27b:free
+OPENROUTER_FALLBACK_MODEL=openrouter/free
+OPENROUTER_MAX_OUTPUT_TOKENS=2000
+```
+
+The OpenRouter adapter accepts only explicit `:free` models and OpenRouter's free router. It tries Qwen first and uses the free router only when the shared Qwen endpoint has a transient availability or rate-limit failure; a paid fallback is impossible. OpenAI remains available by selecting `openai` and setting `OPENAI_API_KEY`, `OPENAI_MODEL` and `OPENAI_MAX_OUTPUT_TOKENS`.
+
+The key remains server-side. A submitted learner response is sent only after the learner clicks “生成反馈”; automatic submission-time model calls are intentionally disabled.
+
+Both providers default to a `2000`-token output ceiling. Agent tool rounds are separately bounded. These are upper limits rather than guaranteed usage; free-provider rate and availability limits still apply.
+
+Weekly Review also contains an explicit AI Learning Coach action. It gives the model only four read-only tools—weekly evidence, skill profile, confirmed weakness state and due reviews—and refuses to save a report unless all four were actually used. The generated text is persisted as an append-only weekly coaching report. It never changes the deterministic plan; with AI disabled the page shows setup guidance and all non-AI features continue normally.
+
+When AI is enabled, Today can explicitly ask the Agent to inspect the current plan. Any proposed duration or resource change is saved as a pending, explainable recommendation. The plan remains unchanged until the learner clicks “接受建议”; ignoring it also creates a linked audit decision. Stale suggestions, completed modules and unavailable resources are rejected instead of being applied silently.
+
+The app also runs pending migrations safely at startup. A pre-Alembic database is adopted only when all expected baseline tables and columns are present. Seed changes synchronize content in place so existing attempt IDs and learner answers are preserved.
+
+PostgreSQL is the primary development and deployment database through the root `compose.yaml`. Set `ENGLISH_TOOL_DATABASE_URL` to a `postgresql+psycopg://...` URL when running the backend directly. SQLite remains supported for fast isolated tests. HTTP routes receive learner identity through one replaceable dependency; the local adapter still uses `ENGLISH_TOOL_LOCAL_USER_KEY=local-user`. A cloud identity provider can replace that dependency without changing learning services.
+
+IELTS audio is streamed from the repository's private, git-ignored `resources/listening` directory. Verified question figures are stored in `assets/ielts` and served through a path-safe media route; source PDFs themselves are never exposed to the browser.
+
+`seed/manifest.json` is the validated, ordered content catalogue. It imports one versioned file per Cambridge test plus curated Australian real-world resources. `scripts/extract_pdf_text.py` is the repeatable OCR helper for future private-book imports. Its output stays in ignored local working directories and must be proofread against the source before becoming practice content.
+
+## Boundaries
+
+- `domain/`: deterministic IELTS rules and repository contracts.
+- `domain/learning_evidence/`: provider-neutral session, exercise-attempt, skill and evidence contracts.
+- `domain/learner_profile/`: configurable rule-based scoring with explicit evidence sufficiency and trends.
+- `domain/weakness_detection/`: replaceable, configurable classification over profile history.
+- `domain/resources/`: provider-neutral resource candidates and replaceable recommendation policy.
+- `domain/study_plan/`: configurable time allocation and a replaceable plan-generator contract.
+- `domain/study_session/`: timed daily-module lifecycle and persistence contract.
+- `domain/writing/`: web-native writing draft/submission contracts, separate from objective grading.
+- `domain/adaptive_learning/`: typed system/manual decisions and append-only override history.
+- `domain/history/` and `domain/analytics/`: reporting contracts and deterministic progress calculations.
+- `domain/dashboard/` and `domain/weekly_review/`: composed read models and deterministic week calculations.
+- `domain/vocabulary/` and `domain/review/`: reusable chunks, typed review state and a replaceable scheduler.
+- `domain/listening/`, `domain/speaking/` and `domain/notebook/`: difficult sentences, revisioned shadowing/retelling practice and typed mistake-book notes.
+- `services/`: application use cases plus the IELTS-to-learning-evidence adapter.
+- `repositories/`: SQLAlchemy persistence adapter.
+- `models/`: database tables only.
+- `api/routes/`: HTTP transport and validation.
+- `api/learner_context.py`: local identity adapter and the replaceable authentication seam used by every learner-scoped route.
+- `presenters/`: converts structured exercise content into a page-specific read model; it does not grade or persist.
+- `templates/` and `static/`: light server-rendered UI and browser interactions.
+- `composition.py`: the explicit application-service composition root shared by routes.
+- `ai_agent/`: provider-neutral model loop, strict tool contracts, authorization policy and offline mock adapters; it has no database session.
+- `integrations/openai/`: optional Responses API and structured-evaluation adapters; provider SDK types stop at this boundary.
+- `integrations/openrouter/`: free-model-only Chat Completions and structured-evaluation adapters; conversation state remains request-local.
+- `domain/ai_evaluation/`: provider-neutral rubric evidence and evaluator/repository contracts.
+- `domain/agent_coaching/`: persisted weekly coaching report and repository contracts, separate from measured learning evidence.
+- `domain/sync/`: provider-neutral change-feed contract for a future authenticated device-sync adapter; no sync side effects run in the local MVP.
+- `content_import/`: strict Pydantic validation for seed manifests, semantic source blocks and complete IELTS question sets.
+- `seed/`: versioned structured practice content imported into SQLite through the manifest.
+- `migrations/`: Alembic schema history; schema changes must never rely on `create_all`.
+
+The profile algorithm uses the latest five sessions per skill. Objective evidence keeps the accuracy/confidence/hard-item weighting. A daily module without questions has `NULL` accuracy and is scored only from explicitly provided confidence and perceived difficulty; its explanation says that this is subjective evidence. Missing signals are excluded and weights are normalized. With no evidence, a skill has no score; one sample is provisional; two or more samples establish the current baseline.
+
+The initial weakness detector examines the latest four profile snapshots. It requires at least two scored snapshots and two consecutive threshold-confirming snapshots before labelling a skill `weak` or `strong`; missing evidence is recorded as `insufficient_evidence`, never as weakness. Each assessment stores the evidence snapshot IDs and measurable reasons that produced it.
+
+The planner keeps four modules: Listening 30, Speaking 25, Vocabulary/Review 25, plus a 30-minute Reading or Writing module that alternates deterministically by date. Confirmed weak/developing skills receive gradual increases, confirmed strong skills receive only a small reduction, and the result is capped at 120 minutes. Resource selection prefers unused, appropriately difficult material and penalizes recently studied or recently assigned material so adjacent dates rotate when alternatives exist.
+
+Every initial plan item creates a `system_recommendation` decision. A learner override changes only the current resource/duration, retains the system values, recalculates the plan total, and appends a `manual_override` decision. Repeating the same request is a no-op; incompatible resources and out-of-range durations are rejected.
+
+The Today page is intentionally server-rendered. A small script starts a module session, accumulates active timer seconds, autosaves notes and self-ratings, and completes the session through typed endpoints. Refreshing restores saved progress. Only all four completed items complete the plan; undoing one reopens it and a later start creates a new session revision. Replacing a resource is blocked while its session is active or the module is still completed.
+
+History can return to any saved date, using a recent timeline, an arbitrary-month calendar, or a single-day detail page. Progress derives streaks and completion metrics from saved plans and submitted sessions. It labels completed plan minutes as estimates and reports real tracked time separately; missing timer data is never inferred.
+
+Review stores complete expressions rather than forcing isolated words, and can schedule difficult listening sentences through the same stable contract. New review items become due one day after their learned date. The initial scheduler follows cumulative Day 1, 3, 7, 14 and 30 checkpoints for `Good`; `Again`, `Hard` and `Easy` adjust the next step deterministically. Every rating is stored as an immutable attempt and client request IDs make retries idempotent.
+
+Notebook keeps free-form typed notes, listening sentences and speaking retellings as separate domain records. Listening practice status (`could_not_hear`, `difficult`, `understood`, `mastered`) is intentionally independent from review mastery. Speaking uses a real local G20 conversation, learner-specific sentence states, one autosaved retelling record and immutable submission revisions. It stores the outline, intended chunks, optional written retelling, mistakes, improved version, timer and self-ratings. A nullable recording reference remains the seam for a later recording adapter; this milestone does not fabricate an IELTS Speaking score.
+
+Library treats resource content and learner-specific state separately. Built-in IELTS resources and personal URL/text/transcript resources share the same read model and recommendation pipeline. Favorites, saved-for-later and recoverable archives live in `ResourceUserState`, so one learner's organization does not mutate global content. Archived resources leave future recommendation candidates but remain referenced by existing plans and history.
+
+Dashboard composes existing service results; it does not query tables or own a second copy of plan/progress state. Weekly Review is calculated from persisted plans, submitted sessions, vocabulary, difficult sentences and immutable review attempts. Its retention percentage is explicitly `Good + Easy` divided by this week's review ratings. Historical due-queue completion cannot be reconstructed from the current schema and is therefore not invented.
+
+JavaScript only manages browser concerns such as section switching, autosave requests, multi-select limits, and timer display. Answer keys, scoring, submission validation, and persistence stay in Python.
+
+The Agent boundary is Python-only and offline-testable. It exposes nine allow-listed read tools for plans, history, profile, weaknesses, reviews, resources and weekly evidence. A separately authorized `save_ai_recommendation` tool appends an explainable suggestion but never applies it to the plan. A learner response is a separate linked decision, so model output and user authority remain distinguishable in history. Tool arguments cannot carry a learner identity: the authenticated execution context owns `user_key`. `MockAIProvider` tests the complete model → tool → result → model loop without a network key, while `OpenAIResponsesProvider` implements the same protocol without receiving SQLAlchemy models or a database session.

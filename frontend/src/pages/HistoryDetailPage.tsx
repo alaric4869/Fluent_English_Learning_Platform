@@ -1,0 +1,12 @@
+import { useCallback } from "react";
+import { AppShell } from "../components/AppShell";
+import { ErrorState, LoadingState } from "../components/LoadingState";
+import { frontendApi } from "../lib/api";
+import { useApiQuery } from "../lib/useApiQuery";
+
+
+export function HistoryDetailPage({ studyDate }: { studyDate: string }) {
+  const loader = useCallback((signal: AbortSignal) => frontendApi.historyDay(studyDate, signal), [studyDate]);
+  const { data, error } = useApiQuery(loader);
+  return <AppShell activePage="history"><div className="page-container"><a className="back-link" href="/history">← Back to history</a>{error && <ErrorState message={error} />}{!data && !error && <LoadingState />}{data && <><section className="detail-hero surface-panel"><div><p className="eyebrow">Study record · {data.study_date}</p><h1>{data.display_date}</h1><p>{data.completed_module_count}/{data.assigned_module_count} planned modules completed · {data.sessions.length} measured sessions</p></div></section><section className="record-section"><div className="section-heading"><div><p className="eyebrow">Daily plan</p><h2>当日学习模块</h2></div></div><div className="module-grid history-detail-modules">{data.modules.map((module) => <article className={`module-card ${module.completed ? "complete" : ""}`} key={module.item_id}><div className="module-card-top"><span>{module.code}</span><b>{module.planned_minutes} min</b></div><h3>{module.title}</h3><p>{module.resource_title}</p><div className="module-card-footer"><small>{module.status.replaceAll("_", " ")}</small></div></article>)}</div></section><section className="record-section"><div className="section-heading"><div><p className="eyebrow">Measured evidence</p><h2>真实作答与练习</h2></div></div>{data.sessions.length ? <div className="review-stack">{data.sessions.map((session) => <article className="session-card surface-panel" key={session.id}><div><div className="review-meta"><span>{session.skill_label}</span><span>{new Date(session.completed_at).toLocaleString("en-AU")}</span></div><h2>{session.resource_title}</h2><p>{session.notes || "No notes recorded."}</p></div><div className="session-metrics"><span><strong>{session.accuracy_percent ?? "—"}{session.accuracy_percent !== null ? "%" : ""}</strong>accuracy</span><span><strong>{session.incorrect_item_count}</strong>mistakes</span><span><strong>{session.actual_duration_seconds ? Math.round(session.actual_duration_seconds / 60) : "—"}</strong>minutes</span></div></article>)}</div> : <p className="empty-state">这一天没有单独记录的作答 Session。</p>}</section></>}</div></AppShell>;
+}
